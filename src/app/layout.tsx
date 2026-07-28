@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
+import { theme } from "@/lib/theme";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,10 +28,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider defaultColorScheme="auto" theme={theme}>{children}</MantineProvider>
       </body>
     </html>
   );

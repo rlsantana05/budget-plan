@@ -1,70 +1,126 @@
 "use client";
 
-import { AppShell, Burger, Group, NavLink, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Avatar,
+  Box,
+  Burger,
+  Group,
+  NavLink,
+  Overlay,
+  Paper,
+  Stack,
+  Text,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
   BanknoteIcon,
-  BarChart3Icon,
+  BellIcon,
+  CrosshairIcon,
   LayoutDashboardIcon,
   PiggyBankIcon,
+  ScrollTextIcon,
+  SettingsIcon,
   WalletIcon,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ColorSchemeToggle } from "./_components/ColorSchemeToggle";
+import classes from "./AppLayout.module.css";
 
-const navItems = [
+const navItems: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Dashboard", href: "/", icon: LayoutDashboardIcon },
+  { label: "Planning", href: "/planning", icon: ScrollTextIcon },
+  { label: "Budget", href: "/budget", icon: PiggyBankIcon },
   { label: "Accounts", href: "/accounts", icon: WalletIcon },
-  { label: "Budgets", href: "/budgets", icon: PiggyBankIcon },
-  { label: "Reports", href: "/reports", icon: BarChart3Icon },
-] as const;
+  { label: "Goals", href: "/goals", icon: CrosshairIcon },
+];
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [opened, { toggle }] = useDisclosure();
+function Sidebar({ close }: { close?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <AppShell
-      padding="md"
-      header={{ height: 60 }}
-      navbar={{
-        width: 260,
-        breakpoint: "sm",
-        collapsed: { mobile: !opened },
-      }}
-    >
-      <AppShell.Header>
-        <Group h="100%" px="md">
-          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-          <BanknoteIcon size={24} />
-          <Text fw={700} size="lg">
-            Budget Plan
-          </Text>
-        </Group>
-      </AppShell.Header>
+    <Stack h="100%" gap={0}>
+      <Stack gap={0} style={{ flex: 1 }}>
+        {navItems.map((item) => (
+          <NavLink
+            key={item.href}
+            component={Link}
+            href={item.href}
+            label={item.label}
+            leftSection={<item.icon size={18} />}
+            active={
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href)
+            }
+            variant="light"
+            color="blue"
+            onClick={close}
+          />
+        ))}
+      </Stack>
 
-      <AppShell.Navbar p="xs">
-        <AppShell.Section grow>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.href}
-              component={Link}
-              href={item.href}
-              label={item.label}
-              leftSection={<item.icon size={18} />}
-              active={
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href)
-              }
-              variant="light"
-              color="blue"
-            />
-          ))}
-        </AppShell.Section>
-      </AppShell.Navbar>
+      <NavLink
+        component={Link}
+        href="/settings"
+        label="Settings"
+        leftSection={<SettingsIcon size={18} />}
+        active={pathname.startsWith("/settings")}
+        variant="light"
+        color="blue"
+        onClick={close}
+      />
+    </Stack>
+  );
+}
 
-      <AppShell.Main>{children}</AppShell.Main>
-    </AppShell>
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const [opened, { toggle, close }] = useDisclosure();
+
+  return (
+    <Box className={classes.shell}>
+      <Group px="md" py="md">
+        <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+        <BanknoteIcon size={24} />
+        <Text fw={700} size="lg">
+          Budget Plan
+        </Text>
+        <div style={{ flex: 1 }} />
+        <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Notifications">
+          <BellIcon size={18} />
+        </ActionIcon>
+        <ColorSchemeToggle />
+        <Avatar src={null} alt="User" radius="xl" color="blue">
+          U
+        </Avatar>
+      </Group>
+
+      <Box className={classes.body}>
+        <Box visibleFrom="sm" className={classes.sidebar}>
+          <Sidebar />
+        </Box>
+
+        {opened && (
+          <>
+            <Overlay onClick={close} zIndex={200} />
+            <Box
+              className={classes.sidebarMobile}
+              bg="surface.1"
+              px="xs"
+              pb="xs"
+              pt="md"
+            >
+              <Sidebar close={close} />
+            </Box>
+          </>
+        )}
+
+        <Paper className={classes.mainPanel} bg="surface.2" p="md">
+          {children}
+        </Paper>
+      </Box>
+    </Box>
   );
 }

@@ -16,6 +16,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import classes from "./Dashboard.module.css";
 
 export default function Dashboard() {
   return (
@@ -47,7 +48,7 @@ export default function Dashboard() {
         </Stack>
 
         <SimpleGrid cols={{ base: 2, lg: 4 }} mb={48}>
-          <Card withBorder padding="lg" radius="md">
+          <Card withBorder padding="lg" radius="md" bg="surface.1" className={classes.nestedCard}>
             <Text size="sm" c="dimmed" mb={4}>
               Planned
             </Text>
@@ -56,7 +57,7 @@ export default function Dashboard() {
             </Text>
           </Card>
 
-          <Card withBorder padding="lg" radius="md">
+          <Card withBorder padding="lg" radius="md" bg="surface.1" className={classes.nestedCard}>
             <Text size="sm" c="dimmed" mb={4}>
               Funded
             </Text>
@@ -65,7 +66,7 @@ export default function Dashboard() {
             </Text>
           </Card>
 
-          <Card withBorder padding="lg" radius="md">
+          <Card withBorder padding="lg" radius="md" bg="surface.1" className={classes.nestedCard}>
             <Text size="sm" c="dimmed" mb={4}>
               Spent
             </Text>
@@ -74,7 +75,7 @@ export default function Dashboard() {
             </Text>
           </Card>
 
-          <Card withBorder padding="lg" radius="md">
+          <Card withBorder padding="lg" radius="md" bg="surface.1" className={classes.nestedCard}>
             <Text size="sm" c="dimmed" mb={4}>
               Remaining
             </Text>
@@ -84,7 +85,7 @@ export default function Dashboard() {
           </Card>
         </SimpleGrid>
 
-        <Paper withBorder p={48} style={{ borderStyle: "dashed" }}>
+        <Paper withBorder p={48} bg="surface.1" style={{ borderStyle: "dashed" }}>
           <Stack align="center" gap="xs">
             <Title order={3}>Welcome to Budget Plan</Title>
             <Text size="sm" c="dimmed">

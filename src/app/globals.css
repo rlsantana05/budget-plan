@@ -11,7 +11,7 @@
 }
 
 body {
-  background: var(--background);
+  background: var(--mantine-color-surface-3);
   color: var(--foreground);
 }
 
