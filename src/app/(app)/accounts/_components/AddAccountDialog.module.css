@@ -1,0 +1,58 @@
+.card {
+  position: relative;
+  flex: 1;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--mantine-radius-md);
+  background: var(--mantine-color-surface-1);
+  padding: 28px 24px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cardSelected {
+  border-color: #5D65B7;
+  background: rgba(93, 101, 183, 0.08);
+}
+
+.cardSelected:hover {
+  background: rgba(93, 101, 183, 0.12);
+}
+
+.checkmark {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #5D65B7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.stepContent {
+  min-height: 260px;
+}
+
+.input {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--mantine-color-surface-1);
+  border-radius: var(--mantine-radius-sm);
+}
+
+.input:focus-within {
+  border-color: #5D65B7;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--mantine-color-dimmed);
+}
