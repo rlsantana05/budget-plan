@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import {
   ActionIcon,
+  Box,
   Button,
   Card,
   Group,
@@ -20,7 +21,7 @@ import classes from "./Dashboard.module.css";
 
 export default function Dashboard() {
   return (
-    <>
+    <Box px="20rem">
       <div>
         <Group justify="center" mb="xl">
           <ActionIcon variant="subtle" color="gray" aria-label="Previous month">
@@ -97,6 +98,6 @@ export default function Dashboard() {
           </Stack>
         </Paper>
       </div>
-    </>
+    </Box>
   );
 }
