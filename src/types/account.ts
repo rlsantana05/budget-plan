@@ -1,13 +1,24 @@
-export type AccountType = "banking" | "cash";
+export type AccountType =
+  | "CHECKING"
+  | "SAVINGS"
+  | "MONEY_MARKET"
+  | "CREDIT_CARD"
+  | "CASH"
+  | "INVESTMENT"
+  | "OTHER";
 
-export type BankingAccountType = "checking" | "savings" | "money-market";
-
-export interface Account {
+export interface AccountDTO {
   id: string;
+  name: string;
   type: AccountType;
-  nickname: string;
+  institutionName: string | null;
   balance: number;
-  createdAt: Date;
-  bankingAccountType?: BankingAccountType;
+  createdAt: string;
+}
+
+export interface CreateAccountInput {
+  name: string;
+  type: AccountType;
   institutionName?: string;
+  balance: number;
 }

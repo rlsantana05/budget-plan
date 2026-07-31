@@ -1,0 +1,334 @@
+// ============================================================
+// GENERATOR & DATASOURCE
+// ============================================================
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+enum AccountType {
+  CHECKING
+  SAVINGS
+  CREDIT_CARD
+  CASH
+  INVESTMENT
+  OTHER
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum TransactionStatus {
+  PROJECTED  // Expected/planned, not yet real
+  ACTUAL     // Real money that has moved
+}
+
+enum Role {
+  OWNER
+  MEMBER
+}
+
+// ============================================================
+// CORE USER & MEMBERSHIP
+// ============================================================
+model User {
+  id        String         @id @default(cuid())
+  clerkId   String         @unique
+  email     String         @unique
+  name      String?
+  members   BudgetMember[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  deletedAt DateTime?      // Soft-delete
+
+  @@index([email])
+  @@index([deletedAt])
+}
+
+model Budget {
+  id             String             @id @default(cuid())
+  name           String
+  members        BudgetMember[]
+  accounts       Account[]
+  categories     Category[]
+  transactions   Transaction[]
+  savingsBuckets SavingsBucket[]
+  allocations    Allocation[]
+  payees         Payee[]
+  reservations   CreditCardReservation[]
+  snapshots      CategorySnapshot[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  deletedAt      DateTime?          // Soft-delete
+
+  @@index([deletedAt])
+}
+
+model BudgetMember {
+  id        String   @id @default(cuid())
+  userId    String
+  budgetId  String
+  role      Role     @default(MEMBER)
+  joinedAt  DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budget    Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, budgetId])
+  @@index([userId])
+  @@index([budgetId])
+  @@index([role])
+}
+
+// ============================================================
+// ACCOUNTS
+// ============================================================
+model Account {
+  id             String         @id @default(cuid())
+  name           String
+  type           AccountType
+  initialBalance Decimal        @default(0.00) @db.Decimal(12, 2)
+  balance        Decimal        @default(0.00) @db.Decimal(12, 2) // Cached derived value. Recalculated atomically with transaction mutations.
+  lastReconciledAt DateTime? // Last time balance was verified against the transaction ledger.
+  isLiquid       Boolean        @default(true) // Used in Funding Horizon calc
+  isActive       Boolean        @default(true)
+  budgetId       String
+  budget         Budget         @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  
+  transactions   Transaction[]
+  savingsBuckets SavingsBucket[]
+  reservations   CreditCardReservation[]
+  
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?      // Soft-delete
+
+  @@index([budgetId])
+  @@index([deletedAt])
+  @@index([isActive])
+  @@index([type])
+}
+
+// ============================================================
+// CATEGORIES
+// ============================================================
+model Category {
+  id               String             @id @default(cuid())
+  name             String
+  color            String             @default("#CCCCCC")
+  iconName         String             @default("Circle")
+  isVariable       Boolean            @default(true)
+  isArchived       Boolean            @default(false)
+  budgetId         String
+  budget           Budget             @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  // Hierarchy support
+  parentCategoryId String?
+  parentCategory   Category?          @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull)
+  subCategories    Category[]         @relation("CategoryHierarchy")
+
+  transactions     Transaction[]
+  allocations      Allocation[]
+  snapshots        CategorySnapshot[]
+  
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  deletedAt     DateTime?          // Soft-delete
+
+  @@index([budgetId])
+  @@index([deletedAt])
+  @@index([isArchived])
+}
+
+// ============================================================
+// BUDGET ALLOCATIONS
+// ============================================================
+model Allocation {
+  id             String   @id @default(cuid())
+  budgetId       String
+  categoryId     String
+  amount         Decimal  @db.Decimal(12, 2)
+  targetDate     DateTime // The period this allocation is intended for
+  note           String?
+  allocatedAt    DateTime @default(now())
+  
+  budget         Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([budgetId, categoryId, targetDate])
+  @@index([budgetId])
+  @@index([categoryId])
+  @@index([allocatedAt])
+}
+
+// ============================================================
+// TRANSACTIONS
+// ============================================================
+model Transaction {
+  id               String         @id @default(cuid())
+  accountId        String
+  budgetId         String
+  categoryId       String?
+  payeeId          String?
+  amount           Decimal        @db.Decimal(12, 2) // Positive = INCOME, Negative = EXPENSE
+  type             TransactionType
+  status           TransactionStatus @default(ACTUAL)
+  description      String
+  date             DateTime
+  isCleared        Boolean        @default(false)
+  isPending        Boolean        @default(false)
+  notes            String?
+  
+  account          Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  budget           Budget         @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  category         Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  payee            Payee?         @relation(fields: [payeeId], references: [id], onDelete: SetNull)
+  
+  reservations     CreditCardReservation[]
+  savingsBuckets   SavingsBucket[]
+  sourceOfTransfer Transfer?      @relation("sourceLeg")
+  destOfTransfer   Transfer?      @relation("destLeg")
+  
+  isArchived       Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?      // Soft-delete
+
+  @@index([accountId])
+  @@index([budgetId])
+  @@index([categoryId])
+  @@index([date])
+  @@index([status])
+  @@index([isCleared])
+  @@index([deletedAt])
+}
+
+// ============================================================
+// PAYEES
+// ============================================================
+model Payee {
+  id        String   @id @default(cuid())
+  budgetId  String
+  name      String
+  budget    Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([budgetId, name])
+}
+
+// ============================================================
+// CATEGORY SNAPSHOTS
+// ============================================================
+model CategorySnapshot {
+  id                  String    @id @default(cuid())
+  budgetId            String
+  categoryId          String
+  snapshotDate        DateTime
+  allocatedToDate     Decimal   @db.Decimal(12, 2)
+  spentToDate         Decimal   @db.Decimal(12, 2)
+  availableAtSnapshot Decimal   @db.Decimal(12, 2)
+  isClosed            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+
+  budget              Budget    @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  category            Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([budgetId, categoryId, snapshotDate])
+  @@index([budgetId])
+  @@index([categoryId])
+}
+
+// ============================================================
+// CREDIT CARD RESERVATIONS
+// ============================================================
+model CreditCardReservation {
+  id                  String    @id @default(cuid())
+  budgetId            String
+  creditCardAccountId String
+  amount              Decimal   @db.Decimal(12, 2)
+  sourceTransactionId String    @unique
+  isReleased          Boolean   @default(false)
+  
+  budget              Budget    @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  creditCardAccount   Account   @relation(fields: [creditCardAccountId], references: [id], onDelete: Cascade)
+  sourceTransaction   Transaction @relation(fields: [sourceTransactionId], references: [id], onDelete: Cascade)
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([budgetId])
+  @@index([creditCardAccountId])
+}
+
+// ============================================================
+// SAVINGS BUCKETS
+// ============================================================
+model SavingsBucket {
+  id             String         @id @default(cuid())
+  name           String
+  accountId      String
+  account        Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  budgetId       String
+  budget         Budget         @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  
+  isUnassigned   Boolean        @default(false)
+  targetAmount   Decimal?       @db.Decimal(12, 2)
+  targetDate     DateTime?
+  isArchived     Boolean        @default(false)
+  
+  transactions   Transaction[]
+  
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?      // Soft-delete
+
+  @@index([accountId])
+  @@index([budgetId])
+  @@index([isUnassigned])
+}
+
+// ============================================================
+// TRANSFERS
+// ============================================================
+model Transfer {
+  id                  String         @id @default(cuid())
+  amountAbsolute      Decimal        @db.Decimal(12, 2) 
+  description         String
+  date                DateTime
+  status              TransferStatus @default(PENDING)
+  
+  sourceTransactionId   String?        @unique
+  sourceTransaction     Transaction?   @relation("sourceLeg", fields: [sourceTransactionId], references: [id])
+  destinationTransactionId String?     @unique
+  destinationTransaction Transaction? @relation("destLeg", fields: [destinationTransactionId], references: [id])
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  deletedAt           DateTime?       // Soft-delete
+
+  @@index([status])
+  @@index([date])
+}
+
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  REVERSED
+  FAILED
+}

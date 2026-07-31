@@ -2,11 +2,21 @@
   position: relative;
   flex: 1;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--mantine-radius-md);
-  background: var(--mantine-color-surface-1);
+  background-color: var(--mantine-color-surface-1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   padding: 28px 24px;
   transition: all 0.2s ease;
+  min-height: 190px;
+}
+
+.iconWrapper {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card:hover {

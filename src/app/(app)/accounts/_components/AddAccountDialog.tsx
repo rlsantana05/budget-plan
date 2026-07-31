@@ -14,13 +14,26 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Check, Landmark, Wallet } from "lucide-react";
-import type { Account, AccountType, BankingAccountType } from "@/types/account";
+import { createAccount } from "@/actions/accounts";
+import type {
+  AccountDTO,
+  AccountType,
+  CreateAccountInput,
+} from "@/types/account";
 import classes from "./AddAccountDialog.module.css";
+
+type BankingAccountType = "checking" | "savings" | "money-market";
+
+const bankingTypeMap: Record<BankingAccountType, AccountType> = {
+  checking: "CHECKING",
+  savings: "SAVINGS",
+  "money-market": "MONEY_MARKET",
+};
 
 interface AddAccountDialogProps {
   opened: boolean;
   onClose: () => void;
-  onAccountCreated: (account: Account) => void;
+  onAccountCreated: (account: AccountDTO) => void;
 }
 
 export default function AddAccountDialog({
@@ -29,7 +42,10 @@ export default function AddAccountDialog({
   onAccountCreated,
 }: AddAccountDialogProps) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [selectedType, setSelectedType] = useState<AccountType | null>(null);
+  const [selectedType, setSelectedType] = useState<
+    "banking" | "cash" | null
+  >(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const bankingForm = useForm({
     mode: "uncontrolled",
@@ -76,30 +92,37 @@ export default function AddAccountDialog({
     setStep(1);
   };
 
-  const handleBankingSubmit = bankingForm.onSubmit((values) => {
-    const account: Account = {
-      id: crypto.randomUUID(),
-      type: "banking",
-      nickname: values.nickname || values.institutionName,
-      balance: values.balance,
-      createdAt: new Date(),
-      bankingAccountType: values.bankingAccountType as BankingAccountType,
-      institutionName: values.institutionName,
-    };
-    onAccountCreated(account);
-    handleClose();
+  const handleBankingSubmit = bankingForm.onSubmit(async (values) => {
+    setSubmitting(true);
+    try {
+      const input: CreateAccountInput = {
+        name: values.nickname || values.institutionName,
+        type: bankingTypeMap[values.bankingAccountType as BankingAccountType],
+        institutionName: values.institutionName,
+        balance: values.balance,
+      };
+      const account = await createAccount(input);
+      onAccountCreated(account);
+      handleClose();
+    } finally {
+      setSubmitting(false);
+    }
   });
 
-  const handleCashSubmit = cashForm.onSubmit((values) => {
-    const account: Account = {
-      id: crypto.randomUUID(),
-      type: "cash",
-      nickname: values.nickname,
-      balance: values.balance,
-      createdAt: new Date(),
-    };
-    onAccountCreated(account);
-    handleClose();
+  const handleCashSubmit = cashForm.onSubmit(async (values) => {
+    setSubmitting(true);
+    try {
+      const input: CreateAccountInput = {
+        name: values.nickname,
+        type: "CASH",
+        balance: values.balance,
+      };
+      const account = await createAccount(input);
+      onAccountCreated(account);
+      handleClose();
+    } finally {
+      setSubmitting(false);
+    }
   });
 
   const bankingValid =
@@ -169,7 +192,7 @@ export default function AddAccountDialog({
                     </div>
                   )}
                   <Stack align="center" gap="xs">
-                    <Landmark size={32} strokeWidth={1.5} />
+                    <div className={classes.iconWrapper}><Landmark size={32} strokeWidth={1.5} /></div>
                     <Text fw={600} size="lg">
                       Banking
                     </Text>
@@ -197,7 +220,7 @@ export default function AddAccountDialog({
                     </div>
                   )}
                   <Stack align="center" gap="xs">
-                    <Wallet size={32} strokeWidth={1.5} />
+                    <div className={classes.iconWrapper}><Wallet size={32} strokeWidth={1.5} /></div>
                     <Text fw={600} size="lg">
                       Cash
                     </Text>
@@ -311,7 +334,8 @@ export default function AddAccountDialog({
               </Group>
               <Button
                 type="submit"
-                disabled={!bankingValid}
+                disabled={!bankingValid || submitting}
+                loading={submitting}
                 style={{
                   backgroundColor: bankingValid ? "#5D65B7" : undefined,
                   borderColor: bankingValid ? "#5D65B7" : undefined,
@@ -372,7 +396,8 @@ export default function AddAccountDialog({
               </Group>
               <Button
                 type="submit"
-                disabled={!cashValid}
+                disabled={!cashValid || submitting}
+                loading={submitting}
                 style={{
                   backgroundColor: cashValid ? "#5D65B7" : undefined,
                   borderColor: cashValid ? "#5D65B7" : undefined,
