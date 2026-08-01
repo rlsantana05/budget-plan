@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "@mantine/core",
+      "@mantine/hooks",
+    ],
+  },
 };
 
 export default nextConfig;

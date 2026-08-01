@@ -1,10 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Stack, Text, Title } from "@mantine/core";
+import {
+  Button,
+  Group,
+  Menu,
+  Modal,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { Ellipsis, Landmark, PlusIcon, Wallet } from "lucide-react";
-import AddAccountDialog from "./AddAccountDialog";
+import { Ellipsis, Landmark, Pencil, PlusIcon, Trash, Wallet } from "lucide-react";
+import { deleteAccount } from "@/actions/accounts";
+import AccountDialog from "./AccountDialog";
 import type { AccountDTO, AccountType } from "@/types/account";
 import classes from "../AccountsPage.module.css";
 
@@ -18,11 +27,25 @@ export default function AccountsClient({
   const [accounts, setAccounts] = useState<AccountDTO[]>(initialAccounts);
   const [opened, { open, close }] = useDisclosure(false);
   const [dialogKey, setDialogKey] = useState(0);
+  const [editingAccount, setEditingAccount] = useState<AccountDTO | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState<AccountDTO | null>(
+    null,
+  );
+  const [deleteOpen, { open: openDelete, close: closeDelete }] =
+    useDisclosure(false);
+  const [deleting, setDeleting] = useState(false);
   const [fadeState, setFadeState] = useState<"empty" | "fading" | "list">(
     initialAccounts.length > 0 ? "list" : "empty",
   );
 
-  const openDialog = () => {
+  const openCreateDialog = () => {
+    setEditingAccount(null);
+    setDialogKey((prev) => prev + 1);
+    open();
+  };
+
+  const openEditDialog = (account: AccountDTO) => {
+    setEditingAccount(account);
     setDialogKey((prev) => prev + 1);
     open();
   };
@@ -32,6 +55,36 @@ export default function AccountsClient({
     if (fadeState !== "list") {
       setFadeState("fading");
       setTimeout(() => setFadeState("list"), 200);
+    }
+  };
+
+  const handleAccountUpdated = (updated: AccountDTO) => {
+    setAccounts((prev) =>
+      prev.map((a) => (a.id === updated.id ? updated : a)),
+    );
+  };
+
+  const handleDeleteRequest = (account: AccountDTO) => {
+    setDeletingAccount(account);
+    openDelete();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingAccount) return;
+    setDeleting(true);
+    try {
+      await deleteAccount(deletingAccount.id);
+      setAccounts((prev) =>
+        prev.filter((a) => a.id !== deletingAccount.id),
+      );
+      closeDelete();
+      setDeletingAccount(null);
+      if (accounts.length === 1) {
+        setFadeState("fading");
+        setTimeout(() => setFadeState("empty"), 200);
+      }
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -159,7 +212,7 @@ export default function AccountsClient({
               radius="md"
               size="md"
               className={classes.cta}
-              onClick={openDialog}
+              onClick={openCreateDialog}
             >
               Add your first account
             </Button>
@@ -186,9 +239,32 @@ export default function AccountsClient({
               const isBanking = account.type !== "CASH";
               return (
                 <div key={account.id} className={classes.card}>
-                  <button className={classes.kebab} aria-label="Account menu">
-                    <Ellipsis size={16} />
-                  </button>
+                  <Menu position="bottom-end" withArrow arrowPosition="center">
+                    <Menu.Target>
+                      <button
+                        className={classes.kebab}
+                        aria-label="Account menu"
+                        aria-haspopup="menu"
+                      >
+                        <Ellipsis size={16} />
+                      </button>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        leftSection={<Pencil size={15} />}
+                        onClick={() => openEditDialog(account)}
+                      >
+                        Edit account
+                      </Menu.Item>
+                      <Menu.Item
+                        leftSection={<Trash size={15} />}
+                        color="red"
+                        onClick={() => handleDeleteRequest(account)}
+                      >
+                        Delete account
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
                   <div className={classes.cardTop}>
                     <div
                       className={classes.badge}
@@ -233,13 +309,13 @@ export default function AccountsClient({
 
             <div
               className={classes.ghostCard}
-              onClick={openDialog}
+              onClick={openCreateDialog}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  openDialog();
+                  openCreateDialog();
                 }
               }}
             >
@@ -252,12 +328,49 @@ export default function AccountsClient({
         </div>
       )}
 
-      <AddAccountDialog
-        key={dialogKey}
+      <AccountDialog
+        key={`${dialogKey}-${editingAccount?.id ?? "new"}`}
         opened={opened}
         onClose={close}
+        account={editingAccount}
         onAccountCreated={handleAccountCreated}
+        onAccountUpdated={handleAccountUpdated}
       />
+
+      <Modal.Root opened={deleteOpen} onClose={closeDelete} size={420}>
+        <Modal.Overlay backgroundOpacity={0.6} blur={3} />
+        <Modal.Content
+          style={{
+            borderRadius: "16px",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            background: "var(--mantine-color-surface-2)",
+            boxShadow: "0 24px 64px rgba(0, 0, 0, 0.5)",
+            padding: "24px",
+          }}
+        >
+          <Stack gap="xs">
+            <Title order={3} style={{ fontSize: 17, fontWeight: 600 }}>
+              Delete account?
+            </Title>
+            <Text size="sm" c="dimmed">
+              <strong>{deletingAccount?.name}</strong> will be hidden from your
+              accounts. Its history is kept so you can recover it later.
+            </Text>
+            <Group justify="flex-end" mt="md">
+              <Button variant="default" onClick={closeDelete} disabled={deleting}>
+                Cancel
+              </Button>
+              <Button
+                color="red"
+                onClick={handleDeleteConfirm}
+                loading={deleting}
+              >
+                Delete
+              </Button>
+            </Group>
+          </Stack>
+        </Modal.Content>
+      </Modal.Root>
     </>
   );
 }

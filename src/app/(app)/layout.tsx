@@ -42,7 +42,7 @@ function Sidebar({ close }: { close?: () => void }) {
 
   return (
     <Stack h="100%" gap={0}>
-      <Stack gap={0} style={{ flex: 1 }}>
+      <Stack gap={2} mt="5rem" style={{ flex: 1 }}>
         {navItems.map((item) => (
           <NavLink
             key={item.href}
@@ -55,6 +55,7 @@ function Sidebar({ close }: { close?: () => void }) {
                 ? pathname === "/"
                 : pathname.startsWith(item.href)
             }
+            className={classes.navLink}
             variant="light"
             color="blue"
             onClick={close}
@@ -68,6 +69,7 @@ function Sidebar({ close }: { close?: () => void }) {
         label="Settings"
         leftSection={<SettingsIcon size={18} />}
         active={pathname.startsWith("/settings")}
+        className={classes.navLink}
         variant="light"
         color="blue"
         onClick={close}
@@ -84,11 +86,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Group px="md" py="md">
         <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
         <BanknoteIcon size={24} />
-        <Text fw={700} size="lg">
+        <Text fw={700} size="lg" c="indigo">
           Budget Plan
         </Text>
         <div style={{ flex: 1 }} />
-        <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Notifications">
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="lg"
+          aria-label="Notifications"
+        >
           <BellIcon size={18} />
         </ActionIcon>
         <ColorSchemeToggle />

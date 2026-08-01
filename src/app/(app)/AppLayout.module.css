@@ -12,10 +12,28 @@
 }
 
 .sidebar {
-  width: 240px;
-  min-width: 240px;
+  width: 200px;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
+  padding-right: 8px;
+}
+
+.navLink {
+  border-radius: var(--mantine-radius-md);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.navLink {
+  color: var(--mantine-color-dimmed);
+}
+
+.navLink[data-active],
+.navLink:hover {
+  background-color: var(--mantine-color-gray-light-hover);
+  color: var(--mantine-color-text);
 }
 
 .sidebarMobile {
@@ -30,10 +48,9 @@
 }
 
 .mainPanel {
-  flex: 1;
-
-  overflow: auto;
-  border-radius: var(--mantine-radius-lg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+	flex: 1;
+	overflow: auto;
+	border-radius: var(--mantine-radius-xl);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+	border: 1px solid rgba(255, 255, 255, 0.04);
 }

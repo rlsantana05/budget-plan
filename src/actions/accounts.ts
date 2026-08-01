@@ -4,7 +4,11 @@ import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { accounts, budgetMembers, budgets, users } from "@/db/schema";
-import type { AccountDTO, CreateAccountInput } from "@/types/account";
+import type {
+  AccountDTO,
+  CreateAccountInput,
+  UpdateAccountInput,
+} from "@/types/account";
 
 const DEV_EMAIL = "dev@budgetplan.app";
 
@@ -72,6 +76,17 @@ export async function getAccounts(): Promise<AccountDTO[]> {
   return rows.map(toDTO);
 }
 
+export async function getAccountTotal(): Promise<number> {
+  const budget = await getOrCreateDefaultBudget();
+
+  const rows = await db
+    .select({ balance: accounts.balance })
+    .from(accounts)
+    .where(and(eq(accounts.budgetId, budget.id), isNull(accounts.deletedAt)));
+
+  return rows.reduce((sum, row) => sum + Number(row.balance), 0);
+}
+
 export async function createAccount(
   input: CreateAccountInput,
 ): Promise<AccountDTO> {
@@ -92,6 +107,68 @@ export async function createAccount(
     .returning();
 
   revalidatePath("/accounts");
+  revalidatePath("/");
 
   return toDTO(account);
+}
+
+export async function updateAccount(
+  id: string,
+  input: UpdateAccountInput,
+): Promise<AccountDTO> {
+  const budget = await getOrCreateDefaultBudget();
+
+  const [account] = await db
+    .update(accounts)
+    .set({
+      name: input.name,
+      type: input.type,
+      institutionName: input.institutionName ?? null,
+      balance: input.balance.toString(),
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(accounts.id, id),
+        eq(accounts.budgetId, budget.id),
+        isNull(accounts.deletedAt),
+      ),
+    )
+    .returning();
+
+  if (!account) {
+    throw new Error("Account not found");
+  }
+
+  revalidatePath("/accounts");
+  revalidatePath("/");
+
+  return toDTO(account);
+}
+
+export async function deleteAccount(id: string): Promise<void> {
+  const budget = await getOrCreateDefaultBudget();
+
+  const [account] = await db
+    .update(accounts)
+    .set({
+      deletedAt: new Date(),
+      isActive: false,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(accounts.id, id),
+        eq(accounts.budgetId, budget.id),
+        isNull(accounts.deletedAt),
+      ),
+    )
+    .returning();
+
+  if (!account) {
+    throw new Error("Account not found");
+  }
+
+  revalidatePath("/accounts");
+  revalidatePath("/");
 }

@@ -66,3 +66,25 @@
   margin-bottom: 6px;
   color: var(--mantine-color-dimmed);
 }
+
+.content {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--mantine-color-surface-2);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+.header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 20px 24px;
+}
+
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 16px 24px;
+}
+
+.primaryButton {
+  background-color: #5d65b7;
+  border-color: #5d65b7;
+}

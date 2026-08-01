@@ -22,3 +22,5 @@ export interface CreateAccountInput {
   institutionName?: string;
   balance: number;
 }
+
+export type UpdateAccountInput = CreateAccountInput;

@@ -1,0 +1,13 @@
+.light {
+  display: block;
+  [data-mantine-color-scheme="dark"] & {
+    display: none;
+  }
+}
+
+.dark {
+  display: none;
+  [data-mantine-color-scheme="dark"] & {
+    display: block;
+  }
+}

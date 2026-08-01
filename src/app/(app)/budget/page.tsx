@@ -1,10 +1,15 @@
-import { Text, Title } from "@mantine/core";
+import { getBudgetScreen } from "@/actions/budget-planning";
+import BudgetingPrototype from "../_components/BudgetingPrototype";
 
-export default function BudgetPage() {
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export default async function BudgetPage() {
+  const budgetScreen = await getBudgetScreen();
+
   return (
     <>
-      <Title order={2}>Budget</Title>
-      <Text c="dimmed">Fund your categories and track spending.</Text>
+      <BudgetingPrototype initialData={budgetScreen} />
     </>
   );
 }
