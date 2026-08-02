@@ -22,6 +22,13 @@
       "when": 1785562431215,
       "tag": "0002_true_reaper",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785646151491,
+      "tag": "0003_nebulous_misty_knight",
+      "breakpoints": true
     }
   ]
 }

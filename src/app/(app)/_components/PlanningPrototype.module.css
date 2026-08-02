@@ -1,8 +1,8 @@
 .page {
   --accent: #5d65b7;
   --accent-bright: rgb(99, 102, 241);
-  --card-bg: rgba(255, 255, 255, 0.015);
-  --card-border: rgba(255, 255, 255, 0.07);
+  --card-bg: var(--mantine-color-surface-1);
+  --card-border: rgba(255, 255, 255, 0.06);
   --line: rgba(255, 255, 255, 0.07);
   --ink: #f2f3f5;
   --ink-soft: #71717a;
@@ -42,6 +42,101 @@
 .chev {
   align-self: center;
   color: var(--ink-soft);
+}
+
+.monthPicker {
+  background: var(--mantine-color-surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.yearNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 12px;
+}
+
+.yearNav span {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.yearNav button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.yearNav button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+}
+
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.monthTile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 56px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.monthTile:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.monthTileActive {
+  background: var(--accent-bright);
+  border-color: var(--accent-bright);
+  color: #fff;
+}
+
+.monthTileActive:hover {
+  background: var(--accent-bright);
+}
+
+.monthTileCurrent:not(.monthTileActive) {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.currentDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-bright);
+}
+
+.monthTileActive .currentDot {
+  background: #fff;
 }
 
 .navArrows {
@@ -94,22 +189,46 @@
 .card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 22px 26px;
   margin-bottom: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* banner */
 .banner {
   text-align: center;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--ink-soft);
+  border-radius: 16px;
+  background: var(--mantine-color-surface-2);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 26px;
 }
 
 .bannerAmount {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1;
   color: var(--red);
-  font-weight: 800;
+}
+
+.bannerOver {
+  color: var(--red);
+}
+
+.bannerUnder {
+  color: #4ade80;
+}
+
+.bannerOnTrack {
+  color: #f59e0b;
+}
+
+.bannerLabel {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--mantine-color-dimmed);
 }
 
 /* category row */
@@ -162,13 +281,81 @@
   margin-top: 18px;
 }
 
+.reorderGroup {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reorderItem {
+  overflow: hidden;
+}
+
 .itemRow {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  padding: 14px 0;
+  padding: 14px 10px;
+  border-radius: 8px;
   border-top: 1px solid var(--line);
+  transition: background 0.12s ease;
+}
+
+.itemRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.deleteWarning {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: 10px;
+  background: rgba(248, 113, 113, 0.08);
+  color: #fca5a5;
+  font-size: 13px;
+}
+
+.deleteWarningActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.deleteWarningConfirm,
+.deleteWarningCancel {
+  border: none;
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.deleteWarningConfirm {
+  background: #dd4e3b;
+  color: #fff;
+}
+
+.deleteWarningConfirm:hover {
+  filter: brightness(1.1);
+}
+
+.deleteWarningCancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--ink-soft);
+}
+
+.deleteWarningCancel:hover {
+  color: var(--ink);
 }
 
 .itemMain {
@@ -182,7 +369,7 @@
   align-items: center;
   gap: 6px;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.12s ease;
 }
 
 .itemRow:hover .itemActions {
@@ -209,6 +396,27 @@
 
 .itemDelete {
   min-width: 26px;
+}
+
+.itemReceive:hover {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.itemReceiveDone {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.receiveHint {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px dashed rgba(250, 204, 21, 0.35);
+  background: rgba(250, 204, 21, 0.07);
+  color: #facc15;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .itemDelete:hover {
@@ -247,7 +455,7 @@
 
 .itemName {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--ink);
 }
 
@@ -267,32 +475,40 @@
   color: var(--ink);
 }
 
-.addItem {
-  display: block;
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  background: transparent;
+.itemAmounts.totalAmounts {
+  font-weight: 700;
+}
+
+.addDivider {
+  border-top: 1px solid var(--line);
+  margin: 0 0 14px;
+}
+
+.addRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.addLink {
+  background: none;
+  border: none;
+  padding: 0;
   color: var(--ink-soft);
   font-size: 15px;
   cursor: pointer;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease;
+  transition: color 0.15s ease;
 }
 
-.addItem:hover {
-  color: #c8cad0;
-  border-color: rgba(129, 140, 248, 0.35);
+.addLink:hover {
+  color: var(--accent-bright);
 }
 
 .addItemForm {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 10px;
 }
 
 .addItemForm input {
@@ -338,9 +554,10 @@
 .rightCol {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 20px 20px 0;
   min-width: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .toggle {
@@ -383,16 +600,26 @@
 }
 
 .subtabs span {
+  position: relative;
   padding-bottom: 10px;
   font-size: 15px;
   color: var(--ink-soft);
   cursor: pointer;
+  user-select: none;
+}
+
+.subtabUnderline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent-bright);
 }
 
 .subtabs span.active {
   color: var(--accent-bright);
   font-weight: 700;
-  border-bottom: 2px solid var(--accent-bright);
 }
 
 .search {
@@ -420,10 +647,14 @@
 }
 
 .summaryPlaceholder {
-  padding: 26px 0;
+  padding: 18px;
   text-align: center;
   color: var(--ink-soft);
   font-style: italic;
+  font-size: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  margin-top: 14px;
 }
 
 .monthGroup {
@@ -618,4 +849,37 @@
 
 .fab:hover {
   transform: scale(1.06);
+}
+
+/* ---------- undo toast ---------- */
+.undoToast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--mantine-color-surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-size: 14px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.undoToast button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent-bright);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.undoToast button:hover {
+  text-decoration: underline;
 }

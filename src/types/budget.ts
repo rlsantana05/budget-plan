@@ -10,6 +10,7 @@ export interface BudgetCategoryItemDTO {
   funded: number;
   spent: number;
   remaining: number;
+  transactionCount: number;
 }
 
 export interface BudgetCategoryGroupDTO {
@@ -26,6 +27,8 @@ export interface BudgetCategoryGroupDTO {
 }
 
 export interface BudgetStatusDTO {
+  /** Signed surplus: positive = over budget, negative = under budget, 0 = on track. */
+  amount: number;
   overBudgetAmount: number;
   label: "over budget" | string;
 }

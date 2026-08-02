@@ -1,7 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Menu, Modal, NumberInput, Select, TextInput } from "@mantine/core";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  Reorder,
+  useReducedMotion,
+} from "framer-motion";
+import { useDisclosure } from "@mantine/hooks";
+import {
+  Menu,
+  Modal,
+  NumberInput,
+  Popover,
+  Select,
+  TextInput,
+} from "@mantine/core";
 import { useRouter } from "next/navigation";
 import {
   Check,
@@ -18,6 +32,9 @@ import {
   addTransaction,
   deleteCategoryItem,
   deleteTransaction,
+  receivePlannedIncome,
+  reorderCategoryItems,
+  restoreCategoryItem,
   trackTransaction,
   updateCategoryItem,
 } from "@/actions/budget-planning";
@@ -25,10 +42,12 @@ import type {
   BudgetTransactionDTO,
   MonthBudgetPlanDTO,
 } from "@/types/budget";
+import { formatMonthValue, parseMonthValue, shiftMonthValue } from "@/lib/month";
 import classes from "./PlanningPrototype.module.css";
 
 interface PlanningPrototypeProps {
   initialData?: MonthBudgetPlanDTO;
+  selectedMonth?: string;
 }
 
 interface GroupItem {
@@ -38,6 +57,7 @@ interface GroupItem {
   planned: number;
   spent: number;
   remaining: number;
+  transactionCount: number;
 }
 
 interface Group {
@@ -108,6 +128,7 @@ const MOCK_GROUPS: Group[] = [
         planned: 240,
         spent: 0,
         remaining: 0,
+        transactionCount: 0,
       },
       {
         id: "mock-maint",
@@ -116,6 +137,7 @@ const MOCK_GROUPS: Group[] = [
         planned: 0,
         spent: 0,
         remaining: 0,
+        transactionCount: 0,
       },
     ],
   },
@@ -224,11 +246,27 @@ function formatDue(date: string): string {
   return `${monthName} ${day}${suffix}`;
 }
 
+function buildMonthsForYear(year: number): Array<{
+  value: string;
+  label: string;
+}> {
+  const months = [];
+  for (let m = 1; m <= 12; m++) {
+    months.push({
+      value: formatMonthValue(year, m),
+      label: new Date(year, m - 1, 1).toLocaleString("default", {
+        month: "short",
+      }),
+    });
+  }
+  return months;
+}
+
 function toGroups(dto: MonthBudgetPlanDTO): Group[] {
   return (dto.categories ?? []).map((cg) => ({
     id: cg.id,
     name: cg.name,
-    defaultExpanded: false,
+    defaultExpanded: (cg.items ?? []).length > 0,
     isIncome: cg.name === "Income",
     rightColumnOptions:
       cg.name === "Income"
@@ -244,21 +282,43 @@ function toGroups(dto: MonthBudgetPlanDTO): Group[] {
       planned: Number(it.planned),
       spent: Number(it.spent),
       remaining: Number(it.remaining),
+      transactionCount: it.transactionCount,
     })),
   }));
 }
 
 export default function PlanningPrototype({
   initialData,
+  selectedMonth,
 }: PlanningPrototypeProps = {}) {
   const dtoGroups: Group[] | undefined = initialData
     ? toGroups(initialData)
     : undefined;
 
-  const month = initialData?.month ?? "July";
-  const year = initialData?.year ?? 2026;
-  const bannerAmount = initialData?.budgetStatus?.overBudgetAmount ?? 2705;
+  const { year, month: monthNumber } = parseMonthValue(selectedMonth);
+  const selectedValue = formatMonthValue(year, monthNumber);
+  const month =
+    initialData?.month ??
+    new Date(year, monthNumber - 1, 1).toLocaleString("default", {
+      month: "long",
+    });
+
+  const now = new Date();
+  const currentValue = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  const [pickerOpened, { close: closePicker, toggle: togglePicker }] =
+    useDisclosure(false);
+  const [pickerYear, setPickerYear] = useState<number>(year);
+  const [navDir, setNavDir] = useState<1 | -1>(1);
+  const handlePickerToggle = () => {
+    if (!pickerOpened) setPickerYear(year);
+    togglePicker();
+  };
+  const pickerMonths = useMemo(() => buildMonthsForYear(pickerYear), [pickerYear]);
+  const bannerAmount = initialData?.budgetStatus?.amount ?? 2705;
   const bannerLabel = initialData?.budgetStatus?.label ?? "over budget";
+  const isOverBudget = bannerAmount > 0;
+  const isUnderBudget = bannerAmount < 0;
 
   const [groups, setGroups] = useState<Group[]>(dtoGroups ?? MOCK_GROUPS);
   const [transactions, setTransactions] = useState<BudgetTransactionDTO[]>(
@@ -284,12 +344,47 @@ export default function PlanningPrototype({
   const [error, setError] = useState<string | null>(null);
   const [addItemGroup, setAddItemGroup] = useState<string | null>(null);
   const [newItemName, setNewItemName] = useState("");
+  const [newItemAmount, setNewItemAmount] = useState(0);
+  const [amountText, setAmountText] = useState("");
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editPlanned, setEditPlanned] = useState<number>(0);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteArmingId, setDeleteArmingId] = useState<string | null>(null);
+  const [receivingId, setReceivingId] = useState<string | null>(null);
+  const [receiveHint, setReceiveHint] = useState<string | null>(null);
+  const [undo, setUndo] = useState<{
+    item: GroupItem;
+    groupId: string;
+    index: number;
+  } | null>(null);
+  const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const amountInputRef = useRef<HTMLInputElement>(null);
+  const reduceMotion = useReducedMotion();
+  const motionTransition = {
+    duration: reduceMotion ? 0 : 0.18,
+    ease: "easeOut" as const,
+  };
+  const itemMotionProps = {
+    initial: { opacity: 0, scale: 0.98 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.98, height: 0 },
+    transition: motionTransition,
+  };
+
+  useEffect(
+    () => () => {
+      if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+    },
+    [],
+  );
 
   const router = useRouter();
+
+  const goToMonth = (value: string) => {
+    setNavDir(value > selectedValue ? 1 : -1);
+    router.push(`/planning?month=${value}`);
+  };
 
   const accounts = initialData?.accounts ?? [];
 
@@ -404,7 +499,9 @@ export default function PlanningPrototype({
   };
 
   const handleAddItem = (groupId: string) => {
-    const name = newItemName;
+    const name = newItemName.trim();
+    if (!name || busy !== null) return;
+    const planned = newItemAmount;
     const tempId = `pending-${Date.now()}`;
 
     setGroups((prev) =>
@@ -418,9 +515,10 @@ export default function PlanningPrototype({
                   id: tempId,
                   name,
                   dueDate: null,
-                  planned: 0,
+                  planned,
                   spent: 0,
                   remaining: 0,
+                  transactionCount: 0,
                 },
               ],
             }
@@ -428,10 +526,11 @@ export default function PlanningPrototype({
       ),
     );
     setNewItemName("");
-    setAddItemGroup(null);
+    setAmountText("");
+    setNewItemAmount(0);
 
     runTxAction("row", async () => {
-      const created = await addCategoryItem(groupId, name);
+      const created = await addCategoryItem(groupId, name, planned);
       setGroups((prev) =>
         prev.map((g) =>
           g.id === groupId
@@ -440,6 +539,7 @@ export default function PlanningPrototype({
                 items: g.items.map((it) =>
                   it.id === tempId
                     ? {
+                        ...it,
                         id: created.id,
                         name: created.name,
                         dueDate: created.dueDate,
@@ -454,13 +554,22 @@ export default function PlanningPrototype({
         ),
       );
     });
+
+    nameInputRef.current?.focus();
+  };
+
+  const cancelAddItem = () => {
+    setNewItemName("");
+    setAmountText("");
+    setNewItemAmount(0);
+    setAddItemGroup(null);
   };
 
   const startEditItem = (item: GroupItem) => {
     setEditingItemId(item.id);
     setEditName(item.name);
     setEditPlanned(item.planned);
-    setConfirmDeleteId(null);
+    setDeleteArmingId(null);
   };
 
   const handleUpdateItem = (itemId: string) => {
@@ -482,17 +591,88 @@ export default function PlanningPrototype({
     });
   };
 
-  const handleDeleteItem = (itemId: string) => {
+  const handleDeleteItem = (item: GroupItem, groupId: string) => {
+    const index = groups
+      .find((g) => g.id === groupId)
+      ?.items.findIndex((it) => it.id === item.id);
+
     setGroups((prev) =>
       prev.map((g) => ({
         ...g,
-        items: g.items.filter((it) => it.id !== itemId),
+        items: g.items.filter((it) => it.id !== item.id),
       })),
     );
-    setConfirmDeleteId(null);
+    setEditingItemId(null);
+    setDeleteArmingId(null);
+
+    // Soft-delete server-side immediately; undo restores the same row.
+    runTxAction("row", async () => {
+      await deleteCategoryItem(item.id);
+    });
+
+    setUndo({ item, groupId, index: index ?? -1 });
+    if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+    undoTimeoutRef.current = setTimeout(() => setUndo(null), 5000);
+  };
+
+  const handleUndoDelete = () => {
+    if (!undo) return;
+    const { item, groupId, index } = undo;
+    setUndo(null);
+    if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              items:
+                index >= 0 && index < g.items.length
+                  ? [...g.items.slice(0, index), item, ...g.items.slice(index)]
+                  : [...g.items, item],
+            }
+          : g,
+      ),
+    );
 
     runTxAction("row", async () => {
-      await deleteCategoryItem(itemId);
+      await restoreCategoryItem(item.id);
+    });
+  };
+
+  const handleReorderItems = (groupId: string, orderedIds: string[]) => {
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              items: orderedIds
+                .map((id) => g.items.find((it) => it.id === id))
+                .filter((it): it is GroupItem => !!it),
+            }
+          : g,
+      ),
+    );
+    runTxAction("row", async () => {
+      await reorderCategoryItems(groupId, orderedIds);
+    });
+  };
+
+  const handleReceiveIncome = (item: GroupItem) => {
+    if (accounts.length === 0) {
+      setReceiveHint(
+        "Add an account before marking income as received",
+      );
+      return;
+    }
+    setReceiveHint(null);
+    setReceivingId(item.id);
+    runTxAction("row", async () => {
+      try {
+        await receivePlannedIncome(item.id);
+      } finally {
+        setReceivingId(null);
+      }
     });
   };
 
@@ -523,16 +703,79 @@ export default function PlanningPrototype({
     <div className={classes.page}>
       {/* Month header */}
       <header className={classes.header}>
-        <div className={classes.monthTitle}>
-          <strong>{month}</strong>
-          <span className={classes.year}>{year}</span>
-          <ChevronDown size={16} className={classes.chev} />
-        </div>
+        <Popover
+          width={300}
+          position="bottom-start"
+          shadow="md"
+          withArrow={false}
+          withinPortal
+          offset={8}
+          opened={pickerOpened}
+          onClose={closePicker}
+        >
+          <Popover.Target>
+            <div
+              className={classes.monthTitle}
+              onClick={handlePickerToggle}
+            >
+              <strong>{month}</strong>
+              <span className={classes.year}>{year}</span>
+              <ChevronDown size={16} className={classes.chev} />
+            </div>
+          </Popover.Target>
+          <Popover.Dropdown className={classes.monthPicker}>
+            <div className={classes.yearNav}>
+              <button
+                type="button"
+                aria-label="Previous year"
+                onClick={() => setPickerYear((y) => y - 1)}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span>{pickerYear}</span>
+              <button
+                type="button"
+                aria-label="Next year"
+                onClick={() => setPickerYear((y) => y + 1)}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+            <div className={classes.monthGrid}>
+              {pickerMonths.map((m) => {
+                const isSelected = m.value === selectedValue;
+                const isCurrent = m.value === currentValue;
+                return (
+                  <button
+                    key={m.value}
+                    type="button"
+                    className={`${classes.monthTile} ${
+                      isSelected ? classes.monthTileActive : ""
+                    } ${isCurrent && !isSelected ? classes.monthTileCurrent : ""}`}
+                    onClick={() => {
+                      closePicker();
+                      goToMonth(m.value);
+                    }}
+                  >
+                    <span>{m.label}</span>
+                    {isCurrent && <span className={classes.currentDot} />}
+                  </button>
+                );
+              })}
+            </div>
+          </Popover.Dropdown>
+        </Popover>
         <div className={classes.navArrows}>
-          <button aria-label="Previous month">
+          <button
+            aria-label="Previous month"
+            onClick={() => goToMonth(shiftMonthValue(selectedValue, -1))}
+          >
             <ChevronLeft size={20} />
           </button>
-          <button aria-label="Next month">
+          <button
+            aria-label="Next month"
+            onClick={() => goToMonth(shiftMonthValue(selectedValue, 1))}
+          >
             <ChevronRight size={20} />
           </button>
         </div>
@@ -540,12 +783,37 @@ export default function PlanningPrototype({
 
       <div className={classes.layout}>
         {/* Left column */}
-        <div className={classes.leftCol}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={selectedValue}
+            className={classes.leftCol}
+            initial={{ opacity: 0, x: navDir * 28 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: navDir * -28 }}
+            transition={motionTransition}
+          >
           <div className={`${classes.card} ${classes.banner}`}>
-            <span className={classes.bannerAmount}>
-              {formatMoney(bannerAmount)}
-            </span>{" "}
-            {bannerLabel}
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                key={`${isOverBudget ? "over" : isUnderBudget ? "under" : "on"}${bannerAmount}`}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={motionTransition}
+                className={`${classes.bannerAmount} ${
+                  isOverBudget
+                    ? classes.bannerOver
+                    : isUnderBudget
+                      ? classes.bannerUnder
+                      : classes.bannerOnTrack
+                }`}
+              >
+                {formatMoney(
+                  isUnderBudget ? -bannerAmount : bannerAmount,
+                )}
+              </motion.div>
+            </AnimatePresence>
+            <div className={classes.bannerLabel}>{bannerLabel}</div>
           </div>
 
           {groups.map((group) => {
@@ -553,6 +821,15 @@ export default function PlanningPrototype({
               expandedGroups[group.id] ?? group.defaultExpanded;
             const rightColumn = groupRightColumn(group);
             const rightLabel = group.isIncome ? "Received" : rightColumn;
+            const totalPlanned = group.items.reduce(
+              (s, it) => s + it.planned,
+              0,
+            );
+            const totalRight = group.items.reduce(
+              (s, it) =>
+                s + (rightColumn === "Remaining" ? it.remaining : it.spent),
+              0,
+            );
 
             return (
               <div className={classes.card} key={group.id}>
@@ -626,133 +903,251 @@ export default function PlanningPrototype({
 
                 {isExpanded && (
                   <div className={classes.items}>
-                    {group.items.map((item, idx) =>
-                      editingItemId === item.id ? (
-                        <div
-                          className={`${classes.itemRow} ${classes.itemEditing}`}
-                          key={`${group.id}-${idx}`}
-                        >
-                          <div className={classes.editForm}>
-                            <TextInput
-                              autoFocus
-                              size="xs"
-                              placeholder="Name"
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") handleUpdateItem(item.id);
-                                if (e.key === "Escape") setEditingItemId(null);
-                              }}
-                            />
-                            <NumberInput
-                              size="xs"
-                              placeholder="Planned"
-                              value={editPlanned}
-                              onChange={(v) =>
-                                setEditPlanned(
-                                  typeof v === "number" ? v : 0,
-                                )
-                              }
-                              min={0}
-                              decimalScale={2}
-                            />
-                            <div className={classes.editActions}>
-                              <button
-                                type="button"
-                                className={classes.addItemSave}
-                                onClick={() => handleUpdateItem(item.id)}
-                                disabled={
-                                  busy !== null || !editName.trim()
-                                }
-                                aria-label="Save item"
+                    <Reorder.Group
+                      axis="y"
+                      values={group.items.map((it) => it.id)}
+                      onReorder={(ordered) =>
+                        handleReorderItems(group.id, ordered)
+                      }
+                      className={classes.reorderGroup}
+                    >
+                      <AnimatePresence initial={false} mode="popLayout">
+                        {group.items.map((item) =>
+                          editingItemId === item.id ? (
+                            <Reorder.Item
+                              key={item.id}
+                              value={item.id}
+                              className={classes.reorderItem}
+                              drag={editingItemId === null}
+                              {...itemMotionProps}
+                            >
+                              <div
+                                className={`${classes.itemRow} ${classes.itemEditing}`}
                               >
-                                <Check size={14} />
-                              </button>
-                              <button
-                                type="button"
-                                className={classes.addItemCancel}
-                                onClick={() => setEditingItemId(null)}
-                                aria-label="Cancel edit"
-                              >
-                                <span aria-hidden>×</span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          className={classes.itemRow}
-                          key={`${group.id}-${idx}`}
-                        >
-                          <div className={classes.itemMain}>
-                            <div>
-                              <div className={classes.itemName}>
-                                {item.name}
-                              </div>
-                              {item.dueDate && (
-                                <div className={classes.itemDue}>
-                                  Due: {formatDue(item.dueDate)}
+                                <div className={classes.editForm}>
+                                  <TextInput
+                                    autoFocus
+                                    size="xs"
+                                    placeholder="Name"
+                                    value={editName}
+                                    onChange={(e) =>
+                                      setEditName(e.target.value)
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter")
+                                        handleUpdateItem(item.id);
+                                      if (e.key === "Escape")
+                                        setEditingItemId(null);
+                                    }}
+                                  />
+                                  <NumberInput
+                                    size="xs"
+                                    placeholder="Planned"
+                                    value={editPlanned}
+                                    onChange={(v) =>
+                                      setEditPlanned(
+                                        typeof v === "number" ? v : 0,
+                                      )
+                                    }
+                                    min={0}
+                                    decimalScale={2}
+                                  />
+                                  <div className={classes.editActions}>
+                                    <button
+                                      type="button"
+                                      className={classes.addItemSave}
+                                      onClick={() => handleUpdateItem(item.id)}
+                                      disabled={
+                                        busy !== null || !editName.trim()
+                                      }
+                                      aria-label="Save item"
+                                    >
+                                      <Check size={14} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className={classes.addItemCancel}
+                                      onClick={() => setEditingItemId(null)}
+                                      aria-label="Cancel edit"
+                                    >
+                                      <span aria-hidden>×</span>
+                                    </button>
+                                  </div>
                                 </div>
-                              )}
-                            </div>
-                            <div className={classes.itemActions}>
-                              <button
-                                type="button"
-                                className={classes.itemIconBtn}
-                                onClick={() => startEditItem(item)}
-                                aria-label={`Edit ${item.name}`}
-                              >
-                                <Pencil size={13} />
-                              </button>
-                              <button
-                                type="button"
-                                className={`${classes.itemIconBtn} ${classes.itemDelete}`}
-                                onClick={() =>
-                                  confirmDeleteId === item.id
-                                    ? handleDeleteItem(item.id)
-                                    : setConfirmDeleteId(item.id)
-                                }
-                                disabled={busy !== null}
-                                aria-label={`Delete ${item.name}`}
-                              >
-                                {confirmDeleteId === item.id ? (
-                                  <span className={classes.confirmLabel}>
-                                    Sure?
+                              </div>
+                            </Reorder.Item>
+                          ) : (
+                            <Reorder.Item
+                              key={item.id}
+                              value={item.id}
+                              className={classes.reorderItem}
+                              drag={editingItemId === null}
+                              {...itemMotionProps}
+                              whileDrag={{
+                                scale: 1.02,
+                                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
+                              }}
+                            >
+                              <div className={classes.itemRow}>
+                                <div className={classes.itemMain}>
+                                  <div>
+                                    <div className={classes.itemName}>
+                                      {item.name}
+                                    </div>
+                                    {item.dueDate && (
+                                      <div className={classes.itemDue}>
+                                        Due: {formatDue(item.dueDate)}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className={classes.itemActions}>
+                                    {group.isIncome && (
+                                      <button
+                                        type="button"
+                                        className={`${classes.itemIconBtn} ${classes.itemReceive} ${
+                                          receivingId === item.id
+                                            ? classes.itemReceiveDone
+                                            : ""
+                                        }`}
+                                        onClick={() => handleReceiveIncome(item)}
+                                        disabled={busy !== null}
+                                        aria-label={`Mark ${item.name} as received`}
+                                        title="Mark as received"
+                                      >
+                                        <Check size={13} />
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      className={classes.itemIconBtn}
+                                      onClick={() => startEditItem(item)}
+                                      aria-label={`Edit ${item.name}`}
+                                    >
+                                      <Pencil size={13} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className={`${classes.itemIconBtn} ${classes.itemDelete}`}
+                                      onClick={() => {
+                                        if (
+                                          item.transactionCount > 0 &&
+                                          deleteArmingId !== item.id
+                                        ) {
+                                          setDeleteArmingId(item.id);
+                                        } else {
+                                          handleDeleteItem(item, group.id);
+                                        }
+                                      }}
+                                      disabled={busy !== null}
+                                      aria-label={`Delete ${item.name}`}
+                                    >
+                                      {deleteArmingId === item.id ? (
+                                        <span className={classes.confirmLabel}>
+                                          Delete?
+                                        </span>
+                                      ) : (
+                                        <Trash size={13} />
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className={classes.itemAmounts}>
+                                  <span>{formatMoney(item.planned)}</span>
+                                  <span>
+                                    {formatMoney(
+                                      rightColumn === "Remaining"
+                                        ? item.remaining
+                                        : item.spent,
+                                    )}
                                   </span>
-                                ) : (
-                                  <Trash size={13} />
+                                </div>
+                              </div>
+                              {deleteArmingId === item.id &&
+                                item.transactionCount > 0 && (
+                                  <div className={classes.deleteWarning}>
+                                    <span>
+                                      {item.transactionCount}{" "}
+                                      {item.transactionCount === 1
+                                        ? "transaction"
+                                        : "transactions"}{" "}
+                                      will be hidden with this category
+                                    </span>
+                                    <div className={classes.deleteWarningActions}>
+                                      <button
+                                        type="button"
+                                        className={classes.deleteWarningConfirm}
+                                        onClick={() =>
+                                          handleDeleteItem(item, group.id)
+                                        }
+                                      >
+                                        Delete
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className={classes.deleteWarningCancel}
+                                        onClick={() => setDeleteArmingId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
                                 )}
-                              </button>
-                            </div>
-                          </div>
-                          <div className={classes.itemAmounts}>
-                            <span>{formatMoney(item.planned)}</span>
-                            <span>
-                              {formatMoney(
-                                rightColumn === "Remaining"
-                                  ? item.remaining
-                                  : item.spent,
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      ),
+                            </Reorder.Item>
+                          ),
+                        )}
+                      </AnimatePresence>
+                    </Reorder.Group>
+
+                    {group.isIncome && receiveHint && (
+                      <div className={classes.receiveHint}>{receiveHint}</div>
                     )}
+
+                    <div className={classes.addDivider} />
                     {addItemGroup === group.id ? (
                       <div className={classes.addItemForm}>
                         <TextInput
+                          ref={nameInputRef}
                           autoFocus
-                          placeholder="Item name"
+                          size="xs"
+                          placeholder={
+                            group.isIncome
+                              ? "e.g. Paycheck"
+                              : "Groceries, rent, coffee…"
+                          }
                           value={newItemName}
                           onChange={(e) => setNewItemName(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") handleAddItem(group.id);
-                            if (e.key === "Escape") {
-                              setNewItemName("");
-                              setAddItemGroup(null);
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              amountInputRef.current?.focus();
                             }
+                            if (e.key === "Escape") cancelAddItem();
                           }}
+                        />
+                        <TextInput
+                          ref={amountInputRef}
                           size="xs"
+                          inputMode="decimal"
+                          placeholder="0.00"
+                          value={
+                            amountText
+                              ? `$${formatMoney(Number(amountText))}`
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const digits = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 9);
+                            setAmountText(digits);
+                            setNewItemAmount(digits ? Number(digits) : 0);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddItem(group.id);
+                            }
+                            if (e.key === "Escape") cancelAddItem();
+                          }}
                         />
                         <button
                           type="button"
@@ -765,30 +1160,43 @@ export default function PlanningPrototype({
                         <button
                           type="button"
                           className={classes.addItemCancel}
-                          onClick={() => {
-                            setNewItemName("");
-                            setAddItemGroup(null);
-                          }}
+                          onClick={cancelAddItem}
                           aria-label="Cancel add item"
                         >
                           <span aria-hidden>×</span>
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        className={classes.addItem}
-                        onClick={() => setAddItemGroup(group.id)}
-                      >
-                        + Add item
-                      </button>
+                      <div className={classes.addRow}>
+                        <button
+                          type="button"
+                          className={classes.addLink}
+                          onClick={() => {
+                            setNewItemName("");
+                            setAmountText("");
+                            setNewItemAmount(0);
+                            setAddItemGroup(group.id);
+                          }}
+                        >
+                          + {group.isIncome ? "Add income" : "Add item"}
+                        </button>
+                        {group.isIncome && (
+                          <div
+                            className={`${classes.itemAmounts} ${classes.totalAmounts}`}
+                          >
+                            <span>{formatMoney(totalPlanned)}</span>
+                            <span>{formatMoney(totalRight)}</span>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
               </div>
             );
           })}
-        </div>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Right column – transactions panel */}
         <aside className={classes.rightCol}>
@@ -815,6 +1223,13 @@ export default function PlanningPrototype({
                 onClick={() => setActiveTab(t)}
               >
                 {t[0].toUpperCase() + t.slice(1)}
+                {activeTab === t && (
+                  <motion.span
+                    layoutId="planning-subtab-underline"
+                    className={classes.subtabUnderline}
+                    transition={motionTransition}
+                  />
+                )}
               </span>
             ))}
           </div>
@@ -992,6 +1407,25 @@ export default function PlanningPrototype({
           </div>
         </Modal.Content>
       </Modal.Root>
+
+      {/* Delete undo toast */}
+      <AnimatePresence>
+        {undo && (
+          <motion.div
+            className={classes.undoToast}
+            initial={{ opacity: 0, y: 24, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 24, x: "-50%" }}
+            transition={motionTransition}
+            role="status"
+          >
+            <span>Deleted {undo.item.name}</span>
+            <button type="button" onClick={handleUndoDelete}>
+              Undo
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

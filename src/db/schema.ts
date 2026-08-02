@@ -217,6 +217,7 @@ export const budgetCategories = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => [
     index("budget_categories_group_id_idx").on(table.groupId),

@@ -98,8 +98,12 @@ function monthYearKey(): { month: number; year: number } {
 async function getOrCreateMonthBudget(
   budgetId: string,
   seedDefaults = true,
+  year?: number,
+  month?: number,
 ): Promise<{ mb: typeof monthBudgets.$inferSelect; month: number; year: number }> {
-  const { month, year } = monthYearKey();
+  const { year: keyYear, month: keyMonth } = monthYearKey();
+  const targetYear = year ?? keyYear;
+  const targetMonth = month ?? keyMonth;
 
   let [mb] = await db
     .select()
@@ -107,8 +111,8 @@ async function getOrCreateMonthBudget(
     .where(
       and(
         eq(monthBudgets.budgetId, budgetId),
-        eq(monthBudgets.year, year),
-        eq(monthBudgets.month, month),
+        eq(monthBudgets.year, targetYear),
+        eq(monthBudgets.month, targetMonth),
         isNull(monthBudgets.deletedAt),
       ),
     )
@@ -118,7 +122,7 @@ async function getOrCreateMonthBudget(
     mb = (
       await db
         .insert(monthBudgets)
-        .values({ budgetId, year, month, note: null })
+        .values({ budgetId, year: targetYear, month: targetMonth, note: null })
         .returning()
     )[0];
     // Brand-new month: seed the default groups + items immediately. Avoids a
@@ -151,7 +155,7 @@ async function getOrCreateMonthBudget(
     }
   }
 
-  return { mb: mb!, month, year };
+  return { mb: mb!, month: targetMonth, year: targetYear };
 }
 
 /**
@@ -159,12 +163,20 @@ async function getOrCreateMonthBudget(
  * logged-in dev budget. Seeds the EveryDollar default groups + items on
  * first creation.
  */
-export async function getMonthBudgetPlan(): Promise<MonthBudgetPlanDTO> {
+export async function getMonthBudgetPlan(
+  year = monthYearKey().year,
+  month = monthYearKey().month,
+): Promise<MonthBudgetPlanDTO> {
   const budget = await getOrCreateDefaultBudget();
-  const { mb, month, year } = await getOrCreateMonthBudget(budget.id);
-  const monthName = new Date(year, month - 1, 1).toLocaleString("default", {
-    month: "long",
-  });
+  const {
+    mb,
+    month: resolvedMonth,
+    year: resolvedYear,
+  } = await getOrCreateMonthBudget(budget.id, true, year, month);
+  const monthName = new Date(resolvedYear, resolvedMonth - 1, 1).toLocaleString(
+    "default",
+    { month: "long" },
+  );
 
   // Load categories grouped
   const groups = await db
@@ -178,7 +190,12 @@ export async function getMonthBudgetPlan(): Promise<MonthBudgetPlanDTO> {
     ? await db
         .select()
         .from(budgetCategoriesTable)
-        .where(inArray(budgetCategoriesTable.groupId, groupIds))
+        .where(
+          and(
+            inArray(budgetCategoriesTable.groupId, groupIds),
+            isNull(budgetCategoriesTable.deletedAt),
+          ),
+        )
         .orderBy(budgetCategoriesTable.sortOrder)
     : [];
   const itemsByGroup = new Map<
@@ -208,12 +225,23 @@ export async function getMonthBudgetPlan(): Promise<MonthBudgetPlanDTO> {
       .where(
         and(
           eq(accounts.budgetId, budget.id),
+          eq(accounts.isActive, true),
           isNull(accounts.deletedAt),
         ),
       ),
   ]);
 
   const rollupById = new Map(rollupRows.map((r) => [r.categoryId, r]));
+
+  const txCountByCategory = new Map<string, number>();
+  for (const tx of txRows) {
+    if (tx.categoryId && tx.status !== "DELETED") {
+      txCountByCategory.set(
+        tx.categoryId,
+        (txCountByCategory.get(tx.categoryId) ?? 0) + 1,
+      );
+    }
+  }
 
   const groupDTOs = groups.map((g) => {
     const items = itemsByGroup.get(g.id) ?? [];
@@ -245,6 +273,7 @@ export async function getMonthBudgetPlan(): Promise<MonthBudgetPlanDTO> {
         funded,
         spent,
         remaining,
+        transactionCount: txCountByCategory.get(it.id) ?? 0,
       };
     });
 
@@ -311,10 +340,11 @@ export async function getMonthBudgetPlan(): Promise<MonthBudgetPlanDTO> {
     id: mb.id,
     budgetId: budget.id,
     month: monthName,
-    year,
+    year: resolvedYear,
     budgetStatus: {
+      amount: diff,
       overBudgetAmount: diff > 0 ? diff : 0,
-      label: diff > 0 ? "over budget" : "under budget",
+      label: diff > 0 ? "over budget" : diff < 0 ? "under budget" : "on track",
     },
     viewTabs: { active: "transactions", options: ["summary", "transactions"] },
     categories: groupDTOs.map((g) => ({
@@ -353,7 +383,12 @@ export async function getBudgetScreen(): Promise<BudgetScreenDTO> {
     ? await db
         .select()
         .from(budgetCategoriesTable)
-        .where(inArray(budgetCategoriesTable.groupId, groupIds))
+        .where(
+          and(
+            inArray(budgetCategoriesTable.groupId, groupIds),
+            isNull(budgetCategoriesTable.deletedAt),
+          ),
+        )
         .orderBy(budgetCategoriesTable.sortOrder)
     : [];
 
@@ -577,6 +612,61 @@ export async function addPaycheck(
 }
 
 /**
+ * Mark a planned income item as received: creates a paycheck for its planned
+ * amount in the item's own month budget. Requires an active account.
+ */
+export async function receivePlannedIncome(categoryItemId: string): Promise<void> {
+  const [item] = await db
+    .select({
+      planned: budgetCategoriesTable.planned,
+      name: budgetCategoriesTable.name,
+      groupId: budgetCategoriesTable.groupId,
+    })
+    .from(budgetCategoriesTable)
+    .where(eq(budgetCategoriesTable.id, categoryItemId))
+    .limit(1);
+  if (!item) throw new Error("Category item not found");
+
+  const [group] = await db
+    .select({ monthBudgetId: categoryGroupsTable.monthBudgetId, name: categoryGroupsTable.name })
+    .from(categoryGroupsTable)
+    .where(eq(categoryGroupsTable.id, item.groupId))
+    .limit(1);
+  if (!group) throw new Error("Category group not found");
+  if (group.name !== "Income") throw new Error("Only income items can be marked as received");
+
+  const budget = await getOrCreateDefaultBudget();
+  const [account] = await db
+    .select()
+    .from(accounts)
+    .where(
+      and(
+        eq(accounts.budgetId, budget.id),
+        eq(accounts.isActive, true),
+        isNull(accounts.deletedAt),
+      ),
+    )
+    .limit(1);
+  if (!account) throw new Error("Add an account before marking income as received");
+
+  const amount = Number(item.planned);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error("Planned amount must be positive to be received");
+  }
+
+  await db.insert(paychecks).values({
+    monthBudgetId: group.monthBudgetId,
+    accountId: account.id,
+    amount: String(amount),
+    date: new Date(),
+    note: `Marked received: ${item.name}`,
+  });
+
+  revalidatePath("/budget");
+  revalidatePath("/planning");
+}
+
+/**
  * Assign money from the Ready to Assign pool into a category. Never exceeds
  * the pool; writes an ASSIGN ledger row and bumps the category rollup.
  */
@@ -735,9 +825,13 @@ async function isIncomeCategory(categoryId: string): Promise<boolean> {
 export async function addCategoryItem(
   groupId: string,
   name: string,
+  planned = 0,
 ): Promise<BudgetCategoryItemDTO> {
   const trimmed = name.trim();
   if (!trimmed) throw new Error("Item name is required");
+  if (!Number.isFinite(planned) || planned < 0) {
+    throw new Error("Planned amount must be zero or positive");
+  }
 
   const [group] = await db
     .select()
@@ -749,7 +843,12 @@ export async function addCategoryItem(
   const [lastItem] = await db
     .select({ sortOrder: budgetCategoriesTable.sortOrder })
     .from(budgetCategoriesTable)
-    .where(eq(budgetCategoriesTable.groupId, groupId))
+    .where(
+      and(
+        eq(budgetCategoriesTable.groupId, groupId),
+        isNull(budgetCategoriesTable.deletedAt),
+      ),
+    )
     .orderBy(desc(budgetCategoriesTable.sortOrder))
     .limit(1);
 
@@ -759,7 +858,7 @@ export async function addCategoryItem(
       groupId,
       name: trimmed,
       dueDate: null,
-      planned: "0",
+      planned: String(planned),
       sortOrder: (lastItem?.sortOrder ?? -1) + 1,
     })
     .returning();
@@ -771,13 +870,14 @@ export async function addCategoryItem(
     groupId: created.groupId,
     name: created.name,
     dueDate: null,
-    planned: 0,
+    planned,
     sortOrder: created.sortOrder,
     isPaymentCategory: false,
     accountId: null,
     funded: 0,
     spent: 0,
     remaining: 0,
+    transactionCount: 0,
   };
 }
 
@@ -819,20 +919,71 @@ export async function updateCategoryItem(
 }
 
 /**
- * Delete an item. Cascades its rollup + ledger rows; transactions referencing
- * it become uncategorized.
+ * Soft-delete an item. The row is hidden from every read so it can be
+ * restored (undo) without losing its transaction links.
  */
 export async function deleteCategoryItem(id: string): Promise<void> {
   const [cat] = await db
-    .select()
+    .select({ id: budgetCategoriesTable.id })
     .from(budgetCategoriesTable)
-    .where(eq(budgetCategoriesTable.id, id))
+    .where(
+      and(
+        eq(budgetCategoriesTable.id, id),
+        isNull(budgetCategoriesTable.deletedAt),
+      ),
+    )
     .limit(1);
   if (!cat) return;
 
   await db
-    .delete(budgetCategoriesTable)
+    .update(budgetCategoriesTable)
+    .set({ deletedAt: new Date() })
     .where(eq(budgetCategoriesTable.id, id));
+
+  revalidateBudgetPages();
+}
+
+/**
+ * Restore a soft-deleted item (undo). Its planned amount, rollup and
+ * transaction links are all preserved.
+ */
+export async function restoreCategoryItem(id: string): Promise<void> {
+  await db
+    .update(budgetCategoriesTable)
+    .set({ deletedAt: null })
+    .where(eq(budgetCategoriesTable.id, id));
+
+  revalidateBudgetPages();
+}
+
+/**
+ * Rewrite item order within a group. The client sends the full ordered list of
+ * ids; this persists sortOrder as 0..n in a single transaction.
+ */
+export async function reorderCategoryItems(
+  groupId: string,
+  orderedIds: string[],
+): Promise<void> {
+  const [group] = await db
+    .select({ id: categoryGroupsTable.id })
+    .from(categoryGroupsTable)
+    .where(eq(categoryGroupsTable.id, groupId))
+    .limit(1);
+  if (!group) throw new Error("Group not found");
+
+  await db.transaction(async (tx) => {
+    for (const [i, id] of orderedIds.entries()) {
+      await tx
+        .update(budgetCategoriesTable)
+        .set({ sortOrder: i })
+        .where(
+          and(
+            eq(budgetCategoriesTable.id, id),
+            eq(budgetCategoriesTable.groupId, groupId),
+          ),
+        );
+    }
+  });
 
   revalidateBudgetPages();
 }
