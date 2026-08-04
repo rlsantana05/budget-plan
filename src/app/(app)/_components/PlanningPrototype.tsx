@@ -9,24 +9,41 @@ import {
 } from "framer-motion";
 import { useDisclosure } from "@mantine/hooks";
 import {
+  Collapse,
   Menu,
   Modal,
   NumberInput,
   Popover,
   Select,
   TextInput,
+  UnstyledButton,
 } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import {
+  Banknote,
+  Car,
   Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  CreditCard,
+  Heart,
+  Home,
+  MoreVertical,
   Pencil,
+  PiggyBank,
   Plus,
   Search,
+  ShieldCheck,
+  Sparkles,
+  Stethoscope,
   Trash,
+  User,
+  UtensilsCrossed,
+  Wallet,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import {
   addCategoryItem,
   addTransaction,
@@ -211,6 +228,20 @@ const MOCK_GROUPS: Group[] = [
 
 const TRANSACTION_TABS = ["new", "tracked", "deleted"];
 
+const GROUP_ICONS: Record<string, LucideIcon> = {
+  Income: Banknote,
+  Giving: Heart,
+  Housing: Home,
+  Savings: PiggyBank,
+  Transportation: Car,
+  Food: UtensilsCrossed,
+  Personal: User,
+  Lifestyle: Sparkles,
+  Health: Stethoscope,
+  Insurance: ShieldCheck,
+  Debt: CreditCard,
+};
+
 function formatMoney(n: number): string {
   return `$${n.toLocaleString(undefined, {
     minimumFractionDigits: 2,
@@ -228,22 +259,6 @@ function formatMonthLabel(date: string): string {
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return "";
   return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
-}
-
-function formatDue(date: string): string {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return date;
-  const day = d.getDate();
-  const suffix =
-    day % 10 === 1 && day !== 11
-      ? "st"
-      : day % 10 === 2 && day !== 12
-        ? "nd"
-        : day % 10 === 3 && day !== 13
-          ? "rd"
-          : "th";
-  const monthName = d.toLocaleString("en-US", { month: "short" });
-  return `${monthName} ${day}${suffix}`;
 }
 
 function buildMonthsForYear(year: number): Array<{
@@ -350,7 +365,6 @@ export default function PlanningPrototype({
   const [editName, setEditName] = useState("");
   const [editPlanned, setEditPlanned] = useState<number>(0);
   const [deleteArmingId, setDeleteArmingId] = useState<string | null>(null);
-  const [receivingId, setReceivingId] = useState<string | null>(null);
   const [receiveHint, setReceiveHint] = useState<string | null>(null);
   const [undo, setUndo] = useState<{
     item: GroupItem;
@@ -413,7 +427,11 @@ export default function PlanningPrototype({
   }
 
   const toggleGroup = (id: string) => {
-    setExpandedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
+    setExpandedGroups((prev) => {
+      const group = groups.find((g) => g.id === id);
+      const wasExpanded = prev[id] ?? group?.defaultExpanded ?? false;
+      return { ...prev, [id]: !wasExpanded };
+    });
   };
 
   const groupRightColumn = (group: Group): "Spent" | "Remaining" =>
@@ -666,13 +684,8 @@ export default function PlanningPrototype({
       return;
     }
     setReceiveHint(null);
-    setReceivingId(item.id);
     runTxAction("row", async () => {
-      try {
-        await receivePlannedIncome(item.id);
-      } finally {
-        setReceivingId(null);
-      }
+      await receivePlannedIncome(item.id);
     });
   };
 
@@ -825,31 +838,51 @@ export default function PlanningPrototype({
               (s, it) => s + it.planned,
               0,
             );
+            const totalSpent = group.items.reduce((s, it) => s + it.spent, 0);
             const totalRight = group.items.reduce(
               (s, it) =>
                 s + (rightColumn === "Remaining" ? it.remaining : it.spent),
               0,
             );
+            const progressPct =
+              totalPlanned > 0
+                ? Math.min(100, (totalSpent / totalPlanned) * 100)
+                : 0;
 
             return (
               <div className={classes.card} key={group.id}>
-                <div
+                <UnstyledButton
                   className={classes.catRow}
                   onClick={() => toggleGroup(group.id)}
                 >
-                  <div className={classes.catName}>
-                    {group.name}
-                    <ChevronDown
-                      size={16}
-                      className={`${classes.catChev} ${isExpanded ? classes.open : ""}`}
-                    />
+                  <div className={classes.catMain}>
+                    <div className={classes.catIcon}>
+                      {(() => {
+                        const Icon = GROUP_ICONS[group.name] ?? Wallet;
+                        return (
+                          <Icon size={24} color="#34d399" strokeWidth={2} />
+                        );
+                      })()}
+                    </div>
+                    <div>
+                      <div className={classes.catTitle}>{group.name}</div>
+                      <div className={classes.catSubtitle}>
+                        {formatMoney(totalSpent)} of{" "}
+                        {formatMoney(totalPlanned)}
+                      </div>
+                    </div>
                   </div>
 
                   <div
-                    className={classes.catCols}
+                    className={classes.catRight}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span>Planned</span>
+                    <div className={classes.progressTrack}>
+                      <span
+                        className={classes.progressDot}
+                        style={{ left: `calc(${progressPct}% - 7px)` }}
+                      />
+                    </div>
                     <span className={classes.rightLabel}>
                       {rightLabel}
                       {!group.isIncome && (
@@ -898,10 +931,16 @@ export default function PlanningPrototype({
                         </Menu>
                       )}
                     </span>
+                    <ChevronUp
+                      size={20}
+                      className={`${classes.catChev} ${
+                        isExpanded ? "" : classes.open
+                      }`}
+                    />
                   </div>
-                </div>
+                </UnstyledButton>
 
-                {isExpanded && (
+                <Collapse expanded={isExpanded}>
                   <div className={classes.items}>
                     <Reorder.Group
                       axis="y"
@@ -994,65 +1033,13 @@ export default function PlanningPrototype({
                                     <div className={classes.itemName}>
                                       {item.name}
                                     </div>
-                                    {item.dueDate && (
-                                      <div className={classes.itemDue}>
-                                        Due: {formatDue(item.dueDate)}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className={classes.itemActions}>
-                                    {group.isIncome && (
-                                      <button
-                                        type="button"
-                                        className={`${classes.itemIconBtn} ${classes.itemReceive} ${
-                                          receivingId === item.id
-                                            ? classes.itemReceiveDone
-                                            : ""
-                                        }`}
-                                        onClick={() => handleReceiveIncome(item)}
-                                        disabled={busy !== null}
-                                        aria-label={`Mark ${item.name} as received`}
-                                        title="Mark as received"
-                                      >
-                                        <Check size={13} />
-                                      </button>
-                                    )}
-                                    <button
-                                      type="button"
-                                      className={classes.itemIconBtn}
-                                      onClick={() => startEditItem(item)}
-                                      aria-label={`Edit ${item.name}`}
-                                    >
-                                      <Pencil size={13} />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className={`${classes.itemIconBtn} ${classes.itemDelete}`}
-                                      onClick={() => {
-                                        if (
-                                          item.transactionCount > 0 &&
-                                          deleteArmingId !== item.id
-                                        ) {
-                                          setDeleteArmingId(item.id);
-                                        } else {
-                                          handleDeleteItem(item, group.id);
-                                        }
-                                      }}
-                                      disabled={busy !== null}
-                                      aria-label={`Delete ${item.name}`}
-                                    >
-                                      {deleteArmingId === item.id ? (
-                                        <span className={classes.confirmLabel}>
-                                          Delete?
-                                        </span>
-                                      ) : (
-                                        <Trash size={13} />
-                                      )}
-                                    </button>
+                                    <div className={classes.itemSub}>
+                                      {formatMoney(item.spent)} of{" "}
+                                      {formatMoney(item.planned)}
+                                    </div>
                                   </div>
                                 </div>
                                 <div className={classes.itemAmounts}>
-                                  <span>{formatMoney(item.planned)}</span>
                                   <span>
                                     {formatMoney(
                                       rightColumn === "Remaining"
@@ -1060,6 +1047,57 @@ export default function PlanningPrototype({
                                         : item.spent,
                                     )}
                                   </span>
+                                  <Menu
+                                    shadow="md"
+                                    width={160}
+                                    position="bottom-end"
+                                    withinPortal
+                                  >
+                                    <Menu.Target>
+                                      <button
+                                        type="button"
+                                        className={classes.itemMoreBtn}
+                                        disabled={busy !== null}
+                                        aria-label={`Actions for ${item.name}`}
+                                      >
+                                        <MoreVertical size={16} />
+                                      </button>
+                                    </Menu.Target>
+                                    <Menu.Dropdown>
+                                      {group.isIncome && (
+                                        <Menu.Item
+                                          leftSection={<Check size={14} />}
+                                          onClick={() =>
+                                            handleReceiveIncome(item)
+                                          }
+                                        >
+                                          Mark received
+                                        </Menu.Item>
+                                      )}
+                                      <Menu.Item
+                                        leftSection={<Pencil size={14} />}
+                                        onClick={() => startEditItem(item)}
+                                      >
+                                        Edit
+                                      </Menu.Item>
+                                      <Menu.Item
+                                        leftSection={<Trash size={14} />}
+                                        color="red"
+                                        onClick={() => {
+                                          if (
+                                            item.transactionCount > 0 &&
+                                            deleteArmingId !== item.id
+                                          ) {
+                                            setDeleteArmingId(item.id);
+                                          } else {
+                                            handleDeleteItem(item, group.id);
+                                          }
+                                        }}
+                                      >
+                                        Delete
+                                      </Menu.Item>
+                                    </Menu.Dropdown>
+                                  </Menu>
                                 </div>
                               </div>
                               {deleteArmingId === item.id &&
@@ -1102,7 +1140,6 @@ export default function PlanningPrototype({
                       <div className={classes.receiveHint}>{receiveHint}</div>
                     )}
 
-                    <div className={classes.addDivider} />
                     {addItemGroup === group.id ? (
                       <div className={classes.addItemForm}>
                         <TextInput
@@ -1191,7 +1228,7 @@ export default function PlanningPrototype({
                       </div>
                     )}
                   </div>
-                )}
+                </Collapse>
               </div>
             );
           })}
