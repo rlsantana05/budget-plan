@@ -242,6 +242,29 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   Debt: CreditCard,
 };
 
+const GROUP_COLORS: Record<string, string> = {
+  Income: "#34d399",
+  Giving: "#fb7185",
+  Housing: "#60a5fa",
+  Savings: "#2dd4bf",
+  Transportation: "#fbbf24",
+  Food: "#fb923c",
+  Personal: "#a78bfa",
+  Lifestyle: "#e879f9",
+  Health: "#f87171",
+  Insurance: "#22d3ee",
+  Debt: "#facc15",
+};
+
+const FALLBACK_ICON_COLOR = "#94a3b8";
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function formatMoney(n: number): string {
   return `$${n.toLocaleString(undefined, {
     minimumFractionDigits: 2,
@@ -856,16 +879,34 @@ export default function PlanningPrototype({
                   onClick={() => toggleGroup(group.id)}
                 >
                   <div className={classes.catMain}>
-                    <div className={classes.catIcon}>
+                    <div
+                      className={classes.catIcon}
+                      style={{
+                        background: hexToRgba(
+                          GROUP_COLORS[group.name] ?? FALLBACK_ICON_COLOR,
+                          0.14,
+                        ),
+                      }}
+                    >
                       {(() => {
                         const Icon = GROUP_ICONS[group.name] ?? Wallet;
+                        const color =
+                          GROUP_COLORS[group.name] ?? FALLBACK_ICON_COLOR;
                         return (
-                          <Icon size={24} color="#34d399" strokeWidth={2} />
+                          <Icon size={24} color={color} strokeWidth={2} />
                         );
                       })()}
                     </div>
                     <div>
-                      <div className={classes.catTitle}>{group.name}</div>
+                      <div className={classes.catTitleRow}>
+                        <span className={classes.catTitle}>{group.name}</span>
+                        <ChevronUp
+                          size={16}
+                          className={`${classes.catChev} ${
+                            isExpanded ? "" : classes.open
+                          }`}
+                        />
+                      </div>
                       <div className={classes.catSubtitle}>
                         {formatMoney(totalSpent)} of{" "}
                         {formatMoney(totalPlanned)}
@@ -931,12 +972,6 @@ export default function PlanningPrototype({
                         </Menu>
                       )}
                     </span>
-                    <ChevronUp
-                      size={20}
-                      className={`${classes.catChev} ${
-                        isExpanded ? "" : classes.open
-                      }`}
-                    />
                   </div>
                 </UnstyledButton>
 
