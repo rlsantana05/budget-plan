@@ -1,0 +1,30 @@
+.subtabs {
+  display: flex;
+  gap: 28px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.subtabs span {
+  position: relative;
+  padding-bottom: 10px;
+  font-size: 15px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  user-select: none;
+}
+
+.subtabUnderline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent-bright);
+}
+
+.subtabs span.active {
+  color: var(--accent-bright);
+  font-weight: 700;
+}

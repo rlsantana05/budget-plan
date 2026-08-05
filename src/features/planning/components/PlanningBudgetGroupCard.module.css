@@ -1,0 +1,102 @@
+.groupCard {
+  border: none;
+}
+
+.gHeader {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  align-items: center;
+  column-gap: 8px;
+  min-height: 60px;
+  padding: 0 24px;
+}
+
+.gTitleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  justify-self: start;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gTitleBtn:focus-visible {
+  outline: 1px solid var(--accent-bright);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.gChev {
+  color: var(--ink-soft);
+  transition: transform 150ms ease;
+}
+
+.gChev.open {
+  transform: rotate(180deg);
+}
+
+.gCol {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink);
+  text-align: left;
+}
+
+.gDivider {
+  height: 1px;
+  background: #2b2d36;
+}
+
+.items {
+  margin-top: 0;
+}
+
+.reorderGroup {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reorderItem {
+  overflow: hidden;
+}
+
+.gFooterBlock {
+  padding-top: 14px;
+}
+
+.gFooter {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  align-items: center;
+  min-height: 54px;
+  padding: 0 24px;
+}
+
+.gFooterForm {
+  grid-column: 1 / -1;
+}
+
+.gAdd {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  justify-self: start;
+  color: #8b5cf6;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.gAdd:hover {
+  color: #a78bfa;
+}

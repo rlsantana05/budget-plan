@@ -1,0 +1,58 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+
+.monthTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.year {
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.chev {
+  align-self: center;
+  color: var(--ink-soft);
+}
+
+.navArrows {
+  display: flex;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.navArrows button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  color: var(--accent-bright);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.navArrows button + button {
+  border-left: 1px solid var(--accent);
+}
+
+.navArrows button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}

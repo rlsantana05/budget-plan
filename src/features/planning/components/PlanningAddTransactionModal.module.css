@@ -1,0 +1,48 @@
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.modalField {
+  margin-top: 14px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modalButton {
+  background: var(--accent-bright);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.modalButton:hover {
+  filter: brightness(1.1);
+}
+
+.modalButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.modalButton.secondary {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--ink-soft);
+}
+
+.modalButton.secondary:hover {
+  filter: none;
+  color: var(--ink);
+}

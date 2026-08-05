@@ -1,0 +1,92 @@
+.txRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 4px;
+  border-top: 1px solid var(--line);
+}
+
+.txMain {
+  min-width: 0;
+}
+
+.txPayee {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.txMeta {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+.txRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.txAmount {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.txAmountIn {
+  color: #5fa23a;
+}
+
+.txActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.txTrack {
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent-bright);
+  border-radius: 7px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.txTrack:hover {
+  background: var(--accent-bright);
+  color: #fff;
+}
+
+.txTrack:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.txDelete {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+}
+
+.txDelete:hover {
+  color: var(--red, #dd4e3b);
+  background: rgba(221, 78, 59, 0.1);
+}
+
+.txDelete:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

@@ -1,0 +1,30 @@
+.rightCol {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 20px 20px 0;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 900px) {
+  .rightCol {
+    overflow: visible;
+    padding-bottom: 0;
+  }
+}
+
+.summaryPlaceholder {
+  padding: 18px;
+  text-align: center;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  margin-top: 14px;
+}

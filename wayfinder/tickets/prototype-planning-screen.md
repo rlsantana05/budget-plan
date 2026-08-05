@@ -24,7 +24,7 @@ Mock data is fine. Link the prototype as an asset on this issue on resolution.
 
 Built a rough Mantine v9 component (prototype) of the Planning screen, mock data only, no backend wiring. Asset:
 
-`src/app/(app)/_components/PlanningPrototype.tsx`
+`src/features/planning/Planning.tsx`
 
 Matches the EveryDollar JSON shape:
 

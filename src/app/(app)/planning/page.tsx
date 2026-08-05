@@ -1,6 +1,6 @@
 import { getMonthBudgetPlan } from "@/actions/budget-planning";
 import { formatMonthValue, normalizeMonthParam } from "@/lib/month";
-import PlanningPrototype from "../_components/PlanningPrototype";
+import Planning from "@/features/planning";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,5 +16,5 @@ export default async function PlanningPage({
   const monthBudget = await getMonthBudgetPlan(year, month);
   const selectedMonth = formatMonthValue(year, month);
 
-  return <PlanningPrototype initialData={monthBudget} selectedMonth={selectedMonth} />;
+  return <Planning initialData={monthBudget} selectedMonth={selectedMonth} />;
 }

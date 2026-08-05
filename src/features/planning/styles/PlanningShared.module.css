@@ -1,0 +1,50 @@
+.card {
+  background: #1f2129;
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  margin-bottom: 14px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.addItemSave,
+.addItemCancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.addItemSave {
+  color: var(--accent-bright);
+  border-color: var(--accent);
+}
+
+.addItemSave:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.addItemCancel {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.addItemSave:hover:not(:disabled),
+.addItemCancel:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.error {
+  color: var(--red, #dd4e3b);
+  font-size: 13px;
+  margin-top: 8px;
+  min-height: 18px;
+}

@@ -1,0 +1,31 @@
+.undoToast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--mantine-color-surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-size: 14px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.undoToast button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent-bright);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.undoToast button:hover {
+  text-decoration: underline;
+}

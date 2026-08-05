@@ -1,0 +1,87 @@
+.page {
+  --accent: #5d65b7;
+  --accent-bright: rgb(99, 102, 241);
+  --card-bg: var(--mantine-color-surface-1);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --line: rgba(255, 255, 255, 0.07);
+  --ink: #f2f3f5;
+  --ink-soft: #71717a;
+  --red: #dd4e3b;
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 32px 28px;
+}
+
+@media (max-width: 900px) {
+  .page {
+    height: auto;
+    overflow: visible;
+    padding-bottom: 96px;
+  }
+}
+
+/* ---------- layout ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    align-items: start;
+    flex: none;
+  }
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.budgetScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0 -6px 0 0;
+  padding: 0 6px 12px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+.budgetScroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.budgetScroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+}
+
+.budgetScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (max-width: 900px) {
+  .leftCol {
+    overflow: visible;
+  }
+
+  .budgetScroll {
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+}

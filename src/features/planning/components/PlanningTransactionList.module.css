@@ -1,0 +1,19 @@
+.monthGroup {
+  padding: 18px 4px 6px;
+}
+
+.monthLabel {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--ink-soft);
+  font-style: italic;
+  padding: 26px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}

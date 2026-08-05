@@ -1,0 +1,143 @@
+import type { Group } from "./types";
+
+export const TRANSACTION_TABS = ["new", "tracked", "deleted"];
+
+export const MOCK_GROUPS: Group[] = [
+  {
+    id: "income",
+    name: "Income",
+    defaultExpanded: false,
+    isIncome: true,
+    rightColumnOptions: [],
+    items: [],
+  },
+  {
+    id: "giving",
+    name: "Giving",
+    defaultExpanded: false,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [],
+  },
+  {
+    id: "housing",
+    name: "Housing",
+    defaultExpanded: true,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [],
+  },
+  {
+    id: "savings",
+    name: "Savings",
+    defaultExpanded: false,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [],
+  },
+  {
+    id: "transportation",
+    name: "Transportation",
+    defaultExpanded: true,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [
+      {
+        id: "mock-gas",
+        name: "Gas",
+        dueDate: "2026-07-31T00:00:00.000Z",
+        planned: 240,
+        spent: 0,
+        remaining: 0,
+        transactionCount: 0,
+      },
+      {
+        id: "mock-maint",
+        name: "Maintenance",
+        dueDate: null,
+        planned: 0,
+        spent: 0,
+        remaining: 0,
+        transactionCount: 0,
+      },
+    ],
+  },
+  {
+    id: "food",
+    name: "Food",
+    defaultExpanded: false,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [],
+  },
+  {
+    id: "personal",
+    name: "Personal",
+    defaultExpanded: false,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [],
+  },
+  {
+    id: "lifestyle",
+    name: "Lifestyle",
+    defaultExpanded: false,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [],
+  },
+  {
+    id: "health",
+    name: "Health",
+    defaultExpanded: false,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [],
+  },
+  {
+    id: "insurance",
+    name: "Insurance",
+    defaultExpanded: false,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [],
+  },
+  {
+    id: "debt",
+    name: "Debt",
+    defaultExpanded: false,
+    isIncome: false,
+    rightColumnOptions: [
+      { label: "Remaining", selected: false },
+      { label: "Spent", selected: true },
+    ],
+    items: [],
+  },
+];

@@ -1,0 +1,137 @@
+.gRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  align-items: center;
+  column-gap: 8px;
+  min-height: 60px;
+  margin: 0 8px;
+  padding: 0 16px;
+  border-radius: 10px;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.gRow:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.gItemName {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gValue {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.gKebab {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background 0.12s ease;
+}
+
+.gRow:hover .gKebab,
+.gKebab:focus-visible {
+  opacity: 1;
+}
+
+.gKebab:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gKebab:disabled {
+  opacity: 0;
+  cursor: default;
+}
+
+.deleteWarning {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: 10px;
+  background: rgba(248, 113, 113, 0.08);
+  color: #fca5a5;
+  font-size: 13px;
+}
+
+.deleteWarningActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.deleteWarningConfirm,
+.deleteWarningCancel {
+  border: none;
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.deleteWarningConfirm {
+  background: #dd4e3b;
+  color: #fff;
+}
+
+.deleteWarningConfirm:hover {
+  filter: brightness(1.1);
+}
+
+.deleteWarningCancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--ink-soft);
+}
+
+.deleteWarningCancel:hover {
+  color: var(--ink);
+}
+
+.receiveHint {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px dashed rgba(250, 204, 21, 0.35);
+  background: rgba(250, 204, 21, 0.07);
+  color: #facc15;
+  font-size: 12px;
+  font-weight: 600;
+}
