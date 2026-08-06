@@ -61,8 +61,13 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
             exit={{ opacity: 0, x: nav.navDir * -28 }}
             transition={motionTransition}
           >
-            <PlanningBudgetBanner amount={bannerAmount} label={bannerLabel} />
             <PlanningBudgetGroupList
+              banner={
+                <PlanningBudgetBanner
+                  amount={bannerAmount}
+                  label={bannerLabel}
+                />
+              }
               groups={groups.groups}
               expandedGroups={groups.expandedGroups}
               onToggleGroup={groups.toggleGroup}

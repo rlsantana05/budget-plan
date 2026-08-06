@@ -1,11 +1,12 @@
 "use client";
 
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import type { Group, GroupItem } from "../types";
 import pageClasses from "../Planning.module.css";
 import PlanningBudgetGroupCard from "./PlanningBudgetGroupCard";
 
 interface PlanningBudgetGroupListProps {
+  banner?: ReactNode;
   groups: Group[];
   expandedGroups: Record<string, boolean>;
   onToggleGroup: (id: string) => void;
@@ -45,6 +46,7 @@ export default function PlanningBudgetGroupList(
 ) {
   return (
     <div className={pageClasses.budgetScroll}>
+      {props.banner}
       {props.groups.map((group) => {
         const isExpanded = props.expandedGroups[group.id] ?? group.defaultExpanded;
         return (

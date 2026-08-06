@@ -2,6 +2,10 @@
   border: none;
 }
 
+.groupCard + .groupCard {
+  margin-top: 14px;
+}
+
 .gHeader {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
@@ -55,7 +59,7 @@
 }
 
 .items {
-  margin-top: 0;
+  margin-top: 0.25rem;
 }
 
 .reorderGroup {
@@ -64,9 +68,7 @@
   padding: 0;
 }
 
-.reorderItem {
-  overflow: hidden;
-}
+.reorderItem {}
 
 .gFooterBlock {
   padding-top: 14px;
