@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type {
   BudgetTransactionDTO,
   MonthBudgetPlanDTO,
@@ -37,7 +37,7 @@ export function useTransactionsPanel(
 
   const { busy, error, runTxAction } = action;
 
-  const accounts = initialData?.accounts ?? [];
+  const accounts = useMemo(() => initialData?.accounts ?? [], [initialData]);
 
   const { categoryOptions, incomeCategoryIds } = useMemo(() => {
     const incomeIds = new Set<string>();
@@ -51,7 +51,7 @@ export function useTransactionsPanel(
     return { categoryOptions: options, incomeCategoryIds: incomeIds };
   }, [initialData]);
 
-  const handleAddTransaction = () => {
+  const handleAddTransaction = useCallback(() => {
     const amount = txAmount;
     const categoryId = txCategory;
     const accountId = txAccount;
@@ -94,48 +94,72 @@ export function useTransactionsPanel(
         prev.map((t) => (t.id === tempId ? { ...t, id: created.id } : t)),
       );
     });
-  };
+  }, [
+    txAmount,
+    txCategory,
+    txAccount,
+    txPayee,
+    txMemo,
+    categoryOptions,
+    accounts,
+    incomeCategoryIds,
+    runTxAction,
+  ]);
 
-  const handleTrack = (id: string) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, status: "TRACKED" } : t)),
-    );
-    runTxAction("row", async () => {
-      await trackTransaction(id);
-    });
-  };
+  const handleTrack = useCallback(
+    (id: string) => {
+      setTransactions((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, status: "TRACKED" } : t)),
+      );
+      runTxAction("row", async () => {
+        await trackTransaction(id);
+      });
+    },
+    [runTxAction],
+  );
 
-  const handleDelete = (id: string) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, status: "DELETED" } : t)),
-    );
-    runTxAction("row", async () => {
-      await deleteTransaction(id);
-    });
-  };
+  const handleDelete = useCallback(
+    (id: string) => {
+      setTransactions((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, status: "DELETED" } : t)),
+      );
+      runTxAction("row", async () => {
+        await deleteTransaction(id);
+      });
+    },
+    [runTxAction],
+  );
 
   const activeStatus = activeTab.toUpperCase() as
     | "NEW"
     | "TRACKED"
     | "DELETED";
   const query = searchQuery.trim().toLowerCase();
-  const filteredTx = transactions
-    .filter((t) => t.status === activeStatus)
-    .filter(
-      (t) =>
-        !query ||
-        (t.payee ?? "").toLowerCase().includes(query) ||
-        (t.memo ?? "").toLowerCase().includes(query) ||
-        (t.categoryName ?? "").toLowerCase().includes(query),
-    );
 
-  const txByMonth = new Map<string, BudgetTransactionDTO[]>();
-  for (const t of filteredTx) {
-    const label = formatMonthLabel(t.date) || "Unknown";
-    const list = txByMonth.get(label) ?? [];
-    list.push(t);
-    txByMonth.set(label, list);
-  }
+  const filteredTx = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.status === activeStatus)
+        .filter(
+          (t) =>
+            !query ||
+            (t.payee ?? "").toLowerCase().includes(query) ||
+            (t.memo ?? "").toLowerCase().includes(query) ||
+            (t.categoryName ?? "").toLowerCase().includes(query),
+        ),
+    [transactions, activeStatus, query],
+  );
+
+  const txByMonth = useMemo(() => {
+    const map = new Map<string, BudgetTransactionDTO[]>();
+    for (const t of filteredTx) {
+      const label = formatMonthLabel(t.date) || "Unknown";
+      const list = map.get(label) ?? [];
+      list.push(t);
+      map.set(label, list);
+    }
+    return map;
+  }, [filteredTx]);
 
   return {
     transactions,

@@ -11,6 +11,7 @@ interface PlanningBudgetGroupListProps {
   expandedGroups: Record<string, boolean>;
   onToggleGroup: (id: string) => void;
   onReorder: (groupId: string, orderedIds: string[]) => void;
+  onReorderCommit: (groupId: string, orderedIds: string[]) => void;
 
   editingItemId: string | null;
   editName: string;
@@ -56,6 +57,7 @@ export default function PlanningBudgetGroupList(
             isExpanded={isExpanded}
             onToggle={() => props.onToggleGroup(group.id)}
             onReorder={(ordered) => props.onReorder(group.id, ordered)}
+            onReorderEnd={(ordered) => props.onReorderCommit(group.id, ordered)}
             editingItemId={props.editingItemId}
             editName={props.editName}
             onEditNameChange={props.onEditNameChange}

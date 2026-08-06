@@ -72,13 +72,14 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
               expandedGroups={groups.expandedGroups}
               onToggleGroup={groups.toggleGroup}
               onReorder={groups.handleReorderItems}
+              onReorderCommit={groups.handleReorderCommit}
               editingItemId={groups.editingItemId}
               editName={groups.editName}
               onEditNameChange={groups.setEditName}
               editPlanned={groups.editPlanned}
               onEditPlannedChange={groups.setEditPlanned}
               onSaveEdit={groups.handleUpdateItem}
-              onCancelEdit={() => groups.setEditingItemId(null)}
+              onCancelEdit={groups.cancelEditItem}
               onStartEdit={groups.startEditItem}
               busy={action.busy}
               deleteArmingId={groups.deleteArmingId}

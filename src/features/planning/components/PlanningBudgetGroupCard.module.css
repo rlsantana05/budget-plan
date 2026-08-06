@@ -68,6 +68,25 @@
   padding: 0;
 }
 
+.reorderWrap {
+  position: relative;
+}
+
+.dropIndicator {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent-bright);
+  box-shadow: 0 0 10px var(--accent-bright);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 0.12s ease;
+}
+
 .reorderItem {}
 
 .gFooterBlock {

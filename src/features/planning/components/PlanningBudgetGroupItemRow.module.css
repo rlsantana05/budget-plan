@@ -19,6 +19,55 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
+.gRow.dragging {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+  position: relative;
+}
+
+.gNameCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.grip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: grab;
+  opacity: 0.35;
+  transition:
+    opacity 0.15s ease,
+    background 0.12s ease;
+}
+
+.gRow:hover .grip,
+.grip:focus-visible {
+  opacity: 1;
+}
+
+.grip:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.grip:active {
+  cursor: grabbing;
+}
+
+.grip.gripDisabled {
+  opacity: 0.15;
+  cursor: default;
+}
+
 .gItemName {
   font-size: 16px;
   font-weight: 400;

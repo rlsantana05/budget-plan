@@ -1,7 +1,8 @@
 "use client";
 
+import { memo } from "react";
 import { Menu } from "@mantine/core";
-import { Check, MoreVertical, Pencil, Trash } from "lucide-react";
+import { Check, GripVertical, MoreVertical, Pencil, Trash } from "lucide-react";
 import type { GroupItem } from "../types";
 import { formatMoney } from "../utils/formatters";
 import classes from "./PlanningBudgetGroupItemRow.module.css";
@@ -12,18 +13,22 @@ interface PlanningBudgetGroupItemRowProps {
   isIncome: boolean;
   busy: "add" | "row" | null;
   deleteArmingId: string | null;
+  isDraggable: boolean;
+  isDragging: boolean;
   onReceiveIncome: (item: GroupItem) => void;
   onStartEdit: (item: GroupItem) => void;
   onArmDelete: (id: string | null) => void;
   onDeleteItem: (item: GroupItem, groupId: string) => void;
 }
 
-export default function PlanningBudgetGroupItemRow({
+function PlanningBudgetGroupItemRow({
   item,
   groupId,
   isIncome,
   busy,
   deleteArmingId,
+  isDraggable,
+  isDragging,
   onReceiveIncome,
   onStartEdit,
   onArmDelete,
@@ -31,8 +36,16 @@ export default function PlanningBudgetGroupItemRow({
 }: PlanningBudgetGroupItemRowProps) {
   return (
     <>
-      <div className={classes.gRow}>
-        <span className={classes.gItemName}>{item.name}</span>
+      <div className={`${classes.gRow} ${isDragging ? classes.dragging : ""}`}>
+        <span className={classes.gNameCell}>
+          <span
+            className={`${classes.grip} ${isDraggable ? "" : classes.gripDisabled}`}
+            aria-hidden
+          >
+            <GripVertical size={14} />
+          </span>
+          <span className={classes.gItemName}>{item.name}</span>
+        </span>
         <span className={classes.gValue}>{formatMoney(item.planned)}</span>
         <span className={classes.gValue}>{formatMoney(item.spent)}</span>
         <span className={classes.gValue}>{formatMoney(item.remaining)}</span>
@@ -48,6 +61,7 @@ export default function PlanningBudgetGroupItemRow({
               className={classes.gKebab}
               disabled={busy !== null}
               aria-label={`Actions for ${item.name}`}
+              onPointerDown={(e) => e.stopPropagation()}
             >
               <MoreVertical size={16} />
             </button>
@@ -95,6 +109,7 @@ export default function PlanningBudgetGroupItemRow({
               type="button"
               className={classes.deleteWarningConfirm}
               onClick={() => onDeleteItem(item, groupId)}
+              onPointerDown={(e) => e.stopPropagation()}
             >
               Delete
             </button>
@@ -102,6 +117,7 @@ export default function PlanningBudgetGroupItemRow({
               type="button"
               className={classes.deleteWarningCancel}
               onClick={() => onArmDelete(null)}
+              onPointerDown={(e) => e.stopPropagation()}
             >
               Cancel
             </button>
@@ -111,3 +127,5 @@ export default function PlanningBudgetGroupItemRow({
     </>
   );
 }
+
+export default memo(PlanningBudgetGroupItemRow);

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { BudgetTransactionDTO } from "@/types/budget";
 import { Trash } from "lucide-react";
 import { formatMoney, formatTxDate } from "../utils/formatters";
@@ -12,13 +13,12 @@ interface PlanningTransactionRowProps {
   onDelete: (id: string) => void;
 }
 
-export default function PlanningTransactionRow({
+function PlanningTransactionRow({
   tx,
   busy,
   onTrack,
   onDelete,
-}: PlanningTransactionRowProps) {
-  return (
+}: PlanningTransactionRowProps) {  return (
     <div className={classes.txRow}>
       <div className={classes.txMain}>
         <div className={classes.txPayee}>{tx.payee ?? "Untracked"}</div>
@@ -65,3 +65,5 @@ export default function PlanningTransactionRow({
     </div>
   );
 }
+
+export default memo(PlanningTransactionRow);
