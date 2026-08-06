@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion, useReducedMotion } from "framer-motion";
-import { TRANSACTION_TABS } from "../constants";
-import classes from "./PlanningStatusSubtabs.module.css";
+import { motion, useReducedMotion } from 'framer-motion';
+import { TRANSACTION_TABS } from '../constants';
+import classes from './PlanningStatusSubtabs.module.css';
 
 interface PlanningStatusSubtabsProps {
   activeTab: string;
@@ -16,15 +16,16 @@ export default function PlanningStatusSubtabs({
   const reduceMotion = useReducedMotion();
   const transition = {
     duration: reduceMotion ? 0 : 0.18,
-    ease: "easeOut" as const,
+    ease: 'easeOut' as const,
   };
 
   return (
     <div className={classes.subtabs}>
       {TRANSACTION_TABS.map((t) => (
-        <span
+        <button
+          type="button"
           key={t}
-          className={activeTab === t ? classes.active : ""}
+          className={activeTab === t ? classes.active : ''}
           onClick={() => onTabChange(t)}
         >
           {t[0].toUpperCase() + t.slice(1)}
@@ -35,7 +36,7 @@ export default function PlanningStatusSubtabs({
               transition={transition}
             />
           )}
-        </span>
+        </button>
       ))}
     </div>
   );

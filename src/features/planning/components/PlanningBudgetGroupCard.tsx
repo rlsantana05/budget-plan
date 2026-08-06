@@ -1,16 +1,18 @@
-"use client";
+'use client';
 
-import type { RefObject } from "react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, Reorder } from "framer-motion";
-import { Collapse } from "@mantine/core";
-import { ChevronDown } from "lucide-react";
-import type { Group, GroupItem } from "../types";
-import sharedClasses from "../styles/PlanningShared.module.css";
-import classes from "./PlanningBudgetGroupCard.module.css";
-import PlanningBudgetGroupReorderItem from "./PlanningBudgetGroupReorderItem";
-import PlanningAddCategoryItemForm from "./PlanningAddCategoryItemForm";
-import rowClasses from "./PlanningBudgetGroupItemRow.module.css";
+import type { RefObject } from 'react';
+import {
+  memo, useCallback, useEffect, useRef, useState,
+} from 'react';
+import { AnimatePresence, Reorder } from 'framer-motion';
+import { Collapse } from '@mantine/core';
+import { ChevronDown } from 'lucide-react';
+import type { Group, GroupItem } from '../types';
+import sharedClasses from '../styles/PlanningShared.module.css';
+import classes from './PlanningBudgetGroupCard.module.css';
+import PlanningBudgetGroupReorderItem from './PlanningBudgetGroupReorderItem';
+import PlanningAddCategoryItemForm from './PlanningAddCategoryItemForm';
+import rowClasses from './PlanningBudgetGroupItemRow.module.css';
 
 interface PlanningBudgetGroupCardProps {
   group: Group;
@@ -28,7 +30,7 @@ interface PlanningBudgetGroupCardProps {
   onCancelEdit: () => void;
   onStartEdit: (item: GroupItem) => void;
 
-  busy: "add" | "row" | null;
+  busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
   onArmDelete: (id: string | null) => void;
   onDeleteItem: (item: GroupItem, groupId: string) => void;
@@ -96,11 +98,11 @@ function PlanningBudgetGroupCard({
     const el = indicatorRef.current;
     if (!el) return;
     if (top === null) {
-      el.style.opacity = "0";
+      el.style.opacity = '0';
       return;
     }
     el.style.transform = `translateY(${top}px)`;
-    el.style.opacity = "1";
+    el.style.opacity = '1';
   }, []);
 
   const registerItemRef = useCallback((id: string, el: HTMLElement | null) => {
@@ -150,13 +152,7 @@ function PlanningBudgetGroupCard({
     startOrderRef.current = null;
     pendingOrderRef.current = null;
     if (!start || !pending || start.length !== pending.length) return;
-    let changed = false;
-    for (let i = 0; i < start.length; i++) {
-      if (start[i] !== pending[i]) {
-        changed = true;
-        break;
-      }
-    }
+    const changed = start.some((value, index) => value !== pending[index]);
     if (changed) onReorderEnd(pending);
   }, [onReorderEnd, showIndicator]);
 
@@ -172,7 +168,7 @@ function PlanningBudgetGroupCard({
           <span>{group.name}</span>
           <ChevronDown
             size={14}
-            className={`${classes.gChev} ${isExpanded ? "" : classes.open}`}
+            className={`${classes.gChev} ${isExpanded ? '' : classes.open}`}
           />
         </button>
         <span className={classes.gCol}>Planned</span>
@@ -255,7 +251,9 @@ function PlanningBudgetGroupCard({
                   className={classes.gAdd}
                   onClick={onBeginAdd}
                 >
-                  + {group.isIncome ? "Add income" : "Add item"}
+                  +
+                  {' '}
+                  {group.isIncome ? 'Add income' : 'Add item'}
                 </button>
               </div>
             </div>

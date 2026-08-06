@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { memo } from "react";
-import { useReducedMotion, Reorder } from "framer-motion";
-import type { GroupItem } from "../types";
-import classes from "./PlanningBudgetGroupCard.module.css";
-import PlanningBudgetGroupItemRow from "./PlanningBudgetGroupItemRow";
-import PlanningBudgetGroupItemEditForm from "./PlanningBudgetGroupItemEditForm";
+import { memo } from 'react';
+import { useReducedMotion, Reorder } from 'framer-motion';
+import type { GroupItem } from '../types';
+import classes from './PlanningBudgetGroupCard.module.css';
+import PlanningBudgetGroupItemRow from './PlanningBudgetGroupItemRow';
+import PlanningBudgetGroupItemEditForm from './PlanningBudgetGroupItemEditForm';
 
 interface PlanningBudgetGroupReorderItemProps {
   item: GroupItem;
@@ -15,7 +15,7 @@ interface PlanningBudgetGroupReorderItemProps {
   dragEnabled: boolean;
   isDragging: boolean;
 
-  busy: "add" | "row" | null;
+  busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
   onArmDelete: (id: string | null) => void;
   onDeleteItem: (item: GroupItem, groupId: string) => void;
@@ -72,7 +72,7 @@ function PlanningBudgetGroupReorderItem({
       exit={{ opacity: 0, scale: 0.98, height: 0 }}
       transition={{
         duration: reduceMotion ? 0 : 0.18,
-        ease: "easeOut",
+        ease: 'easeOut',
       }}
       onDragStart={() => onDragStart(item.id)}
       onDrag={onDrag}

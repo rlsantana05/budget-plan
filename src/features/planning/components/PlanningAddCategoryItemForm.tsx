@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import type { RefObject } from "react";
-import { TextInput } from "@mantine/core";
-import { Check } from "lucide-react";
-import { formatMoney } from "../utils/formatters";
-import sharedClasses from "../styles/PlanningShared.module.css";
-import classes from "./PlanningAddCategoryItemForm.module.css";
+import type { RefObject } from 'react';
+import { TextInput } from '@mantine/core';
+import { Check } from 'lucide-react';
+import { formatMoney } from '../utils/formatters';
+import sharedClasses from '../styles/PlanningShared.module.css';
+import classes from './PlanningAddCategoryItemForm.module.css';
 
 interface PlanningAddCategoryItemFormProps {
   className?: string;
   isIncome: boolean;
-  busy: "add" | "row" | null;
+  busy: 'add' | 'row' | null;
   newItemName: string;
   onNewItemNameChange: (value: string) => void;
   amountText: string;
@@ -35,20 +35,20 @@ export default function PlanningAddCategoryItemForm({
   amountInputRef,
 }: PlanningAddCategoryItemFormProps) {
   return (
-    <div className={`${classes.addItemForm} ${className ?? ""}`}>
+    <div className={`${classes.addItemForm} ${className ?? ''}`}>
       <TextInput
         ref={nameInputRef}
         autoFocus
         size="xs"
-        placeholder={isIncome ? "e.g. Paycheck" : "Groceries, rent, coffee…"}
+        placeholder={isIncome ? 'e.g. Paycheck' : 'Groceries, rent, coffee…'}
         value={newItemName}
         onChange={(e) => onNewItemNameChange(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
+          if (e.key === 'Enter') {
             e.preventDefault();
             amountInputRef.current?.focus();
           }
-          if (e.key === "Escape") onCancel();
+          if (e.key === 'Escape') onCancel();
         }}
       />
       <TextInput
@@ -56,14 +56,14 @@ export default function PlanningAddCategoryItemForm({
         size="xs"
         inputMode="decimal"
         placeholder="0.00"
-        value={amountText ? `$${formatMoney(Number(amountText))}` : ""}
+        value={amountText ? `$${formatMoney(Number(amountText))}` : ''}
         onChange={(e) => onAmountChange(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
+          if (e.key === 'Enter') {
             e.preventDefault();
             onAddItem();
           }
-          if (e.key === "Escape") onCancel();
+          if (e.key === 'Escape') onCancel();
         }}
       />
       <button

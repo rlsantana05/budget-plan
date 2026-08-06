@@ -6,9 +6,12 @@
   padding: 0 4px;
 }
 
-.subtabs span {
+.subtabs button {
   position: relative;
-  padding-bottom: 10px;
+  padding: 0 0 10px;
+  background: none;
+  border: none;
+  font: inherit;
   font-size: 15px;
   color: var(--ink-soft);
   cursor: pointer;
@@ -24,7 +27,7 @@
   background: var(--accent-bright);
 }
 
-.subtabs span.active {
+.subtabs button.active {
   color: var(--accent-bright);
   font-weight: 700;
 }

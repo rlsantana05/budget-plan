@@ -1,19 +1,19 @@
-import type { MonthBudgetPlanDTO } from "@/types/budget";
-import type { Group } from "../types";
+import type { MonthBudgetPlanDTO } from '@/types/budget';
+import type { Group } from '../types';
 
 export function toGroups(dto: MonthBudgetPlanDTO): Group[] {
   return (dto.categories ?? []).map((cg) => ({
     id: cg.id,
     name: cg.name,
     defaultExpanded: (cg.items ?? []).length > 0,
-    isIncome: cg.name === "Income",
+    isIncome: cg.name === 'Income',
     rightColumnOptions:
-      cg.name === "Income"
+      cg.name === 'Income'
         ? []
         : [
-            { label: "Remaining", selected: cg.rightColumn === "Remaining" },
-            { label: "Spent", selected: cg.rightColumn === "Spent" },
-          ],
+          { label: 'Remaining', selected: cg.rightColumn === 'Remaining' },
+          { label: 'Spent', selected: cg.rightColumn === 'Spent' },
+        ],
     items: (cg.items ?? []).map((it) => ({
       id: it.id,
       name: it.name,

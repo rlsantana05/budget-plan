@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { MonthBudgetPlanDTO } from "@/types/budget";
+import {
+  useCallback, useEffect, useMemo, useRef, useState,
+} from 'react';
+import type { MonthBudgetPlanDTO } from '@/types/budget';
 import {
   addCategoryItem,
   deleteCategoryItem,
@@ -7,12 +9,12 @@ import {
   reorderCategoryItems,
   restoreCategoryItem,
   updateCategoryItem,
-} from "@/actions/budget-planning";
-import { MOCK_GROUPS } from "../constants";
-import { toGroups } from "../utils/mappers";
-import type { Group, GroupItem } from "../types";
-import type { PlanningActionState } from "./usePlanningActionState";
-import { useServerSync } from "./useServerSync";
+} from '@/actions/budget-planning';
+import { MOCK_GROUPS } from '../constants';
+import { toGroups } from '../utils/mappers';
+import type { Group, GroupItem } from '../types';
+import type { PlanningActionState } from './usePlanningActionState';
+import { useServerSync } from './useServerSync';
 
 export interface BudgetGroupUndo {
   item: GroupItem;
@@ -33,11 +35,11 @@ export function useBudgetGroups(
     {},
   );
   const [addItemGroup, setAddItemGroup] = useState<string | null>(null);
-  const [newItemName, setNewItemName] = useState("");
+  const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState(0);
-  const [amountText, setAmountText] = useState("");
+  const [amountText, setAmountText] = useState('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
+  const [editName, setEditName] = useState('');
   const [editPlanned, setEditPlanned] = useState<number>(0);
   const [deleteArmingId, setDeleteArmingId] = useState<string | null>(null);
   const [receiveHint, setReceiveHint] = useState<string | null>(null);
@@ -72,21 +74,21 @@ export function useBudgetGroups(
   );
 
   const beginAddItem = useCallback((groupId: string) => {
-    setNewItemName("");
-    setAmountText("");
+    setNewItemName('');
+    setAmountText('');
     setNewItemAmount(0);
     setAddItemGroup(groupId);
   }, []);
 
   const cancelAddItem = useCallback(() => {
-    setNewItemName("");
-    setAmountText("");
+    setNewItemName('');
+    setAmountText('');
     setNewItemAmount(0);
     setAddItemGroup(null);
   }, []);
 
   const handleAmountInputChange = useCallback((value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 9);
+    const digits = value.replace(/\D/g, '').slice(0, 9);
     setAmountText(digits);
     setNewItemAmount(digits ? Number(digits) : 0);
   }, []);
@@ -98,55 +100,45 @@ export function useBudgetGroups(
       const planned = newItemAmount;
       const tempId = `pending-${Date.now()}`;
 
-      setGroups((prev) =>
-        prev.map((g) =>
-          g.id === groupId
-            ? {
-                ...g,
-                items: [
-                  ...g.items,
-                  {
-                    id: tempId,
-                    name,
-                    dueDate: null,
-                    planned,
-                    spent: 0,
-                    remaining: 0,
-                    transactionCount: 0,
-                  },
-                ],
-              }
-            : g,
-        ),
-      );
-      setNewItemName("");
-      setAmountText("");
+      setGroups((prev) => prev.map((g) => (g.id === groupId
+        ? {
+          ...g,
+          items: [
+            ...g.items,
+            {
+              id: tempId,
+              name,
+              dueDate: null,
+              planned,
+              spent: 0,
+              remaining: 0,
+              transactionCount: 0,
+            },
+          ],
+        }
+        : g)));
+      setNewItemName('');
+      setAmountText('');
       setNewItemAmount(0);
 
-      runTxAction("row", async () => {
+      runTxAction('row', async () => {
         const created = await addCategoryItem(groupId, name, planned);
-        setGroups((prev) =>
-          prev.map((g) =>
-            g.id === groupId
+        setGroups((prev) => prev.map((g) => (g.id === groupId
+          ? {
+            ...g,
+            items: g.items.map((it) => (it.id === tempId
               ? {
-                  ...g,
-                  items: g.items.map((it) =>
-                    it.id === tempId
-                      ? {
-                          ...it,
-                          id: created.id,
-                          name: created.name,
-                          dueDate: created.dueDate,
-                          planned: created.planned,
-                          spent: created.spent,
-                          remaining: created.remaining,
-                        }
-                      : it,
-                  ),
-                }
-              : g,
-          ),
-        );
+                ...it,
+                id: created.id,
+                name: created.name,
+                dueDate: created.dueDate,
+                planned: created.planned,
+                spent: created.spent,
+                remaining: created.remaining,
+              }
+              : it)),
+          }
+          : g)));
       });
 
       nameInputRef.current?.focus();
@@ -170,17 +162,13 @@ export function useBudgetGroups(
       const name = editName;
       const planned = editPlanned;
 
-      setGroups((prev) =>
-        prev.map((g) => ({
-          ...g,
-          items: g.items.map((it) =>
-            it.id === itemId ? { ...it, name, planned } : it,
-          ),
-        })),
-      );
+      setGroups((prev) => prev.map((g) => ({
+        ...g,
+        items: g.items.map((it) => (it.id === itemId ? { ...it, name, planned } : it)),
+      })));
       setEditingItemId(null);
 
-      runTxAction("row", async () => {
+      runTxAction('row', async () => {
         await updateCategoryItem(itemId, { name, planned });
       });
     },
@@ -193,16 +181,14 @@ export function useBudgetGroups(
         .find((g) => g.id === groupId)
         ?.items.findIndex((it) => it.id === item.id);
 
-      setGroups((prev) =>
-        prev.map((g) => ({
-          ...g,
-          items: g.items.filter((it) => it.id !== item.id),
-        })),
-      );
+      setGroups((prev) => prev.map((g) => ({
+        ...g,
+        items: g.items.filter((it) => it.id !== item.id),
+      })));
       setEditingItemId(null);
       setDeleteArmingId(null);
 
-      runTxAction("row", async () => {
+      runTxAction('row', async () => {
         await deleteCategoryItem(item.id);
       });
 
@@ -219,43 +205,35 @@ export function useBudgetGroups(
     setUndo(null);
     if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
 
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId
-          ? {
-              ...g,
-              items:
+    setGroups((prev) => prev.map((g) => (g.id === groupId
+      ? {
+        ...g,
+        items:
                 index >= 0 && index < g.items.length
                   ? [...g.items.slice(0, index), item, ...g.items.slice(index)]
                   : [...g.items, item],
-            }
-          : g,
-      ),
-    );
+      }
+      : g)));
 
-    runTxAction("row", async () => {
+    runTxAction('row', async () => {
       await restoreCategoryItem(item.id);
     });
   }, [undo, runTxAction]);
 
   const handleReorderItems = useCallback((groupId: string, orderedIds: string[]) => {
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId
-          ? {
-              ...g,
-              items: orderedIds
-                .map((id) => g.items.find((it) => it.id === id))
-                .filter((it): it is GroupItem => !!it),
-            }
-          : g,
-      ),
-    );
+    setGroups((prev) => prev.map((g) => (g.id === groupId
+      ? {
+        ...g,
+        items: orderedIds
+          .map((id) => g.items.find((it) => it.id === id))
+          .filter((it): it is GroupItem => !!it),
+      }
+      : g)));
   }, []);
 
   const handleReorderCommit = useCallback(
     (groupId: string, orderedIds: string[]) => {
-      runTxAction("row", async () => {
+      runTxAction('row', async () => {
         await reorderCategoryItems(groupId, orderedIds);
       });
     },
@@ -265,11 +243,11 @@ export function useBudgetGroups(
   const handleReceiveIncome = useCallback(
     (item: GroupItem) => {
       if (accounts.length === 0) {
-        setReceiveHint("Add an account before marking income as received");
+        setReceiveHint('Add an account before marking income as received');
         return;
       }
       setReceiveHint(null);
-      runTxAction("row", async () => {
+      runTxAction('row', async () => {
         await receivePlannedIncome(item.id);
       });
     },

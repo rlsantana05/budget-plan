@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import type { MonthBudgetPlanDTO } from "@/types/budget";
-import { useMonthNavigation } from "./hooks/useMonthNavigation";
-import { usePlanningActionState } from "./hooks/usePlanningActionState";
-import { useBudgetGroups } from "./hooks/useBudgetGroups";
-import { useTransactionsPanel } from "./hooks/useTransactionsPanel";
-import PlanningMonthHeader from "./components/PlanningMonthHeader";
-import PlanningBudgetBanner from "./components/PlanningBudgetBanner";
-import PlanningBudgetGroupList from "./components/PlanningBudgetGroupList";
-import PlanningTransactionsPanel from "./components/PlanningTransactionsPanel";
-import PlanningAddTransactionFab from "./components/PlanningAddTransactionFab";
-import PlanningAddTransactionModal from "./components/PlanningAddTransactionModal";
-import PlanningUndoToast from "./components/PlanningUndoToast";
-import classes from "./Planning.module.css";
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import type { MonthBudgetPlanDTO } from '@/types/budget';
+import { useMonthNavigation } from './hooks/useMonthNavigation';
+import { usePlanningActionState } from './hooks/usePlanningActionState';
+import { useBudgetGroups } from './hooks/useBudgetGroups';
+import { useTransactionsPanel } from './hooks/useTransactionsPanel';
+import PlanningMonthHeader from './components/PlanningMonthHeader';
+import PlanningBudgetBanner from './components/PlanningBudgetBanner';
+import PlanningBudgetGroupList from './components/PlanningBudgetGroupList';
+import PlanningTransactionsPanel from './components/PlanningTransactionsPanel';
+import PlanningAddTransactionFab from './components/PlanningAddTransactionFab';
+import PlanningAddTransactionModal from './components/PlanningAddTransactionModal';
+import PlanningUndoToast from './components/PlanningUndoToast';
+import classes from './Planning.module.css';
 
 interface PlanningProps {
   initialData?: MonthBudgetPlanDTO;
@@ -29,11 +29,11 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
   const reduceMotion = useReducedMotion();
   const motionTransition = {
     duration: reduceMotion ? 0 : 0.18,
-    ease: "easeOut" as const,
+    ease: 'easeOut' as const,
   };
 
   const bannerAmount = initialData?.budgetStatus?.amount ?? 2705;
-  const bannerLabel = initialData?.budgetStatus?.label ?? "over budget";
+  const bannerLabel = initialData?.budgetStatus?.label ?? 'over budget';
 
   return (
     <div className={classes.page}>
@@ -62,12 +62,12 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
             transition={motionTransition}
           >
             <PlanningBudgetGroupList
-              banner={
+              banner={(
                 <PlanningBudgetBanner
                   amount={bannerAmount}
                   label={bannerLabel}
                 />
-              }
+              )}
               groups={groups.groups}
               expandedGroups={groups.expandedGroups}
               onToggleGroup={groups.toggleGroup}

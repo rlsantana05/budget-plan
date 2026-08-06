@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { ReactNode, RefObject } from "react";
-import type { Group, GroupItem } from "../types";
-import pageClasses from "../Planning.module.css";
-import PlanningBudgetGroupCard from "./PlanningBudgetGroupCard";
+import type { ReactNode, RefObject } from 'react';
+import type { Group, GroupItem } from '../types';
+import pageClasses from '../Planning.module.css';
+import PlanningBudgetGroupCard from './PlanningBudgetGroupCard';
 
 interface PlanningBudgetGroupListProps {
   banner?: ReactNode;
@@ -22,7 +22,7 @@ interface PlanningBudgetGroupListProps {
   onCancelEdit: () => void;
   onStartEdit: (item: GroupItem) => void;
 
-  busy: "add" | "row" | null;
+  busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
   onArmDelete: (id: string | null) => void;
   onDeleteItem: (item: GroupItem, groupId: string) => void;

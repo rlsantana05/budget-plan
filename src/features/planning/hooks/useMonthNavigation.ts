@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
-import { useDisclosure } from "@mantine/hooks";
-import { useRouter } from "next/navigation";
-import { formatMonthValue, parseMonthValue } from "@/lib/month";
-import { buildMonthsForYear } from "../utils/monthPicker";
+import { useMemo, useState } from 'react';
+import { useDisclosure } from '@mantine/hooks';
+import { useRouter } from 'next/navigation';
+import { formatMonthValue, parseMonthValue } from '@/lib/month';
+import { buildMonthsForYear } from '../utils/monthPicker';
 
 export function useMonthNavigation(
   selectedMonth?: string,
@@ -10,17 +10,15 @@ export function useMonthNavigation(
 ) {
   const { year, month: monthNumber } = parseMonthValue(selectedMonth);
   const selectedValue = formatMonthValue(year, monthNumber);
-  const month =
-    serverMonth ??
-    new Date(year, monthNumber - 1, 1).toLocaleString("default", {
-      month: "long",
+  const month = serverMonth
+    ?? new Date(year, monthNumber - 1, 1).toLocaleString('default', {
+      month: 'long',
     });
 
   const now = new Date();
-  const currentValue = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentValue = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  const [pickerOpened, { close: closePicker, toggle: togglePicker }] =
-    useDisclosure(false);
+  const [pickerOpened, { close: closePicker, toggle: togglePicker }] = useDisclosure(false);
   const [pickerYear, setPickerYear] = useState<number>(year);
   const [navDir, setNavDir] = useState<1 | -1>(1);
   const handlePickerToggle = () => {

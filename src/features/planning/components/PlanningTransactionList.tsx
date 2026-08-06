@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import type { BudgetTransactionDTO } from "@/types/budget";
-import PlanningTransactionRow from "./PlanningTransactionRow";
-import classes from "./PlanningTransactionList.module.css";
+import type { BudgetTransactionDTO } from '@/types/budget';
+import PlanningTransactionRow from './PlanningTransactionRow';
+import classes from './PlanningTransactionList.module.css';
 
 interface PlanningTransactionListProps {
   groups: Array<{ label: string; txs: BudgetTransactionDTO[] }>;
-  busy: "add" | "row" | null;
+  busy: 'add' | 'row' | null;
   onTrack: (id: string) => void;
   onDelete: (id: string) => void;
 }

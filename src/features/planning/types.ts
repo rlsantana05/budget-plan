@@ -13,6 +13,6 @@ export interface Group {
   name: string;
   defaultExpanded: boolean;
   isIncome: boolean;
-  rightColumnOptions: Array<{ label: "Spent" | "Remaining"; selected: boolean }>;
+  rightColumnOptions: Array<{ label: 'Spent' | 'Remaining'; selected: boolean }>;
   items: GroupItem[];
 }

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { TextInput } from "@mantine/core";
-import { Search } from "lucide-react";
-import classes from "./PlanningTransactionSearch.module.css";
+import { TextInput } from '@mantine/core';
+import { Search } from 'lucide-react';
+import classes from './PlanningTransactionSearch.module.css';
 
 interface PlanningTransactionSearchProps {
   searchQuery: string;

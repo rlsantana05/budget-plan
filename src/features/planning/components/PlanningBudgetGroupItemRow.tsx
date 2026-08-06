@@ -1,17 +1,19 @@
-"use client";
+'use client';
 
-import { memo } from "react";
-import { Menu } from "@mantine/core";
-import { Check, GripVertical, MoreVertical, Pencil, Trash } from "lucide-react";
-import type { GroupItem } from "../types";
-import { formatMoney } from "../utils/formatters";
-import classes from "./PlanningBudgetGroupItemRow.module.css";
+import { memo } from 'react';
+import { Menu } from '@mantine/core';
+import {
+  Check, GripVertical, MoreVertical, Pencil, Trash,
+} from 'lucide-react';
+import type { GroupItem } from '../types';
+import { formatMoney } from '../utils/formatters';
+import classes from './PlanningBudgetGroupItemRow.module.css';
 
 interface PlanningBudgetGroupItemRowProps {
   item: GroupItem;
   groupId: string;
   isIncome: boolean;
-  busy: "add" | "row" | null;
+  busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
   isDraggable: boolean;
   isDragging: boolean;
@@ -36,10 +38,10 @@ function PlanningBudgetGroupItemRow({
 }: PlanningBudgetGroupItemRowProps) {
   return (
     <>
-      <div className={`${classes.gRow} ${isDragging ? classes.dragging : ""}`}>
+      <div className={`${classes.gRow} ${isDragging ? classes.dragging : ''}`}>
         <span className={classes.gNameCell}>
           <span
-            className={`${classes.grip} ${isDraggable ? "" : classes.gripDisabled}`}
+            className={`${classes.grip} ${isDraggable ? '' : classes.gripDisabled}`}
             aria-hidden
           >
             <GripVertical size={14} />
@@ -100,8 +102,11 @@ function PlanningBudgetGroupItemRow({
       {deleteArmingId === item.id && item.transactionCount > 0 && (
         <div className={classes.deleteWarning}>
           <span>
-            {item.transactionCount}{" "}
-            {item.transactionCount === 1 ? "transaction" : "transactions"} will
+            {item.transactionCount}
+            {' '}
+            {item.transactionCount === 1 ? 'transaction' : 'transactions'}
+            {' '}
+            will
             be hidden with this category
           </span>
           <div className={classes.deleteWarningActions}>

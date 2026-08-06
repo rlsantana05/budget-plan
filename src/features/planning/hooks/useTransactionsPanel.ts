@@ -1,16 +1,16 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from 'react';
 import type {
   BudgetTransactionDTO,
   MonthBudgetPlanDTO,
-} from "@/types/budget";
+} from '@/types/budget';
 import {
   addTransaction,
   deleteTransaction,
   trackTransaction,
-} from "@/actions/budget-planning";
-import { formatMonthLabel } from "../utils/formatters";
-import { useServerSync } from "./useServerSync";
-import type { PlanningActionState } from "./usePlanningActionState";
+} from '@/actions/budget-planning';
+import { formatMonthLabel } from '../utils/formatters';
+import { useServerSync } from './useServerSync';
+import type { PlanningActionState } from './usePlanningActionState';
 
 export function useTransactionsPanel(
   initialData: MonthBudgetPlanDTO | undefined,
@@ -23,15 +23,15 @@ export function useTransactionsPanel(
     setTransactions(latest.transactions);
   });
 
-  const [activeView, setActiveView] = useState<"summary" | "transactions">(
-    "transactions",
+  const [activeView, setActiveView] = useState<'summary' | 'transactions'>(
+    'transactions',
   );
-  const [activeTab, setActiveTab] = useState("new");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState('new');
+  const [searchQuery, setSearchQuery] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [txAmount, setTxAmount] = useState<number>(0);
-  const [txPayee, setTxPayee] = useState("");
-  const [txMemo, setTxMemo] = useState("");
+  const [txPayee, setTxPayee] = useState('');
+  const [txMemo, setTxMemo] = useState('');
   const [txCategory, setTxCategory] = useState<string | null>(null);
   const [txAccount, setTxAccount] = useState<string | null>(null);
 
@@ -40,14 +40,18 @@ export function useTransactionsPanel(
   const accounts = useMemo(() => initialData?.accounts ?? [], [initialData]);
 
   const { categoryOptions, incomeCategoryIds } = useMemo(() => {
-    const incomeIds = new Set<string>();
-    const options: Array<{ value: string; label: string }> = [];
-    for (const g of initialData?.categories ?? []) {
-      for (const it of g.items ?? []) {
-        options.push({ value: it.id, label: `${g.name} · ${it.name}` });
-        if (g.name === "Income") incomeIds.add(it.id);
-      }
-    }
+    const categories = initialData?.categories ?? [];
+    const options = categories.flatMap(
+      (g) => (g.items ?? []).map((it) => ({
+        value: it.id,
+        label: `${g.name} · ${it.name}`,
+      })),
+    );
+    const incomeIds = new Set(
+      categories
+        .filter((g) => g.name === 'Income')
+        .flatMap((g) => (g.items ?? []).map((it) => it.id)),
+    );
     return { categoryOptions: options, incomeCategoryIds: incomeIds };
   }, [initialData]);
 
@@ -68,7 +72,7 @@ export function useTransactionsPanel(
         payee,
         memo,
         date: new Date().toISOString(),
-        status: "NEW",
+        status: 'NEW',
         categoryName: category?.label ?? null,
         accountName: account?.name ?? null,
         isIncome: !!categoryId && incomeCategoryIds.has(categoryId),
@@ -77,12 +81,12 @@ export function useTransactionsPanel(
     ]);
     setAddOpen(false);
     setTxAmount(0);
-    setTxPayee("");
-    setTxMemo("");
+    setTxPayee('');
+    setTxMemo('');
     setTxCategory(null);
     setTxAccount(null);
 
-    runTxAction("add", async () => {
+    runTxAction('add', async () => {
       const created = await addTransaction({
         amount,
         categoryId,
@@ -90,9 +94,7 @@ export function useTransactionsPanel(
         payee,
         memo,
       });
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === tempId ? { ...t, id: created.id } : t)),
-      );
+      setTransactions((prev) => prev.map((t) => (t.id === tempId ? { ...t, id: created.id } : t)));
     });
   }, [
     txAmount,
@@ -108,10 +110,8 @@ export function useTransactionsPanel(
 
   const handleTrack = useCallback(
     (id: string) => {
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, status: "TRACKED" } : t)),
-      );
-      runTxAction("row", async () => {
+      setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'TRACKED' } : t)));
+      runTxAction('row', async () => {
         await trackTransaction(id);
       });
     },
@@ -120,10 +120,8 @@ export function useTransactionsPanel(
 
   const handleDelete = useCallback(
     (id: string) => {
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, status: "DELETED" } : t)),
-      );
-      runTxAction("row", async () => {
+      setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'DELETED' } : t)));
+      runTxAction('row', async () => {
         await deleteTransaction(id);
       });
     },
@@ -131,33 +129,31 @@ export function useTransactionsPanel(
   );
 
   const activeStatus = activeTab.toUpperCase() as
-    | "NEW"
-    | "TRACKED"
-    | "DELETED";
+    | 'NEW'
+    | 'TRACKED'
+    | 'DELETED';
   const query = searchQuery.trim().toLowerCase();
 
   const filteredTx = useMemo(
-    () =>
-      transactions
-        .filter((t) => t.status === activeStatus)
-        .filter(
-          (t) =>
-            !query ||
-            (t.payee ?? "").toLowerCase().includes(query) ||
-            (t.memo ?? "").toLowerCase().includes(query) ||
-            (t.categoryName ?? "").toLowerCase().includes(query),
-        ),
+    () => transactions
+      .filter((t) => t.status === activeStatus)
+      .filter(
+        (t) => !query
+            || (t.payee ?? '').toLowerCase().includes(query)
+            || (t.memo ?? '').toLowerCase().includes(query)
+            || (t.categoryName ?? '').toLowerCase().includes(query),
+      ),
     [transactions, activeStatus, query],
   );
 
   const txByMonth = useMemo(() => {
     const map = new Map<string, BudgetTransactionDTO[]>();
-    for (const t of filteredTx) {
-      const label = formatMonthLabel(t.date) || "Unknown";
+    filteredTx.forEach((t) => {
+      const label = formatMonthLabel(t.date) || 'Unknown';
       const list = map.get(label) ?? [];
       list.push(t);
       map.set(label, list);
-    }
+    });
     return map;
   }, [filteredTx]);
 

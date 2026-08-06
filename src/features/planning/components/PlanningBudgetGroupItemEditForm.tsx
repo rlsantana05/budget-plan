@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { NumberInput, TextInput } from "@mantine/core";
-import { Check } from "lucide-react";
-import type { GroupItem } from "../types";
-import sharedClasses from "../styles/PlanningShared.module.css";
-import classes from "./PlanningBudgetGroupItemEditForm.module.css";
+import { NumberInput, TextInput } from '@mantine/core';
+import { Check } from 'lucide-react';
+import type { GroupItem } from '../types';
+import sharedClasses from '../styles/PlanningShared.module.css';
+import classes from './PlanningBudgetGroupItemEditForm.module.css';
 
 interface PlanningBudgetGroupItemEditFormProps {
   item: GroupItem;
@@ -12,7 +12,7 @@ interface PlanningBudgetGroupItemEditFormProps {
   onEditNameChange: (value: string) => void;
   editPlanned: number;
   onEditPlannedChange: (value: number) => void;
-  busy: "add" | "row" | null;
+  busy: 'add' | 'row' | null;
   onSave: (itemId: string) => void;
   onCancel: () => void;
 }
@@ -37,15 +37,15 @@ export default function PlanningBudgetGroupItemEditForm({
           value={editName}
           onChange={(e) => onEditNameChange(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") onSave(item.id);
-            if (e.key === "Escape") onCancel();
+            if (e.key === 'Enter') onSave(item.id);
+            if (e.key === 'Escape') onCancel();
           }}
         />
         <NumberInput
           size="xs"
           placeholder="Planned"
           value={editPlanned}
-          onChange={(v) => onEditPlannedChange(typeof v === "number" ? v : 0)}
+          onChange={(v) => onEditPlannedChange(typeof v === 'number' ? v : 0)}
           min={0}
           decimalScale={2}
         />

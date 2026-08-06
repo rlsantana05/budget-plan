@@ -1,9 +1,11 @@
-"use client";
+'use client';
 
-import { Modal, NumberInput, Select, TextInput } from "@mantine/core";
-import type { BudgetAccountOptionDTO } from "@/types/budget";
-import sharedClasses from "../styles/PlanningShared.module.css";
-import classes from "./PlanningAddTransactionModal.module.css";
+import {
+  Modal, NumberInput, Select, TextInput,
+} from '@mantine/core';
+import type { BudgetAccountOptionDTO } from '@/types/budget';
+import sharedClasses from '../styles/PlanningShared.module.css';
+import classes from './PlanningAddTransactionModal.module.css';
 
 interface PlanningAddTransactionModalProps {
   opened: boolean;
@@ -21,7 +23,7 @@ interface PlanningAddTransactionModalProps {
   txAccount: string | null;
   onTxAccountChange: (value: string | null) => void;
   onSubmit: () => void;
-  busy: "add" | "row" | null;
+  busy: 'add' | 'row' | null;
   error: string | null;
 }
 
@@ -50,8 +52,8 @@ export default function PlanningAddTransactionModal({
       <Modal.Content
         style={{
           borderRadius: 16,
-          background: "var(--mantine-color-surface-2)",
-          border: "1px solid rgba(255,255,255,0.06)",
+          background: 'var(--mantine-color-surface-2)',
+          border: '1px solid rgba(255,255,255,0.06)',
           padding: 24,
         }}
       >
@@ -60,7 +62,7 @@ export default function PlanningAddTransactionModal({
           <NumberInput
             label="Amount"
             value={txAmount}
-            onChange={(v) => onTxAmountChange(typeof v === "number" ? v : 0)}
+            onChange={(v) => onTxAmountChange(typeof v === 'number' ? v : 0)}
             min={0}
             decimalScale={2}
             autoFocus
@@ -116,9 +118,9 @@ export default function PlanningAddTransactionModal({
             type="button"
             className={classes.modalButton}
             onClick={onSubmit}
-            disabled={busy === "add" || txAmount <= 0}
+            disabled={busy === 'add' || txAmount <= 0}
           >
-            {busy === "add" ? "Saving…" : "Add transaction"}
+            {busy === 'add' ? 'Saving…' : 'Add transaction'}
           </button>
         </div>
       </Modal.Content>

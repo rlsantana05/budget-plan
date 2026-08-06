@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import type { BudgetTransactionDTO } from "@/types/budget";
-import sharedClasses from "../styles/PlanningShared.module.css";
-import PlanningViewToggle from "./PlanningViewToggle";
-import PlanningStatusSubtabs from "./PlanningStatusSubtabs";
-import PlanningTransactionSearch from "./PlanningTransactionSearch";
-import PlanningTransactionList from "./PlanningTransactionList";
-import listClasses from "./PlanningTransactionList.module.css";
-import classes from "./PlanningTransactionsPanel.module.css";
+import type { BudgetTransactionDTO } from '@/types/budget';
+import sharedClasses from '../styles/PlanningShared.module.css';
+import PlanningViewToggle from './PlanningViewToggle';
+import PlanningStatusSubtabs from './PlanningStatusSubtabs';
+import PlanningTransactionSearch from './PlanningTransactionSearch';
+import PlanningTransactionList from './PlanningTransactionList';
+import listClasses from './PlanningTransactionList.module.css';
+import classes from './PlanningTransactionsPanel.module.css';
 
 interface PlanningTransactionsPanelProps {
-  activeView: "summary" | "transactions";
-  onViewChange: (view: "summary" | "transactions") => void;
+  activeView: 'summary' | 'transactions';
+  onViewChange: (view: 'summary' | 'transactions') => void;
   activeTab: string;
   onTabChange: (tab: string) => void;
   searchQuery: string;
@@ -20,7 +20,7 @@ interface PlanningTransactionsPanelProps {
   txByMonth: Map<string, BudgetTransactionDTO[]>;
   filteredTx: BudgetTransactionDTO[];
   error: string | null;
-  busy: "add" | "row" | null;
+  busy: 'add' | 'row' | null;
   onTrack: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -49,7 +49,7 @@ export default function PlanningTransactionsPanel({
 
       <PlanningStatusSubtabs activeTab={activeTab} onTabChange={onTabChange} />
 
-      {activeView === "transactions" ? (
+      {activeView === 'transactions' ? (
         <>
           <PlanningTransactionSearch
             searchQuery={searchQuery}

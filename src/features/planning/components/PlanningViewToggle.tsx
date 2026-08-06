@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import classes from "./PlanningViewToggle.module.css";
+import classes from './PlanningViewToggle.module.css';
 
-type View = "summary" | "transactions";
+type View = 'summary' | 'transactions';
 
 interface PlanningViewToggleProps {
   activeView: View;
@@ -16,16 +16,22 @@ export default function PlanningViewToggle({
   return (
     <div className={classes.toggle}>
       <button
-        className={activeView === "summary" ? classes.active : ""}
-        onClick={() => onViewChange("summary")}
+        type="button"
+        className={activeView === 'summary' ? classes.active : ''}
+        onClick={() => onViewChange('summary')}
       >
-        <span aria-hidden>◐</span> Summary
+        <span aria-hidden>◐</span>
+        {' '}
+        Summary
       </button>
       <button
-        className={activeView === "transactions" ? classes.active : ""}
-        onClick={() => onViewChange("transactions")}
+        type="button"
+        className={activeView === 'transactions' ? classes.active : ''}
+        onClick={() => onViewChange('transactions')}
       >
-        <span aria-hidden>$</span> Transactions
+        <span aria-hidden>$</span>
+        {' '}
+        Transactions
       </button>
     </div>
   );

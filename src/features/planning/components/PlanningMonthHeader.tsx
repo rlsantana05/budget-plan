@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Popover } from "@mantine/core";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
-import { shiftMonthValue } from "@/lib/month";
-import PlanningMonthPicker from "./PlanningMonthPicker";
-import classes from "./PlanningMonthHeader.module.css";
+import { Popover } from '@mantine/core';
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { shiftMonthValue } from '@/lib/month';
+import PlanningMonthPicker from './PlanningMonthPicker';
+import classes from './PlanningMonthHeader.module.css';
 
 interface PlanningMonthHeaderProps {
   month: string;
@@ -46,11 +46,15 @@ export default function PlanningMonthHeader({
         onClose={onPickerClose}
       >
         <Popover.Target>
-          <div className={classes.monthTitle} onClick={onPickerToggle}>
+          <button
+            type="button"
+            className={classes.monthTitle}
+            onClick={onPickerToggle}
+          >
             <strong>{month}</strong>
             <span className={classes.year}>{year}</span>
             <ChevronDown size={16} className={classes.chev} />
-          </div>
+          </button>
         </Popover.Target>
         <Popover.Dropdown className={classes.monthPicker}>
           <PlanningMonthPicker
@@ -68,12 +72,14 @@ export default function PlanningMonthHeader({
       </Popover>
       <div className={classes.navArrows}>
         <button
+          type="button"
           aria-label="Previous month"
           onClick={() => onGoToMonth(shiftMonthValue(selectedValue, -1))}
         >
           <ChevronLeft size={20} />
         </button>
         <button
+          type="button"
           aria-label="Next month"
           onClick={() => onGoToMonth(shiftMonthValue(selectedValue, 1))}
         >

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import classes from "./PlanningMonthPicker.module.css";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import classes from './PlanningMonthPicker.module.css';
 
 interface PlanningMonthPickerProps {
   year: number;
@@ -48,8 +48,8 @@ export default function PlanningMonthPicker({
               key={m.value}
               type="button"
               className={`${classes.monthTile} ${
-                isSelected ? classes.monthTileActive : ""
-              } ${isCurrent && !isSelected ? classes.monthTileCurrent : ""}`}
+                isSelected ? classes.monthTileActive : ''
+              } ${isCurrent && !isSelected ? classes.monthTileCurrent : ''}`}
               onClick={() => onSelectMonth(m.value)}
             >
               <span>{m.label}</span>
