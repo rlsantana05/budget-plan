@@ -1,9 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import type { RefObject } from 'react';
 import { TextInput } from '@mantine/core';
 import { Check } from 'lucide-react';
-import { formatMoney } from '../utils/formatters';
+import { formatMoney, parseAmountText } from '../utils/formatters';
 import sharedClasses from '../styles/PlanningShared.module.css';
 import classes from './PlanningAddCategoryItemForm.module.css';
 
@@ -34,6 +35,10 @@ export default function PlanningAddCategoryItemForm({
   nameInputRef,
   amountInputRef,
 }: PlanningAddCategoryItemFormProps) {
+  const [amountFocused, setAmountFocused] = useState(false);
+  let amountDisplay = amountText ? `${formatMoney(parseAmountText(amountText))}` : '';
+  if (amountFocused) amountDisplay = amountText;
+
   return (
     <div className={`${classes.addItemForm} ${className ?? ''}`}>
       <TextInput
@@ -56,7 +61,12 @@ export default function PlanningAddCategoryItemForm({
         size="xs"
         inputMode="decimal"
         placeholder="0.00"
-        value={amountText ? `$${formatMoney(Number(amountText))}` : ''}
+        value={amountDisplay}
+        onFocus={(e) => {
+          setAmountFocused(true);
+          e.currentTarget.select();
+        }}
+        onBlur={() => setAmountFocused(false)}
         onChange={(e) => onAmountChange(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {

@@ -1,18 +1,18 @@
 'use client';
 
-import { memo } from 'react';
-import { useReducedMotion, Reorder } from 'framer-motion';
+import { memo, useCallback } from 'react';
+import type { PointerEvent } from 'react';
+import {
+  Reorder, useDragControls, useReducedMotion,
+} from 'framer-motion';
 import type { GroupItem } from '../types';
 import classes from './PlanningBudgetGroupCard.module.css';
 import PlanningBudgetGroupItemRow from './PlanningBudgetGroupItemRow';
-import PlanningBudgetGroupItemEditForm from './PlanningBudgetGroupItemEditForm';
 
 interface PlanningBudgetGroupReorderItemProps {
   item: GroupItem;
   groupId: string;
   isIncome: boolean;
-  isEditing: boolean;
-  dragEnabled: boolean;
   isDragging: boolean;
 
   busy: 'add' | 'row' | null;
@@ -20,14 +20,7 @@ interface PlanningBudgetGroupReorderItemProps {
   onArmDelete: (id: string | null) => void;
   onDeleteItem: (item: GroupItem, groupId: string) => void;
   onReceiveIncome: (item: GroupItem) => void;
-  onStartEdit: (item: GroupItem) => void;
-
-  editName: string;
-  onEditNameChange: (value: string) => void;
-  editPlanned: number;
-  onEditPlannedChange: (value: number) => void;
-  onSaveEdit: (itemId: string) => void;
-  onCancelEdit: () => void;
+  onUpdateItem: (itemId: string, patch: { name: string; planned: number }) => void;
 
   registerItemRef: (id: string, el: HTMLLIElement | null) => void;
   onDragStart: (id: string) => void;
@@ -39,33 +32,35 @@ function PlanningBudgetGroupReorderItem({
   item,
   groupId,
   isIncome,
-  isEditing,
-  dragEnabled,
   isDragging,
   busy,
   deleteArmingId,
   onArmDelete,
   onDeleteItem,
   onReceiveIncome,
-  onStartEdit,
-  editName,
-  onEditNameChange,
-  editPlanned,
-  onEditPlannedChange,
-  onSaveEdit,
-  onCancelEdit,
+  onUpdateItem,
   registerItemRef,
   onDragStart,
   onDrag,
   onDragEnd,
 }: PlanningBudgetGroupReorderItemProps) {
   const reduceMotion = useReducedMotion();
+  const dragControls = useDragControls();
+
+  const handleGripPointerDown = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      event.stopPropagation();
+      dragControls.start(event);
+    },
+    [dragControls],
+  );
 
   return (
     <Reorder.Item
       ref={(el: HTMLLIElement | null) => registerItemRef(item.id, el)}
       value={item.id}
-      {...(dragEnabled ? {} : { drag: false })}
+      dragListener={false}
+      dragControls={dragControls}
       className={classes.reorderItem}
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -78,32 +73,19 @@ function PlanningBudgetGroupReorderItem({
       onDrag={onDrag}
       onDragEnd={onDragEnd}
     >
-      {isEditing ? (
-        <PlanningBudgetGroupItemEditForm
-          item={item}
-          editName={editName}
-          onEditNameChange={onEditNameChange}
-          editPlanned={editPlanned}
-          onEditPlannedChange={onEditPlannedChange}
-          busy={busy}
-          onSave={onSaveEdit}
-          onCancel={onCancelEdit}
-        />
-      ) : (
-        <PlanningBudgetGroupItemRow
-          item={item}
-          groupId={groupId}
-          isIncome={isIncome}
-          busy={busy}
-          deleteArmingId={deleteArmingId}
-          isDraggable={dragEnabled}
-          isDragging={isDragging}
-          onReceiveIncome={onReceiveIncome}
-          onStartEdit={onStartEdit}
-          onArmDelete={onArmDelete}
-          onDeleteItem={onDeleteItem}
-        />
-      )}
+      <PlanningBudgetGroupItemRow
+        item={item}
+        groupId={groupId}
+        isIncome={isIncome}
+        busy={busy}
+        deleteArmingId={deleteArmingId}
+        isDragging={isDragging}
+        onReceiveIncome={onReceiveIncome}
+        onArmDelete={onArmDelete}
+        onDeleteItem={onDeleteItem}
+        onUpdateItem={onUpdateItem}
+        onGripPointerDown={handleGripPointerDown}
+      />
     </Reorder.Item>
   );
 }

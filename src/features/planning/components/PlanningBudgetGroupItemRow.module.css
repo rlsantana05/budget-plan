@@ -39,12 +39,13 @@
   flex-shrink: 0;
   width: 20px;
   height: 20px;
+  padding: 0;
   border: none;
   border-radius: 6px;
   background: transparent;
   color: var(--ink-soft);
   cursor: grab;
-  opacity: 0.35;
+  opacity: 0;
   transition:
     opacity 0.15s ease,
     background 0.12s ease;
@@ -63,19 +64,54 @@
   cursor: grabbing;
 }
 
-.grip.gripDisabled {
-  opacity: 0.15;
-  cursor: default;
-}
-
-.gItemName {
+.gNameInput {
+  min-width: 0;
+  flex: 1;
+  padding: 4px 6px;
+  margin-left: -4px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
   font-size: 16px;
   font-weight: 400;
   color: var(--ink);
   letter-spacing: 0.01em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  outline: none;
+}
+
+.gNameInput:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gNameInput:focus {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 1px var(--accent-bright) inset;
+}
+
+.gAmountInput {
+  width: 100%;
+  min-width: 0;
+  padding: 4px 6px;
+  margin-left: -6px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.gAmountInput:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gAmountInput:focus {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 1px var(--accent-bright) inset;
 }
 
 .gValue {
@@ -87,38 +123,55 @@
   text-align: left;
 }
 
-.gKebab {
+.gRemaining {
+  padding-right: 64px;
+}
+
+.gActions {
   position: absolute;
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.gRow:hover .gActions,
+.gActions:focus-within {
+  opacity: 1;
+}
+
+.gAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: 8px;
   border: none;
+  border-radius: 8px;
   background: transparent;
-  color: #ffffff;
+  color: var(--ink-soft);
   cursor: pointer;
-  opacity: 0;
   transition:
-    opacity 0.15s ease,
-    background 0.12s ease;
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
-.gRow:hover .gKebab,
-.gKebab:focus-visible {
-  opacity: 1;
-}
-
-.gKebab:hover {
+.gAction:hover {
   background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
 }
 
-.gKebab:disabled {
-  opacity: 0;
+.gActionDanger:hover {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+}
+
+.gAction:disabled {
+  opacity: 0.35;
   cursor: default;
 }
 

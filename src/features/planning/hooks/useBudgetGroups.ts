@@ -12,6 +12,7 @@ import {
 } from '@/actions/budget-planning';
 import { MOCK_GROUPS } from '../constants';
 import { toGroups } from '../utils/mappers';
+import { parseAmountText, sanitizeAmountText } from '../utils/formatters';
 import type { Group, GroupItem } from '../types';
 import type { PlanningActionState } from './usePlanningActionState';
 import { useServerSync } from './useServerSync';
@@ -38,9 +39,6 @@ export function useBudgetGroups(
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState(0);
   const [amountText, setAmountText] = useState('');
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editPlanned, setEditPlanned] = useState<number>(0);
   const [deleteArmingId, setDeleteArmingId] = useState<string | null>(null);
   const [receiveHint, setReceiveHint] = useState<string | null>(null);
   const [undo, setUndo] = useState<BudgetGroupUndo | null>(null);
@@ -88,9 +86,9 @@ export function useBudgetGroups(
   }, []);
 
   const handleAmountInputChange = useCallback((value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 9);
-    setAmountText(digits);
-    setNewItemAmount(digits ? Number(digits) : 0);
+    const sanitized = sanitizeAmountText(value);
+    setAmountText(sanitized);
+    setNewItemAmount(parseAmountText(sanitized));
   }, []);
 
   const handleAddItem = useCallback(
@@ -146,33 +144,20 @@ export function useBudgetGroups(
     [newItemName, newItemAmount, busy, runTxAction],
   );
 
-  const startEditItem = useCallback((item: GroupItem) => {
-    setEditingItemId(item.id);
-    setEditName(item.name);
-    setEditPlanned(item.planned);
-    setDeleteArmingId(null);
-  }, []);
-
-  const cancelEditItem = useCallback(() => {
-    setEditingItemId(null);
-  }, []);
-
   const handleUpdateItem = useCallback(
-    (itemId: string) => {
-      const name = editName;
-      const planned = editPlanned;
+    (itemId: string, patch: { name: string; planned: number }) => {
+      const { name, planned } = patch;
 
       setGroups((prev) => prev.map((g) => ({
         ...g,
         items: g.items.map((it) => (it.id === itemId ? { ...it, name, planned } : it)),
       })));
-      setEditingItemId(null);
 
       runTxAction('row', async () => {
         await updateCategoryItem(itemId, { name, planned });
       });
     },
-    [editName, editPlanned, runTxAction],
+    [runTxAction],
   );
 
   const handleDeleteItem = useCallback(
@@ -185,7 +170,6 @@ export function useBudgetGroups(
         ...g,
         items: g.items.filter((it) => it.id !== item.id),
       })));
-      setEditingItemId(null);
       setDeleteArmingId(null);
 
       runTxAction('row', async () => {
@@ -269,18 +253,10 @@ export function useBudgetGroups(
     amountText,
     setAmountText,
     handleAmountInputChange,
-    editingItemId,
-    setEditingItemId,
-    editName,
-    setEditName,
-    editPlanned,
-    setEditPlanned,
-    startEditItem,
-    cancelEditItem,
-    handleUpdateItem,
     deleteArmingId,
     setDeleteArmingId,
     handleDeleteItem,
+    handleUpdateItem,
     receiveHint,
     handleReceiveIncome,
     handleReorderItems,

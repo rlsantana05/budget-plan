@@ -12,6 +12,7 @@ import sharedClasses from '../styles/PlanningShared.module.css';
 import classes from './PlanningBudgetGroupCard.module.css';
 import PlanningBudgetGroupReorderItem from './PlanningBudgetGroupReorderItem';
 import PlanningAddCategoryItemForm from './PlanningAddCategoryItemForm';
+import { formatMoney } from '../utils/formatters';
 import rowClasses from './PlanningBudgetGroupItemRow.module.css';
 
 interface PlanningBudgetGroupCardProps {
@@ -20,15 +21,7 @@ interface PlanningBudgetGroupCardProps {
   onToggle: () => void;
   onReorder: (orderedIds: string[]) => void;
   onReorderEnd: (orderedIds: string[]) => void;
-
-  editingItemId: string | null;
-  editName: string;
-  onEditNameChange: (value: string) => void;
-  editPlanned: number;
-  onEditPlannedChange: (value: number) => void;
-  onSaveEdit: (itemId: string) => void;
-  onCancelEdit: () => void;
-  onStartEdit: (item: GroupItem) => void;
+  onUpdateItem: (itemId: string, patch: { name: string; planned: number }) => void;
 
   busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
@@ -56,14 +49,7 @@ function PlanningBudgetGroupCard({
   onToggle,
   onReorder,
   onReorderEnd,
-  editingItemId,
-  editName,
-  onEditNameChange,
-  editPlanned,
-  onEditPlannedChange,
-  onSaveEdit,
-  onCancelEdit,
-  onStartEdit,
+  onUpdateItem,
   busy,
   deleteArmingId,
   onArmDelete,
@@ -172,7 +158,7 @@ function PlanningBudgetGroupCard({
           />
         </button>
         <span className={classes.gCol}>Planned</span>
-        <span className={classes.gCol}>Spent</span>
+        <span className={classes.gCol}>{group.isIncome ? 'Received' : 'Spent'}</span>
         <span className={classes.gCol}>Remaining</span>
       </div>
 
@@ -193,21 +179,13 @@ function PlanningBudgetGroupCard({
                     item={item}
                     groupId={group.id}
                     isIncome={group.isIncome}
-                    isEditing={editingItemId === item.id}
-                    dragEnabled={editingItemId === null}
                     isDragging={draggingItemId === item.id}
                     busy={busy}
                     deleteArmingId={deleteArmingId}
                     onArmDelete={onArmDelete}
                     onDeleteItem={onDeleteItem}
                     onReceiveIncome={onReceiveIncome}
-                    onStartEdit={onStartEdit}
-                    editName={editName}
-                    onEditNameChange={onEditNameChange}
-                    editPlanned={editPlanned}
-                    onEditPlannedChange={onEditPlannedChange}
-                    onSaveEdit={onSaveEdit}
-                    onCancelEdit={onCancelEdit}
+                    onUpdateItem={onUpdateItem}
                     registerItemRef={registerItemRef}
                     onDragStart={handleDragStart}
                     onDrag={handleDrag}
@@ -255,6 +233,19 @@ function PlanningBudgetGroupCard({
                   {' '}
                   {group.isIncome ? 'Add income' : 'Add item'}
                 </button>
+                {group.isIncome && (
+                  <>
+                    <span className={`${classes.gTotal} ${classes.gTotalPlanned}`}>
+                      {formatMoney(group.items.reduce((sum, it) => sum + it.planned, 0))}
+                    </span>
+                    <span className={`${classes.gTotal} ${classes.gTotalSpent}`}>
+                      {formatMoney(group.items.reduce((sum, it) => sum + it.spent, 0))}
+                    </span>
+                    <span className={`${classes.gTotal} ${classes.gTotalRemaining}`}>
+                      {formatMoney(group.items.reduce((sum, it) => sum + it.remaining, 0))}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           )}

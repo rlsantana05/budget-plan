@@ -12,15 +12,7 @@ interface PlanningBudgetGroupListProps {
   onToggleGroup: (id: string) => void;
   onReorder: (groupId: string, orderedIds: string[]) => void;
   onReorderCommit: (groupId: string, orderedIds: string[]) => void;
-
-  editingItemId: string | null;
-  editName: string;
-  onEditNameChange: (value: string) => void;
-  editPlanned: number;
-  onEditPlannedChange: (value: number) => void;
-  onSaveEdit: (itemId: string) => void;
-  onCancelEdit: () => void;
-  onStartEdit: (item: GroupItem) => void;
+  onUpdateItem: (itemId: string, patch: { name: string; planned: number }) => void;
 
   busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
@@ -58,14 +50,7 @@ export default function PlanningBudgetGroupList(
             onToggle={() => props.onToggleGroup(group.id)}
             onReorder={(ordered) => props.onReorder(group.id, ordered)}
             onReorderEnd={(ordered) => props.onReorderCommit(group.id, ordered)}
-            editingItemId={props.editingItemId}
-            editName={props.editName}
-            onEditNameChange={props.onEditNameChange}
-            editPlanned={props.editPlanned}
-            onEditPlannedChange={props.onEditPlannedChange}
-            onSaveEdit={props.onSaveEdit}
-            onCancelEdit={props.onCancelEdit}
-            onStartEdit={props.onStartEdit}
+            onUpdateItem={props.onUpdateItem}
             busy={props.busy}
             deleteArmingId={props.deleteArmingId}
             onArmDelete={props.onArmDelete}

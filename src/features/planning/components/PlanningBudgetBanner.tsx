@@ -19,8 +19,8 @@ export default function PlanningBudgetBanner({
     duration: reduceMotion ? 0 : 0.18,
     ease: 'easeOut' as const,
   };
-  const isOverBudget = amount > 0;
-  const isUnderBudget = amount < 0;
+  const isOverBudget = amount < 0;
+  const isUnderBudget = amount > 0;
   let status: 'over' | 'under' | 'on' = 'on';
   if (isOverBudget) status = 'over';
   if (isUnderBudget) status = 'under';
@@ -41,7 +41,7 @@ export default function PlanningBudgetBanner({
           transition={transition}
           className={`${classes.bannerAmount} ${bannerClass}`}
         >
-          {formatMoney(isUnderBudget ? -amount : amount)}
+          {formatMoney(Math.abs(amount))}
         </motion.div>
       </AnimatePresence>
       <div className={classes.bannerLabel}>{label}</div>

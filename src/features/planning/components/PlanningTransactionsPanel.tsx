@@ -1,6 +1,13 @@
 'use client';
 
+import {
+  Box,
+  Table,
+  Text,
+  Center,
+} from '@mantine/core';
 import type { BudgetTransactionDTO } from '@/types/budget';
+import type { PlanningCategory } from '../types';
 import sharedClasses from '../styles/PlanningShared.module.css';
 import PlanningViewToggle from './PlanningViewToggle';
 import PlanningStatusSubtabs from './PlanningStatusSubtabs';
@@ -23,6 +30,80 @@ interface PlanningTransactionsPanelProps {
   busy: 'add' | 'row' | null;
   onTrack: (id: string) => void;
   onDelete: (id: string) => void;
+  plannedCategories: PlanningCategory[];
+}
+
+function SummaryCircleChart() {
+  return (
+    <Box h={200}>
+      <Center h="100%">
+        <Text c="dimmed">Circle Chart Placeholder</Text>
+      </Center>
+    </Box>
+  );
+}
+
+const CATEGORY_COLORS = [
+  'var(--mantine-color-indigo-5)',
+  'var(--mantine-color-teal-5)',
+  'var(--mantine-color-orange-5)',
+  'var(--mantine-color-grape-5)',
+  'var(--mantine-color-cyan-5)',
+  'var(--mantine-color-pink-5)',
+  'var(--mantine-color-lime-5)',
+  'var(--mantine-color-red-5)',
+  'var(--mantine-color-blue-5)',
+  'var(--mantine-color-yellow-5)',
+];
+
+function SummaryTable({ plannedCategories }: { plannedCategories: PlanningCategory[] }) {
+  const headers = ['Planned', 'Spent', 'Remaining'];
+
+  return (
+    <Table>
+      <Table.Thead>
+        <Table.Tr>
+          {headers.map((label) => (
+            <Table.Th key={label} align="center">
+              <Text size="xs" fw={700} c="dimmed">
+                {label}
+              </Text>
+            </Table.Th>
+          ))}
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {plannedCategories.map((cat, index) => {
+          const color = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+          return (
+            <Table.Tr key={cat.name}>
+              <Table.Td>
+                <div className={classes.categoryCell}>
+                  <span
+                    className={classes.categoryDot}
+                    style={{ backgroundColor: color }}
+                  />
+                  <Text fw={500} c={color}>{cat.name}</Text>
+                </div>
+              </Table.Td>
+              <Table.Td align="center">
+                <Text fw={500}>
+                  $
+                  {cat.spent.toFixed(2)}
+                </Text>
+              </Table.Td>
+              <Table.Td align="center">
+                <Text fw={500}>
+                  $
+                  {cat.remaining.toFixed(2)}
+                </Text>
+              </Table.Td>
+            </Table.Tr>
+          );
+        })}
+      </Table.Tbody>
+    </Table>
+  );
 }
 
 export default function PlanningTransactionsPanel({
@@ -39,15 +120,15 @@ export default function PlanningTransactionsPanel({
   busy,
   onTrack,
   onDelete,
+  plannedCategories,
 }: PlanningTransactionsPanelProps) {
   return (
     <aside className={classes.rightCol}>
-      <PlanningViewToggle
-        activeView={activeView}
-        onViewChange={onViewChange}
-      />
+      <PlanningViewToggle activeView={activeView} onViewChange={onViewChange} />
 
-      <PlanningStatusSubtabs activeTab={activeTab} onTabChange={onTabChange} />
+      {activeView === 'transactions' && (
+        <PlanningStatusSubtabs activeTab={activeTab} onTabChange={onTabChange} />
+      )}
 
       {activeView === 'transactions' ? (
         <>
@@ -76,8 +157,9 @@ export default function PlanningTransactionsPanel({
           {error && <div className={sharedClasses.error}>{error}</div>}
         </>
       ) : (
-        <div className={classes.summaryPlaceholder}>
-          Summary view – not implemented in this prototype.
+        <div className={classes.summaryView}>
+          <SummaryCircleChart />
+          <SummaryTable plannedCategories={plannedCategories} />
         </div>
       )}
     </aside>

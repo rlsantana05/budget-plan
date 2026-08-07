@@ -1,16 +1,44 @@
 .toggle {
+  position: relative;
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--mantine-color-surface-2);
   border-radius: 14px;
+
   padding: 5px;
   margin-bottom: 18px;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.toggle::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: calc(50% - 5px);
+  height: calc(100% - 10px);
+  background: var(--card-bg);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease;
+  z-index: 0;
+}
+
+.toggle[data-active="summary"]::before {
+  transform: translateX(0);
+}
+
+.toggle[data-active="transactions"]::before {
+  transform: translateX(100%);
 }
 
 .toggle button {
+  position: relative;
+  z-index: 1;
   flex: 1;
   border: none;
   background: transparent;
-  padding: 12px 0;
+  padding: 8px 0;
   font-size: 15px;
   font-weight: 600;
   color: var(--ink-soft);
@@ -20,11 +48,10 @@
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.25s ease;
 }
 
 .toggle button.active {
-  background: #1e2128;
   color: var(--ink);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  box-shadow: none;
 }

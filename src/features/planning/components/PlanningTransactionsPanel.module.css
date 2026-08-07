@@ -2,13 +2,33 @@
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 12px;
-  padding: 20px 20px 0;
+  padding: 32px 24px 0;
   min-width: 0;
   min-height: 0;
+  width: 332px;
+  height: 760px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.summaryView {
+  flex: none;
+  box-sizing: border-box;
+}
+
+.categoryCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.categoryDot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 }
 
 @media (max-width: 900px) {

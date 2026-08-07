@@ -8,6 +8,14 @@ export interface GroupItem {
   transactionCount: number;
 }
 
+export interface PlanningCategory {
+  name: string;
+  planned: number;
+  spent: number;
+  remaining: number;
+  isIncome: boolean;
+}
+
 export interface Group {
   id: string;
   name: string;

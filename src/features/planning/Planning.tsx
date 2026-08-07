@@ -1,11 +1,13 @@
 'use client';
 
+import { useMemo } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import type { MonthBudgetPlanDTO } from '@/types/budget';
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { usePlanningActionState } from './hooks/usePlanningActionState';
 import { useBudgetGroups } from './hooks/useBudgetGroups';
 import { useTransactionsPanel } from './hooks/useTransactionsPanel';
+import { usePlannedSummary } from './hooks/usePlannedSummary';
 import PlanningMonthHeader from './components/PlanningMonthHeader';
 import PlanningBudgetBanner from './components/PlanningBudgetBanner';
 import PlanningBudgetGroupList from './components/PlanningBudgetGroupList';
@@ -25,6 +27,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
   const action = usePlanningActionState();
   const groups = useBudgetGroups(initialData, action);
   const panel = useTransactionsPanel(initialData, action);
+  const { categories: plannedCategories } = usePlannedSummary(groups.groups);
 
   const reduceMotion = useReducedMotion();
   const motionTransition = {
@@ -32,8 +35,20 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
     ease: 'easeOut' as const,
   };
 
-  const bannerAmount = initialData?.budgetStatus?.amount ?? 2705;
-  const bannerLabel = initialData?.budgetStatus?.label ?? 'over budget';
+  const bannerAmount = useMemo(() => {
+    const income = groups.groups
+      .filter((g) => g.isIncome)
+      .flatMap((g) => g.items)
+      .reduce((sum, it) => sum + it.planned, 0);
+    const spending = groups.groups
+      .filter((g) => !g.isIncome)
+      .flatMap((g) => g.items)
+      .reduce((sum, it) => sum + it.planned, 0);
+    return income - spending;
+  }, [groups.groups]);
+  let bannerLabel = 'on budget';
+  if (bannerAmount < 0) bannerLabel = 'over budget';
+  if (bannerAmount > 0) bannerLabel = 'left to budget';
 
   return (
     <div className={classes.page}>
@@ -73,14 +88,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
               onToggleGroup={groups.toggleGroup}
               onReorder={groups.handleReorderItems}
               onReorderCommit={groups.handleReorderCommit}
-              editingItemId={groups.editingItemId}
-              editName={groups.editName}
-              onEditNameChange={groups.setEditName}
-              editPlanned={groups.editPlanned}
-              onEditPlannedChange={groups.setEditPlanned}
-              onSaveEdit={groups.handleUpdateItem}
-              onCancelEdit={groups.cancelEditItem}
-              onStartEdit={groups.startEditItem}
+              onUpdateItem={groups.handleUpdateItem}
               busy={action.busy}
               deleteArmingId={groups.deleteArmingId}
               onArmDelete={groups.setDeleteArmingId}
@@ -115,6 +123,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
           busy={action.busy}
           onTrack={panel.handleTrack}
           onDelete={panel.handleDelete}
+          plannedCategories={plannedCategories}
         />
       </div>
 

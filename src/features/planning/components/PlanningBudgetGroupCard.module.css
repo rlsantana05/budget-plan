@@ -118,6 +118,36 @@
   transition: color 0.15s ease;
 }
 
+.gFooterLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  grid-column: 1;
+}
+
+.gTotal {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.gTotalPlanned {
+  grid-column: 2;
+  text-align: left;
+}
+
+.gTotalSpent {
+  grid-column: 3;
+  text-align: left;
+}
+
+.gTotalRemaining {
+  grid-column: 4;
+  text-align: left;
+}
+
 .gAdd:hover {
   color: #a78bfa;
 }

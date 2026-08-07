@@ -14,7 +14,7 @@ export default function PlanningViewToggle({
   onViewChange,
 }: PlanningViewToggleProps) {
   return (
-    <div className={classes.toggle}>
+    <div className={classes.toggle} data-active={activeView}>
       <button
         type="button"
         className={activeView === 'summary' ? classes.active : ''}

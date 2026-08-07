@@ -1,12 +1,12 @@
 'use client';
 
-import { memo } from 'react';
-import { Menu } from '@mantine/core';
 import {
-  Check, GripVertical, MoreVertical, Pencil, Trash,
-} from 'lucide-react';
+  memo, useCallback, useEffect, useRef, useState,
+} from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
+import { Check, GripVertical, Trash } from 'lucide-react';
 import type { GroupItem } from '../types';
-import { formatMoney } from '../utils/formatters';
+import { formatMoney, parseAmountText, sanitizeAmountText } from '../utils/formatters';
 import classes from './PlanningBudgetGroupItemRow.module.css';
 
 interface PlanningBudgetGroupItemRowProps {
@@ -15,12 +15,15 @@ interface PlanningBudgetGroupItemRowProps {
   isIncome: boolean;
   busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
-  isDraggable: boolean;
   isDragging: boolean;
   onReceiveIncome: (item: GroupItem) => void;
-  onStartEdit: (item: GroupItem) => void;
   onArmDelete: (id: string | null) => void;
   onDeleteItem: (item: GroupItem, groupId: string) => void;
+  onUpdateItem: (
+    itemId: string,
+    patch: { name: string; planned: number },
+  ) => void;
+  onGripPointerDown: (event: PointerEvent<HTMLElement>) => void;
 }
 
 function PlanningBudgetGroupItemRow({
@@ -29,75 +32,161 @@ function PlanningBudgetGroupItemRow({
   isIncome,
   busy,
   deleteArmingId,
-  isDraggable,
   isDragging,
   onReceiveIncome,
-  onStartEdit,
   onArmDelete,
   onDeleteItem,
+  onUpdateItem,
+  onGripPointerDown,
 }: PlanningBudgetGroupItemRowProps) {
+  const [draftName, setDraftName] = useState(item.name);
+  const [draftAmount, setDraftAmount] = useState(String(item.planned));
+  const [amountFocused, setAmountFocused] = useState(false);
+  const nameFocusedRef = useRef(false);
+  const amountFocusedRef = useRef(false);
+  const revertRef = useRef(false);
+
+  useEffect(() => {
+    if (!nameFocusedRef.current) setDraftName(item.name);
+  }, [item.name]);
+
+  useEffect(() => {
+    if (!amountFocusedRef.current) setDraftAmount(String(item.planned));
+  }, [item.planned]);
+
+  const commitIfDirty = useCallback(() => {
+    if (revertRef.current || busy !== null) {
+      revertRef.current = false;
+      return;
+    }
+    const name = draftName.trim();
+    if (!name) {
+      setDraftName(item.name);
+      return;
+    }
+    const planned = parseAmountText(draftAmount);
+    if (name !== item.name || planned !== item.planned) {
+      onUpdateItem(item.id, { name, planned });
+    }
+  }, [busy, draftName, draftAmount, item, onUpdateItem]);
+
+  const revertToItem = useCallback(() => {
+    revertRef.current = true;
+    setDraftName(item.name);
+    setDraftAmount(String(item.planned));
+  }, [item]);
+
+  const handleNameKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        event.currentTarget.blur();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        revertToItem();
+        event.currentTarget.blur();
+      }
+    },
+    [revertToItem],
+  );
+
+  const handleAmountKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        event.currentTarget.blur();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        revertToItem();
+        event.currentTarget.blur();
+      }
+    },
+    [revertToItem],
+  );
+
+  const handleDeleteClick = useCallback(() => {
+    if (item.transactionCount > 0 && deleteArmingId !== item.id) {
+      onArmDelete(item.id);
+    } else {
+      onDeleteItem(item, groupId);
+    }
+  }, [item, groupId, deleteArmingId, onArmDelete, onDeleteItem]);
+
+  let amountDisplay = draftAmount ? `${formatMoney(parseAmountText(draftAmount))}` : '';
+  if (amountFocused) amountDisplay = draftAmount;
+
   return (
     <>
       <div className={`${classes.gRow} ${isDragging ? classes.dragging : ''}`}>
         <span className={classes.gNameCell}>
-          <span
-            className={`${classes.grip} ${isDraggable ? '' : classes.gripDisabled}`}
-            aria-hidden
+          <button
+            type="button"
+            className={classes.grip}
+            aria-label={`Drag to reorder ${item.name}`}
+            onPointerDown={onGripPointerDown}
           >
             <GripVertical size={14} />
-          </span>
-          <span className={classes.gItemName}>{item.name}</span>
+          </button>
+          <input
+            className={classes.gNameInput}
+            value={draftName}
+            aria-label="Item name"
+            onFocus={(e) => {
+              nameFocusedRef.current = true;
+              e.target.select();
+            }}
+            onBlur={() => {
+              nameFocusedRef.current = false;
+              commitIfDirty();
+            }}
+            onChange={(e) => setDraftName(e.target.value)}
+            onKeyDown={handleNameKeyDown}
+          />
         </span>
-        <span className={classes.gValue}>{formatMoney(item.planned)}</span>
+        <input
+          className={classes.gAmountInput}
+          value={amountDisplay}
+          aria-label="Planned amount"
+          inputMode="decimal"
+          onFocus={(e) => {
+            setAmountFocused(true);
+            amountFocusedRef.current = true;
+            e.target.select();
+          }}
+          onBlur={() => {
+            setAmountFocused(false);
+            amountFocusedRef.current = false;
+            commitIfDirty();
+          }}
+          onChange={(e) => setDraftAmount(sanitizeAmountText(e.target.value))}
+          onKeyDown={handleAmountKeyDown}
+        />
         <span className={classes.gValue}>{formatMoney(item.spent)}</span>
-        <span className={classes.gValue}>{formatMoney(item.remaining)}</span>
-        <Menu
-          shadow="md"
-          width={160}
-          position="bottom-end"
-          withinPortal
-        >
-          <Menu.Target>
+        <span className={`${classes.gValue} ${classes.gRemaining}`}>
+          {formatMoney(item.remaining)}
+        </span>
+        <div className={classes.gActions}>
+          {isIncome && (
             <button
               type="button"
-              className={classes.gKebab}
+              className={classes.gAction}
               disabled={busy !== null}
-              aria-label={`Actions for ${item.name}`}
-              onPointerDown={(e) => e.stopPropagation()}
+              aria-label={`Mark ${item.name} as received`}
+              onClick={() => onReceiveIncome(item)}
             >
-              <MoreVertical size={16} />
+              <Check size={15} />
             </button>
-          </Menu.Target>
-          <Menu.Dropdown>
-            {isIncome && (
-              <Menu.Item
-                leftSection={<Check size={14} />}
-                onClick={() => onReceiveIncome(item)}
-              >
-                Mark received
-              </Menu.Item>
-            )}
-            <Menu.Item
-              leftSection={<Pencil size={14} />}
-              onClick={() => onStartEdit(item)}
-            >
-              Edit
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<Trash size={14} />}
-              color="red"
-              onClick={() => {
-                if (item.transactionCount > 0 && deleteArmingId !== item.id) {
-                  onArmDelete(item.id);
-                } else {
-                  onDeleteItem(item, groupId);
-                }
-              }}
-            >
-              Delete
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
+          )}
+          <button
+            type="button"
+            className={`${classes.gAction} ${classes.gActionDanger}`}
+            disabled={busy !== null}
+            aria-label={`Delete ${item.name}`}
+            onClick={handleDeleteClick}
+          >
+            <Trash size={15} />
+          </button>
+        </div>
       </div>
       {deleteArmingId === item.id && item.transactionCount > 0 && (
         <div className={classes.deleteWarning}>
@@ -114,7 +203,6 @@ function PlanningBudgetGroupItemRow({
               type="button"
               className={classes.deleteWarningConfirm}
               onClick={() => onDeleteItem(item, groupId)}
-              onPointerDown={(e) => e.stopPropagation()}
             >
               Delete
             </button>
@@ -122,7 +210,6 @@ function PlanningBudgetGroupItemRow({
               type="button"
               className={classes.deleteWarningCancel}
               onClick={() => onArmDelete(null)}
-              onPointerDown={(e) => e.stopPropagation()}
             >
               Cancel
             </button>
