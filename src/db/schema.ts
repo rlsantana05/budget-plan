@@ -140,6 +140,12 @@ export const moveTypeEnum = pgEnum("move_type", [
   "CARD_PAYMENT",
 ]);
 
+export const categoryTargetTypeEnum = pgEnum("category_target_type", [
+  "NONE",
+  "ONCE",
+  "MONTHLY",
+]);
+
 // One budget-month snapshot (EveryDollar: copy month → month with structure only)
 export const monthBudgets = pgTable(
   "month_budgets",
@@ -193,6 +199,41 @@ export const categoryGroups = pgTable(
   ],
 );
 
+// Durable category identity + its target rule (ADR-0002). Each month's
+// budget_categories row links to one template via budget_categories.template_id,
+// giving a stable "Groceries" across months for targets and history.
+export const categoryTemplates = pgTable(
+  "category_templates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    budgetId: uuid("budget_id")
+      .notNull()
+      .references(() => budgets.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    groupName: text("group_name").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    targetType: categoryTargetTypeEnum("target_type")
+      .notNull()
+      .default("NONE"),
+    targetAmount: numeric("target_amount", { precision: 12, scale: 2 })
+      .notNull()
+      .default("0"),
+    targetDueDate: timestamp("target_due_date", { withTimezone: true }),
+    targetMonthDay: integer("target_month_day"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("category_templates_budget_id_idx").on(table.budgetId),
+    index("category_templates_name_group_idx").on(table.budgetId, table.name, table.groupName),
+  ],
+);
+
 // Budget item (category) within a group. Spent/Remaining are DERIVED from transactions.
 export const budgetCategories = pgTable(
   "budget_categories",
@@ -201,6 +242,9 @@ export const budgetCategories = pgTable(
     groupId: uuid("group_id")
       .notNull()
       .references(() => categoryGroups.id, { onDelete: "cascade" }),
+    templateId: uuid("template_id").references(() => categoryTemplates.id, {
+      onDelete: "set null",
+    }),
     name: text("name").notNull(),
     dueDate: timestamp("due_date", { withTimezone: true }),
     planned: numeric("planned", { precision: 12, scale: 2 })
@@ -221,6 +265,7 @@ export const budgetCategories = pgTable(
   },
   (table) => [
     index("budget_categories_group_id_idx").on(table.groupId),
+    index("budget_categories_template_id_idx").on(table.templateId),
     index("budget_categories_account_id_idx").on(table.accountId),
     index("budget_categories_due_date_idx").on(table.dueDate),
   ],

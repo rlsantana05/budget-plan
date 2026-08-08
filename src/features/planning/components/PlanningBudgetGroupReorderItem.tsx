@@ -14,6 +14,8 @@ interface PlanningBudgetGroupReorderItemProps {
   groupId: string;
   isIncome: boolean;
   isDragging: boolean;
+  isSelected: boolean;
+  onSelectItem: (item: GroupItem) => void;
 
   busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
@@ -21,6 +23,7 @@ interface PlanningBudgetGroupReorderItemProps {
   onDeleteItem: (item: GroupItem, groupId: string) => void;
   onReceiveIncome: (item: GroupItem) => void;
   onUpdateItem: (itemId: string, patch: { name: string; planned: number }) => void;
+  onAssignAmount: (item: GroupItem, amount: number) => void;
 
   registerItemRef: (id: string, el: HTMLLIElement | null) => void;
   onDragStart: (id: string) => void;
@@ -33,12 +36,15 @@ function PlanningBudgetGroupReorderItem({
   groupId,
   isIncome,
   isDragging,
+  isSelected,
+  onSelectItem,
   busy,
   deleteArmingId,
   onArmDelete,
   onDeleteItem,
   onReceiveIncome,
   onUpdateItem,
+  onAssignAmount,
   registerItemRef,
   onDragStart,
   onDrag,
@@ -80,10 +86,13 @@ function PlanningBudgetGroupReorderItem({
         busy={busy}
         deleteArmingId={deleteArmingId}
         isDragging={isDragging}
+        isSelected={isSelected}
+        onSelectItem={onSelectItem}
         onReceiveIncome={onReceiveIncome}
         onArmDelete={onArmDelete}
         onDeleteItem={onDeleteItem}
         onUpdateItem={onUpdateItem}
+        onAssignAmount={onAssignAmount}
         onGripPointerDown={handleGripPointerDown}
       />
     </Reorder.Item>

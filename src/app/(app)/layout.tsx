@@ -18,7 +18,6 @@ import {
   BellIcon,
   CrosshairIcon,
   LayoutDashboardIcon,
-  PiggyBankIcon,
   ScrollTextIcon,
   SettingsIcon,
   WalletIcon,
@@ -32,7 +31,6 @@ import classes from "./AppLayout.module.css";
 const navItems: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Dashboard", href: "/", icon: LayoutDashboardIcon },
   { label: "Planning", href: "/planning", icon: ScrollTextIcon },
-  { label: "Budget", href: "/budget", icon: PiggyBankIcon },
   { label: "Accounts", href: "/accounts", icon: WalletIcon },
   { label: "Goals", href: "/goals", icon: CrosshairIcon },
 ];

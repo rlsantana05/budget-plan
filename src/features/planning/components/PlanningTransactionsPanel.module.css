@@ -13,6 +13,37 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.assignAll {
+  all: unset;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--ink-mono, inherit);
+  color: #fff;
+  background: var(--accent);
+  border-radius: 6px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.assignAll:hover {
+  background: var(--accent-strong);
+}
+
+.assignAll:disabled {
+  opacity: 0.45;
+  cursor: default;
+  background: var(--accent);
+}
+
 .summaryView {
   flex: none;
   box-sizing: border-box;

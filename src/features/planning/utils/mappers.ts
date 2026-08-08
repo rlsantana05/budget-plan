@@ -19,10 +19,22 @@ export function toGroups(dto: MonthBudgetPlanDTO): Group[] {
       name: it.name,
       dueDate: it.dueDate ?? null,
       planned: Number(it.planned),
+      funded: Number(it.funded ?? 0),
       spent: Number(it.spent),
       received: Number(it.received ?? 0),
       remaining: Number(it.remaining),
       transactionCount: it.transactionCount,
+      templateId: it.templateId ?? null,
+      targetType: it.targetType ?? 'NONE',
+      targetAmount: Number(it.targetAmount ?? 0),
+      targetDue: it.targetDue ?? null,
+      targetDate: it.targetDate ?? null,
+      targetMonthDay: it.targetMonthDay ?? null,
+      needed: Number(it.needed ?? 0),
+      trend: (it.trend ?? []).map((t) => ({
+        month: t.month,
+        activity: Number(t.activity ?? 0),
+      })),
     })),
   }));
 }

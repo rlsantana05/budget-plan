@@ -1,8 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import {
+  useCallback, useEffect, useMemo, useState,
+} from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import type { MonthBudgetPlanDTO } from '@/types/budget';
+import { assignToTargets, setCategoryTarget } from '@/actions/budget-planning';
+import type { GroupItem } from './types';
+import type { TargetFormState } from './components/PlanningTargetModal';
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { usePlanningActionState } from './hooks/usePlanningActionState';
 import { useBudgetGroups } from './hooks/useBudgetGroups';
@@ -28,6 +33,11 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
   const groups = useBudgetGroups(initialData, action);
   const panel = useTransactionsPanel(initialData, action);
   const { categories: plannedCategories } = usePlannedSummary(groups.groups);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+
+  const selectedItem = useMemo(() => groups.groups
+    .flatMap((g) => g.items)
+    .find((it) => it.id === selectedItemId) ?? null, [groups.groups, selectedItemId]);
 
   const reduceMotion = useReducedMotion();
   const motionTransition = {
@@ -49,6 +59,78 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
   let bannerLabel = 'on budget';
   if (bannerAmount < 0) bannerLabel = 'over budget';
   if (bannerAmount > 0) bannerLabel = 'left to budget';
+
+  const readyToAssign = useMemo(() => {
+    const received = groups.groups
+      .filter((g) => g.isIncome)
+      .flatMap((g) => g.items)
+      .reduce((sum, it) => sum + it.received, 0);
+    const assigned = groups.groups
+      .flatMap((g) => g.items)
+      .reduce((sum, it) => sum + it.funded, 0);
+    return received - assigned;
+  }, [groups.groups]);
+
+  const handleAssign = useCallback(
+    (item: GroupItem) => {
+      action.runTxAction('row', async () => {
+        await assignToTargets([item.id]);
+      });
+    },
+    [action],
+  );
+
+  const handleAssignAll = useCallback(() => {
+    action.runTxAction('row', async () => {
+      await assignToTargets();
+    });
+  }, [action]);
+
+  const handleSaveTarget = useCallback(
+    (item: GroupItem, form: TargetFormState) => {
+      let input: {
+        type: 'NONE' | 'ONCE' | 'MONTHLY';
+        amount?: number;
+        dueDate?: string | null;
+        monthDay?: number | null;
+      };
+      if (form.type === 'NONE') {
+        input = { type: 'NONE' };
+      } else if (form.type === 'ONCE') {
+        input = {
+          type: 'ONCE',
+          amount: form.amount,
+          dueDate: form.dueDate,
+        };
+      } else {
+        input = {
+          type: 'MONTHLY',
+          amount: form.amount,
+          monthDay: Number(form.monthDay),
+        };
+      }
+      action.runTxAction('row', async () => {
+        await setCategoryTarget(item.id, input);
+      });
+    },
+    [action],
+  );
+
+  const handleSelectItem = useCallback((item: GroupItem) => {
+    setSelectedItemId(item.id);
+  }, []);
+
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      if (!target) return;
+      if (target.closest('[data-category-row]')) return;
+      if (target.closest('[data-hub-panel]')) return;
+      setSelectedItemId(null);
+    };
+    document.addEventListener('click', handleDocumentClick);
+    return () => document.removeEventListener('click', handleDocumentClick);
+  }, []);
 
   return (
     <div className={classes.page}>
@@ -89,11 +171,14 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
               onReorder={groups.handleReorderItems}
               onReorderCommit={groups.handleReorderCommit}
               onUpdateItem={groups.handleUpdateItem}
+              onAssignAmount={groups.handleAssignAmount}
               busy={action.busy}
               deleteArmingId={groups.deleteArmingId}
               onArmDelete={groups.setDeleteArmingId}
               onDeleteItem={groups.handleDeleteItem}
               onReceiveIncome={groups.handleReceiveIncome}
+              selectedItemId={selectedItem?.id ?? null}
+              onSelectItem={handleSelectItem}
               addItemGroup={groups.addItemGroup}
               onBeginAddItem={groups.beginAddItem}
               newItemName={groups.newItemName}
@@ -124,6 +209,14 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
           onTrack={panel.handleTrack}
           onDelete={panel.handleDelete}
           plannedCategories={plannedCategories}
+          selectedItem={selectedItem}
+          onClearSelected={() => setSelectedItemId(null)}
+          onAssign={handleAssign}
+          readyToAssign={readyToAssign}
+          onSaveTarget={handleSaveTarget}
+          targetBusy={action.busy === 'row'}
+          onAssignAll={handleAssignAll}
+          assignAllBusy={action.busy === 'row'}
         />
       </div>
 

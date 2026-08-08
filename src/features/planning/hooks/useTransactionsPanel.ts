@@ -75,6 +75,7 @@ export function useTransactionsPanel(
         date: new Date().toISOString(),
         status: 'NEW',
         categoryName: category?.label ?? null,
+        categoryId: category?.value ?? null,
         accountName: account?.name ?? null,
         isIncome: !!categoryId && incomeCategoryIds.has(categoryId),
       },

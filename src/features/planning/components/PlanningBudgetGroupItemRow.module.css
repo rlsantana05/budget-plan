@@ -1,9 +1,9 @@
 .gRow {
   position: relative;
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 1.7fr 1.1fr 0.9fr 0.9fr 0.9fr 64px;
   align-items: center;
-  column-gap: 8px;
+  column-gap: 12px;
   min-height: 48px;
   margin: 6px 8px;
   padding: 0 16px;
@@ -14,7 +14,21 @@
     transform 0.2s ease;
 }
 
+.gRowIncome {
+  grid-template-columns: 1.5fr 1fr 1fr 64px;
+}
+
 .gRow:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.gRow.selected {
+  background-color: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.gRow.selected:hover {
   background-color: rgba(255, 255, 255, 0.03);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
@@ -67,7 +81,7 @@
 .gNameInput {
   min-width: 0;
   flex: 1;
-  padding: 4px 6px;
+  padding: 4px;
   margin-left: -4px;
   background: transparent;
   border: none;
@@ -78,6 +92,15 @@
   color: var(--ink);
   letter-spacing: 0.01em;
   outline: none;
+}
+
+@supports (field-sizing: content) {
+  .gNameInput {
+    flex: 0 0 auto;
+    width: fit-content;
+    max-width: 100%;
+    field-sizing: content;
+  }
 }
 
 .gNameInput:hover {
@@ -92,8 +115,7 @@
 .gAmountInput {
   width: 100%;
   min-width: 0;
-  padding: 4px 6px;
-  margin-left: -6px;
+  padding: 4px 8px;
   background: transparent;
   border: none;
   border-radius: 6px;
@@ -102,6 +124,7 @@
   font-weight: 400;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
+  text-align: right;
   outline: none;
 }
 
@@ -120,20 +143,26 @@
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  text-align: left;
+  text-align: right;
+  padding-right: 8px;
 }
 
-.gRemaining {
-  padding-right: 64px;
+.gPositive {
+  color: var(--green, #22c55e);
+}
+
+.gNegative {
+  color: var(--red, #dd4e3b);
+}
+
+.gZero {
+  color: var(--orange, #f59e0b);
 }
 
 .gActions {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 2px;
   opacity: 0;
   transition: opacity 0.15s ease;
@@ -236,4 +265,13 @@
   color: #facc15;
   font-size: 12px;
   font-weight: 600;
+}
+
+.gNote {
+  margin-right: 0.5rem;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 0;
 }

@@ -8,11 +8,15 @@
 
 .gHeader {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 1.7fr 1.1fr 0.9fr 0.9fr 0.9fr 64px;
   align-items: center;
-  column-gap: 8px;
-  min-height: 60px;
+  column-gap: 12px;
+  min-height: 44px;
   padding: 0 24px;
+}
+
+.gHeaderIncome {
+  grid-template-columns: 1.5fr 1fr 1fr 64px;
 }
 
 .gTitleBtn {
@@ -21,9 +25,9 @@
   gap: 6px;
   background: none;
   border: none;
-  padding: 4px 0;
+  padding: 4px 0 4px 30px;
   font-family: inherit;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--ink);
   justify-self: start;
@@ -50,7 +54,8 @@
   font-size: 14px;
   font-weight: 400;
   color: var(--ink);
-  text-align: left;
+  text-align: right;
+  padding-right: 8px;
 }
 
 .gDivider {
@@ -87,7 +92,8 @@
   transition: opacity 0.12s ease;
 }
 
-.reorderItem {}
+.reorderItem {
+}
 
 .gFooterBlock {
   padding-top: 14px;
@@ -95,10 +101,15 @@
 
 .gFooter {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 1.7fr 1.1fr 0.9fr 0.9fr 0.9fr 64px;
   align-items: center;
+  column-gap: 12px;
   min-height: 54px;
   padding: 0 24px;
+}
+
+.gFooterIncome {
+  grid-template-columns: 1.5fr 1fr 1fr 64px;
 }
 
 .gFooterForm {
@@ -135,17 +146,20 @@
 
 .gTotalPlanned {
   grid-column: 2;
-  text-align: left;
+  text-align: right;
+  padding-right: 8px;
 }
 
 .gTotalSpent {
   grid-column: 3;
-  text-align: left;
+  text-align: right;
+  padding-right: 8px;
 }
 
 .gTotalRemaining {
   grid-column: 4;
-  text-align: left;
+  text-align: right;
+  padding-right: 8px;
 }
 
 .gAdd:hover {

@@ -11,6 +11,7 @@ import {
   budgetMembers,
   categoryGroups as categoryGroupsTable,
   categoryRollups,
+  categoryTemplates as categoryTemplatesTable,
   monthBudgets,
   paychecks,
   transactions,
@@ -18,9 +19,6 @@ import {
 } from "@/db/schema";
 import type {
   BudgetCategoryItemDTO,
-  BudgetScreenDTO,
-  BudgetScreenCategoryGroupDTO,
-  BudgetScreenCategoryItemDTO,
   BudgetTransactionDTO,
   MonthBudgetPlanDTO,
 } from "@/types/budget";
@@ -93,6 +91,88 @@ function monthYearKey(): { month: number; year: number } {
   return { month: now.getMonth() + 1, year: now.getFullYear() };
 }
 
+// ADR-0002: durable category identity + targets -------------------------------
+async function findCategoryTemplate(
+  budgetId: string,
+  name: string,
+  groupName: string,
+): Promise<string | null> {
+  const [t] = await db
+    .select({ id: categoryTemplatesTable.id })
+    .from(categoryTemplatesTable)
+    .where(
+      and(
+        eq(categoryTemplatesTable.budgetId, budgetId),
+        eq(categoryTemplatesTable.name, name),
+        eq(categoryTemplatesTable.groupName, groupName),
+        isNull(categoryTemplatesTable.deletedAt),
+      ),
+    )
+    .limit(1);
+  return t?.id ?? null;
+}
+
+async function getOrCreateCategoryTemplate(
+  budgetId: string,
+  name: string,
+  groupName: string,
+): Promise<string> {
+  const existing = await findCategoryTemplate(budgetId, name, groupName);
+  if (existing) return existing;
+  const [created] = await db
+    .insert(categoryTemplatesTable)
+    .values({ budgetId, name, groupName, sortOrder: 0 })
+    .returning({ id: categoryTemplatesTable.id });
+  return created.id;
+}
+
+/**
+ * Every month's budget_categories row must be linked to a durable template.
+ * Picks up rows created before the template table existed (or by older seed
+ * code) and links them in place.
+ */
+async function ensureCategoryLinks(
+  monthBudgetId: string,
+  budgetId: string,
+): Promise<void> {
+  const missing = await db
+    .select({
+      id: budgetCategoriesTable.id,
+      name: budgetCategoriesTable.name,
+      groupId: budgetCategoriesTable.groupId,
+    })
+    .from(budgetCategoriesTable)
+    .innerJoin(
+      categoryGroupsTable,
+      eq(budgetCategoriesTable.groupId, categoryGroupsTable.id),
+    )
+    .where(
+      and(
+        eq(categoryGroupsTable.monthBudgetId, monthBudgetId),
+        isNull(budgetCategoriesTable.deletedAt),
+        isNull(budgetCategoriesTable.templateId),
+      ),
+    );
+  if (missing.length === 0) return;
+
+  for (const row of missing) {
+    const [grp] = await db
+      .select({ name: categoryGroupsTable.name })
+      .from(categoryGroupsTable)
+      .where(eq(categoryGroupsTable.id, row.groupId))
+      .limit(1);
+    const templateId = await getOrCreateCategoryTemplate(
+      budgetId,
+      row.name,
+      grp?.name ?? "Other",
+    );
+    await db
+      .update(budgetCategoriesTable)
+      .set({ templateId })
+      .where(eq(budgetCategoriesTable.id, row.id));
+  }
+}
+
 /**
  * Fetch (or create + seed) the current month's budget snapshot for the
  * logged-in dev budget. Seeds the EveryDollar default groups + items on
@@ -131,28 +211,101 @@ async function getOrCreateMonthBudget(
     // Brand-new month: seed the default groups + items immediately. Avoids a
     // "does it need seeding?" check on every subsequent read.
     if (seedDefaults) {
-      for (const [gi, g] of DEFAULT_GROUPS.entries()) {
-        const [grp] = await db
-          .insert(categoryGroupsTable)
-          .values({
-            monthBudgetId: mb.id,
-            name: g.name,
-            sortOrder: gi,
-            rightColumn: g.name === "Income" ? "Received" : "Spent",
-            collapsed: false,
-          })
-          .returning();
+      // Clone the previous month's structure so categories persist across
+      // months (ADR-0002). First month on this budget uses the EveryDollar
+      // defaults and also creates the durable templates.
+      const [prev] = await db
+        .select()
+        .from(monthBudgets)
+        .where(
+          and(
+            eq(monthBudgets.budgetId, budgetId),
+            isNull(monthBudgets.deletedAt),
+          ),
+        )
+        .orderBy(desc(monthBudgets.year), desc(monthBudgets.month))
+        .limit(1);
 
-        let itemSort = 0;
-        for (const itemName of g.items) {
-          await db.insert(budgetCategoriesTable).values({
-            groupId: grp.id,
-            name: itemName,
-            dueDate: null,
-            planned: "0",
-            sortOrder: itemSort,
-          });
-          itemSort++;
+      if (prev) {
+        const prevGroups = await db
+          .select()
+          .from(categoryGroupsTable)
+          .where(eq(categoryGroupsTable.monthBudgetId, prev.id))
+          .orderBy(categoryGroupsTable.sortOrder);
+        const prevGroupIds = prevGroups.map((g) => g.id);
+        const prevItems = prevGroupIds.length
+          ? await db
+            .select()
+            .from(budgetCategoriesTable)
+            .where(
+              and(
+                inArray(budgetCategoriesTable.groupId, prevGroupIds),
+                isNull(budgetCategoriesTable.deletedAt),
+              ),
+            )
+            .orderBy(budgetCategoriesTable.sortOrder)
+          : [];
+        const prevItemsByGroup = new Map<string, (typeof prevItems)[number][]>();
+        for (const item of prevItems) {
+          const list = prevItemsByGroup.get(item.groupId) ?? [];
+          list.push(item);
+          prevItemsByGroup.set(item.groupId, list);
+        }
+        for (const grp of prevGroups) {
+          const [newGroup] = await db
+            .insert(categoryGroupsTable)
+            .values({
+              monthBudgetId: mb.id,
+              name: grp.name,
+              sortOrder: grp.sortOrder,
+              rightColumn: grp.rightColumn,
+              collapsed: grp.collapsed,
+            })
+            .returning();
+          for (const item of prevItemsByGroup.get(grp.id) ?? []) {
+            await db.insert(budgetCategoriesTable).values({
+              groupId: newGroup.id,
+              templateId: item.templateId ?? null,
+              name: item.name,
+              dueDate: item.dueDate,
+              planned: item.planned,
+              sortOrder: item.sortOrder,
+              isPaymentCategory: item.isPaymentCategory,
+              accountId: item.accountId,
+            });
+          }
+        }
+        await ensureCategoryLinks(mb.id, budgetId);
+      } else {
+        for (const [gi, g] of DEFAULT_GROUPS.entries()) {
+          const [grp] = await db
+            .insert(categoryGroupsTable)
+            .values({
+              monthBudgetId: mb.id,
+              name: g.name,
+              sortOrder: gi,
+              rightColumn: g.name === "Income" ? "Received" : "Spent",
+              collapsed: false,
+            })
+            .returning();
+
+          let itemSort = 0;
+          for (const itemName of g.items) {
+            const templateId = await getOrCreateCategoryTemplate(
+              budgetId,
+              itemName,
+              g.name,
+            );
+            await db.insert(budgetCategoriesTable).values({
+              groupId: grp.id,
+              templateId,
+              name: itemName,
+              dueDate: null,
+              planned: "0",
+              sortOrder: itemSort,
+            });
+            itemSort++;
+          }
         }
       }
     }
@@ -180,6 +333,9 @@ export async function getMonthBudgetPlan(
     "default",
     { month: "long" },
   );
+
+  // Link any legacy per-month rows to their durable template (ADR-0002).
+  await ensureCategoryLinks(mb.id, budget.id);
 
   // Load categories grouped
   const groups = await db
@@ -236,6 +392,78 @@ export async function getMonthBudgetPlan(
 
   const rollupById = new Map(rollupRows.map((r) => [r.categoryId, r]));
 
+  const templateIds = Array.from(
+    new Set(allItems.map((it) => it.templateId).filter((id): id is string => !!id)),
+  );
+  const templates = templateIds.length
+    ? await db
+      .select()
+      .from(categoryTemplatesTable)
+      .where(inArray(categoryTemplatesTable.id, templateIds))
+    : [];
+  const templateById = new Map(templates.map((t) => [t.id, t]));
+
+  // ADR-0003: per-category 3-month spending trend, keyed by the durable
+  // template id so history spans months even though each month has its own row.
+  const trendByTemplate = new Map<
+    string,
+    Array<{ month: string; activity: number }>
+  >();
+  if (templateIds.length > 0) {
+    const historyRows = await db
+      .select({
+        activity: categoryRollups.activity,
+        year: monthBudgets.year,
+        month: monthBudgets.month,
+        templateId: budgetCategoriesTable.templateId,
+      })
+      .from(categoryRollups)
+      .innerJoin(
+        budgetCategoriesTable,
+        eq(categoryRollups.categoryId, budgetCategoriesTable.id),
+      )
+      .innerJoin(
+        monthBudgets,
+        eq(categoryRollups.monthBudgetId, monthBudgets.id),
+      )
+      .where(
+        and(
+          inArray(budgetCategoriesTable.templateId, templateIds),
+          eq(monthBudgets.budgetId, budget.id),
+        ),
+      );
+
+    const monthsByTemplate = new Map<
+      string,
+      Array<{ year: number; month: number; activity: number }>
+    >();
+    for (const row of historyRows) {
+      if (!row.templateId) continue;
+      const list = monthsByTemplate.get(row.templateId) ?? [];
+      list.push({
+        year: row.year,
+        month: row.month,
+        activity: Number(row.activity ?? 0),
+      });
+      monthsByTemplate.set(row.templateId, list);
+    }
+
+    for (const [tplId, months] of monthsByTemplate) {
+      const recent = months
+        .sort((a, b) => a.year - b.year || a.month - b.month)
+        .slice(-3);
+      trendByTemplate.set(
+        tplId,
+        recent.map((m) => ({
+          month: new Date(m.year, m.month - 1, 1).toLocaleString("default", {
+            month: "short",
+          }),
+          activity: m.activity,
+        })),
+      );
+    }
+  }
+
   const txCountByCategory = new Map<string, number>();
   for (const tx of txRows) {
     if (tx.categoryId && tx.status !== "DELETED") {
@@ -277,6 +505,9 @@ export async function getMonthBudgetPlan(
 
     const categoryItems = items.map((it): BudgetCategoryItemDTO => {
       const rollup = rollupById.get(it.id);
+      const template = it.templateId
+        ? templateById.get(it.templateId)
+        : undefined;
       const funded = Number(rollup?.assigned ?? 0);
       const spent = Number(rollup?.activity ?? 0);
       const remaining = funded - spent;
@@ -302,6 +533,26 @@ export async function getMonthBudgetPlan(
           : 0,
         remaining,
         transactionCount: txCountByCategory.get(it.id) ?? 0,
+        templateId: it.templateId ?? null,
+        targetType: template?.targetType ?? "NONE",
+        targetAmount: template ? Number(template.targetAmount ?? 0) : 0,
+        targetDue: targetDueLabel(
+          template?.targetType ?? "NONE",
+          template?.targetDueDate,
+          template?.targetMonthDay,
+          resolvedYear,
+          resolvedMonth,
+        ),
+        targetDate: template?.targetType === "ONCE" && template.targetDueDate
+          ? template.targetDueDate.toISOString().slice(0, 10)
+          : null,
+        targetMonthDay: template?.targetType === "MONTHLY"
+          ? (template?.targetMonthDay ?? null)
+          : null,
+        needed: template && template.targetType !== "NONE"
+          ? Math.max(Number(template.targetAmount ?? 0) - funded, 0)
+          : 0,
+        trend: it.templateId ? (trendByTemplate.get(it.templateId) ?? []) : [],
       };
     });
 
@@ -353,6 +604,7 @@ export async function getMonthBudgetPlan(
       categoryName: tx.categoryId
         ? (categoryNameById.get(tx.categoryId) ?? null)
         : null,
+      categoryId: tx.categoryId ?? null,
       accountName: tx.accountId
         ? (accountNameById.get(tx.accountId) ?? null)
         : null,
@@ -388,134 +640,6 @@ export async function getMonthBudgetPlan(
     note: mb.note,
     transactions: transactionsDTO,
     accounts: accountRows.map((a) => ({ id: a.id, name: a.name })),
-  };
-}
-
-export async function getBudgetScreen(): Promise<BudgetScreenDTO> {
-  const budget = await getOrCreateDefaultBudget();
-  const { mb, month, year } = await getOrCreateMonthBudget(budget.id);
-  const monthName = new Date(year, month - 1, 1).toLocaleString("default", {
-    month: "long",
-  });
-
-  const groupRows = await db
-    .select()
-    .from(categoryGroupsTable)
-    .where(eq(categoryGroupsTable.monthBudgetId, mb.id))
-    .orderBy(categoryGroupsTable.sortOrder);
-
-  const groupIds = groupRows.map((g) => g.id);
-  const allItems = groupIds.length
-    ? await db
-        .select()
-        .from(budgetCategoriesTable)
-        .where(
-          and(
-            inArray(budgetCategoriesTable.groupId, groupIds),
-            isNull(budgetCategoriesTable.deletedAt),
-          ),
-        )
-        .orderBy(budgetCategoriesTable.sortOrder)
-    : [];
-
-  const itemsByGroup = new Map<string, (typeof allItems)[number][]>();
-  for (const item of allItems) {
-    const list = itemsByGroup.get(item.groupId) ?? [];
-    list.push(item);
-    itemsByGroup.set(item.groupId, list);
-  }
-
-  const [rollupRows, [paycheckTotal]] = await Promise.all([
-    db
-      .select()
-      .from(categoryRollups)
-      .where(eq(categoryRollups.monthBudgetId, mb.id)),
-    db
-      .select({ total: sql<string | null>`coalesce(sum(${paychecks.amount}), 0)` })
-      .from(paychecks)
-      .where(eq(paychecks.monthBudgetId, mb.id)),
-  ]);
-
-  const rollupById = new Map(
-    rollupRows.map((r) => [r.categoryId, r]),
-  );
-
-  const totalAssigned = rollupRows.reduce(
-    (sum, r) => sum + Number(r.assigned),
-    0,
-  );
-  const readyToAssign = Number(paycheckTotal?.total ?? 0) - totalAssigned;
-
-  const categoryGroups: BudgetScreenCategoryGroupDTO[] = groupRows.map((g) => {
-    const items = itemsByGroup.get(g.id) ?? [];
-    let assigned = 0;
-    let activity = 0;
-    let available = 0;
-
-    const itemDTOs: BudgetScreenCategoryItemDTO[] = items.map((it) => {
-      const rollup = rollupById.get(it.id);
-      const itemAssigned = Number(rollup?.assigned ?? 0);
-      const itemActivity = Number(rollup?.activity ?? 0);
-      const itemAvailable = itemAssigned - itemActivity;
-      const planned = Number(it.planned ?? 0);
-
-      assigned += itemAssigned;
-      activity += itemActivity;
-      available += itemAvailable;
-
-      return {
-        id: it.id,
-        groupId: it.groupId,
-        name: it.name,
-        planned,
-        dueDate: it.dueDate?.toISOString() ?? null,
-        assigned: itemAssigned,
-        activity: itemActivity,
-        available: itemAvailable,
-        availableStatus:
-          itemAvailable > 0
-            ? "positive"
-            : itemAvailable < 0
-              ? "negative"
-              : "neutral",
-        status:
-          planned > 0 && itemAssigned >= planned ? "Funded" : undefined,
-      };
-    });
-
-    return {
-      id: g.id,
-      monthBudgetId: g.monthBudgetId,
-      name: g.name,
-      sortOrder: g.sortOrder,
-      collapsed: g.collapsed ?? false,
-      assigned,
-      activity,
-      available,
-      items: itemDTOs,
-    };
-  });
-
-  return {
-    id: mb.id,
-    month: monthName,
-    year,
-    note: mb.note,
-    readyToAssign: {
-      amount: readyToAssign,
-      label: "Ready to Assign",
-      action: "Assign",
-    },
-    filterTabs: {
-      active: "All",
-      options: ["All", "Underfunded", "Overfunded", "Money Available"],
-    },
-    toolbar: {
-      actions: ["Category Group", "Undo", "Redo", "Recent Moves"],
-      viewToggle: ["list", "detail"],
-    },
-    columns: ["ASSIGNED", "ACTIVITY", "AVAILABLE"],
-    categoryGroups,
   };
 }
 
@@ -618,6 +742,37 @@ function assertAmount(amount: number): void {
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new Error("Amount must be a positive number");
   }
+}
+
+function daysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+/**
+ * Human due label for a target rule in a specific (year, month). ONCE resolves
+ * to its absolute date; MONTHLY resolves to day-of-month in the given month.
+ */
+function targetDueLabel(
+  targetType: string,
+  dueDate: Date | null | undefined,
+  monthDay: number | null | undefined,
+  year: number,
+  month: number,
+): string | null {
+  if (targetType === "ONCE" && dueDate) {
+    return dueDate.toLocaleDateString("default", {
+      month: "short",
+      day: "numeric",
+    });
+  }
+  if (targetType === "MONTHLY" && monthDay != null) {
+    const day = Math.min(monthDay, daysInMonth(year, month));
+    return new Date(year, month - 1, day).toLocaleDateString("default", {
+      month: "short",
+      day: "numeric",
+    });
+  }
+  return null;
 }
 
 /**
@@ -746,6 +901,61 @@ export async function assignToCategory(
 }
 
 /**
+ * Set a category's Assigned total directly (inline "Assigned" editing on a
+ * planning row). Computes the delta against the current rollup and moves money
+ * in or out of the Available to Assign pool: a positive delta is capped by the
+ * pool, a negative delta returns money to it. Persists a single ASSIGN ledger
+ * row so the undo-move history stays coherent.
+ */
+export async function setCategoryAssigned(
+  categoryId: string,
+  amount: number,
+): Promise<void> {
+  if (!Number.isFinite(amount) || amount < 0) {
+    throw new Error("Assigned amount must be zero or positive");
+  }
+
+  const monthBudgetId = await getCategoryMonthBudgetId(categoryId);
+
+  const [rollup] = await db
+    .select({ assigned: categoryRollups.assigned })
+    .from(categoryRollups)
+    .where(
+      and(
+        eq(categoryRollups.monthBudgetId, monthBudgetId),
+        eq(categoryRollups.categoryId, categoryId),
+      ),
+    )
+    .limit(1);
+  const current = Number(rollup?.assigned ?? 0);
+  const delta = amount - current;
+  if (Math.abs(delta) < 0.005) return;
+
+  if (delta > 0) {
+    const readyToAssign = await getReadyToAssign(monthBudgetId);
+    if (delta > readyToAssign) {
+      throw new Error("Amount exceeds Available to Assign");
+    }
+  }
+
+  await db.insert(assignmentLedger).values({
+    monthBudgetId,
+    categoryId,
+    paycheckId: null,
+    moveId: null,
+    amount: String(delta),
+    moveType: "ASSIGN",
+  });
+
+  await incrementRollup(monthBudgetId, categoryId, {
+    assigned: delta,
+    available: delta,
+  });
+
+  revalidateBudgetPages();
+}
+
+/**
  * Move money between categories. Writes a linked MOVE_OUT/MOVE_IN ledger
  * pair (shared move_id); total funded is unchanged.
  */
@@ -841,6 +1051,222 @@ export async function undoLastMove(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Targets + Assign-to-Targets (ADR-0002)
+// ---------------------------------------------------------------------------
+
+export interface CategoryTargetInput {
+  type: "NONE" | "ONCE" | "MONTHLY";
+  /** Required when type is ONCE or MONTHLY. */
+  amount?: number;
+  /** ISO date string, required for ONCE. */
+  dueDate?: string | null;
+  /** 1–31, required for MONTHLY (day the bill recurs). */
+  monthDay?: number | null;
+}
+
+function assertTargetInput(input: CategoryTargetInput): void {
+  const { type, amount, dueDate, monthDay } = input;
+  if (type !== "NONE" && (!Number.isFinite(amount) || (amount as number) <= 0)) {
+    throw new Error("Target amount must be positive");
+  }
+  if (type === "ONCE" && !dueDate) {
+    throw new Error("A one-time target needs a due date");
+  }
+  if (type === "ONCE" && Number.isNaN(Date.parse(dueDate as string))) {
+    throw new Error("Due date is invalid");
+  }
+  if (
+    type === "MONTHLY"
+    && (monthDay == null || monthDay < 1 || monthDay > 31)
+  ) {
+    throw new Error("A monthly target needs a day of the month (1–31)");
+  }
+  if (type === "NONE" && monthDay != null) {
+    throw new Error("Cannot set a day without a target type");
+  }
+}
+
+/**
+ * Set (or remove) the target rule on a category's durable template
+ * (ADR-0002). NONE removes the target; ONCE stores an absolute due date;
+ * MONTHLY stores a recurring day-of-month.
+ */
+export async function setCategoryTarget(
+  categoryItemId: string,
+  input: CategoryTargetInput,
+): Promise<void> {
+  assertTargetInput(input);
+
+  const [item] = await db
+    .select({
+      id: budgetCategoriesTable.id,
+      name: budgetCategoriesTable.name,
+      groupId: budgetCategoriesTable.groupId,
+      templateId: budgetCategoriesTable.templateId,
+    })
+    .from(budgetCategoriesTable)
+    .where(
+      and(
+        eq(budgetCategoriesTable.id, categoryItemId),
+        isNull(budgetCategoriesTable.deletedAt),
+      ),
+    )
+    .limit(1);
+  if (!item) throw new Error("Category not found");
+
+  const [grp] = await db
+    .select({ monthBudgetId: categoryGroupsTable.monthBudgetId, name: categoryGroupsTable.name })
+    .from(categoryGroupsTable)
+    .where(eq(categoryGroupsTable.id, item.groupId))
+    .limit(1);
+  if (!grp) throw new Error("Category group not found");
+
+  let templateId = item.templateId;
+  if (!templateId) {
+    const [monthB] = await db
+      .select({ budgetId: monthBudgets.budgetId })
+      .from(monthBudgets)
+      .where(eq(monthBudgets.id, grp.monthBudgetId))
+      .limit(1);
+    if (!monthB) throw new Error("Month budget not found");
+    templateId = await getOrCreateCategoryTemplate(
+      monthB.budgetId,
+      item.name,
+      grp.name,
+    );
+    await db
+      .update(budgetCategoriesTable)
+      .set({ templateId })
+      .where(eq(budgetCategoriesTable.id, item.id));
+  }
+
+  await db
+    .update(categoryTemplatesTable)
+    .set({
+      targetType: input.type,
+      targetAmount:
+        input.type === "NONE" ? "0" : String(input.amount as number),
+      targetDueDate:
+        input.type === "ONCE" ? new Date(input.dueDate as string) : null,
+      targetMonthDay: input.type === "MONTHLY" ? input.monthDay! : null,
+      updatedAt: new Date(),
+    })
+    .where(eq(categoryTemplatesTable.id, templateId));
+
+  revalidateBudgetPages();
+}
+
+/**
+ * Route Available to Assign into underfunded targets (ADR-0002). When no
+ * categoryItemIds are given, every category with an active target is
+ * considered, in group/sort order. Funds each by its shortfall (target −
+ * assigned) up to the remaining pool, never funding more than is available.
+ * Returns the amount successfully assigned.
+ */
+export async function assignToTargets(
+  categoryItemIds?: string[],
+): Promise<{ assigned: number; categoryCount: number }> {
+  const budget = await getOrCreateDefaultBudget();
+  const { mb } = await getOrCreateMonthBudget(budget.id);
+
+  const groups = await db
+    .select()
+    .from(categoryGroupsTable)
+    .where(eq(categoryGroupsTable.monthBudgetId, mb.id))
+    .orderBy(categoryGroupsTable.sortOrder);
+  const groupIds = groups.map((g) => g.id);
+  const rows = groupIds.length
+    ? await db
+      .select()
+      .from(budgetCategoriesTable)
+      .where(
+        and(
+          inArray(budgetCategoriesTable.groupId, groupIds),
+          isNull(budgetCategoriesTable.deletedAt),
+        ),
+      )
+      .orderBy(budgetCategoriesTable.sortOrder)
+    : [];
+
+  const templateIds = Array.from(
+    new Set(rows.map((r) => r.templateId).filter((id): id is string => !!id)),
+  );
+  const templates = templateIds.length
+    ? await db
+      .select()
+      .from(categoryTemplatesTable)
+      .where(inArray(categoryTemplatesTable.id, templateIds))
+    : [];
+  const templateById = new Map(templates.map((t) => [t.id, t]));
+
+  const rollups = await db
+    .select()
+    .from(categoryRollups)
+    .where(eq(categoryRollups.monthBudgetId, mb.id));
+  const assignedByCategory = new Map(
+    rollups.map((r) => [r.categoryId, Number(r.assigned ?? 0)]),
+  );
+
+  // target := [itemId, template, assigned, shortfall], ordered by group then item
+  const orderByGroup = new Map(
+    groups.map((g, i) => [g.id, i]),
+  );
+  const targeted = rows
+    .map((r) => {
+      const tpl = r.templateId ? templateById.get(r.templateId) : undefined;
+      if (!tpl || tpl.targetType === "NONE") return null;
+      const assigned = assignedByCategory.get(r.id) ?? 0;
+      const shortfall = Math.max(Number(tpl.targetAmount ?? 0) - assigned, 0);
+      return { itemId: r.id, shortfall, order: orderByGroup.get(r.groupId) ?? 0 };
+    })
+    .filter((x): x is { itemId: string; shortfall: number; order: number } => x !== null)
+    .sort((a, b) => a.order - b.order);
+  if (targeted.length === 0) return { assigned: 0, categoryCount: 0 };
+
+  const pool = await getReadyToAssign(mb.id);
+  if (pool <= 0.005) return { assigned: 0, categoryCount: 0 };
+
+  const itemsToFund = categoryItemIds && categoryItemIds.length > 0
+    ? targeted.filter((t) => categoryItemIds.includes(t.itemId))
+    : targeted;
+  if (itemsToFund.length === 0) return { assigned: 0, categoryCount: 0 };
+
+  let remainingPool = pool;
+  let assignedTotal = 0;
+  let fundedCount = 0;
+  const spends: Array<{ monthBudgetId: string; categoryId: string; amount: number }> = [];
+
+  for (const { itemId, shortfall } of itemsToFund) {
+    const alloc = Math.min(shortfall, remainingPool);
+    if (alloc <= 0.005) break;
+    spends.push({ monthBudgetId: mb.id, categoryId: itemId, amount: alloc });
+    assignedTotal += alloc;
+    remainingPool -= alloc;
+    if (alloc >= shortfall - 0.005) fundedCount++;
+  }
+
+  await db.transaction(async (tx) => {
+    for (const s of spends) {
+      await tx.insert(assignmentLedger).values({
+        monthBudgetId: s.monthBudgetId,
+        categoryId: s.categoryId,
+        paycheckId: null,
+        moveId: null,
+        amount: String(s.amount),
+        moveType: "ASSIGN",
+      });
+      await incrementRollup(s.monthBudgetId, s.categoryId, {
+        assigned: s.amount,
+        available: s.amount,
+      }, tx);
+    }
+  });
+
+  revalidateBudgetPages();
+  return { assigned: assignedTotal, categoryCount: fundedCount };
+}
+
+// ---------------------------------------------------------------------------
 // Transactions: NEW → TRACKED → DELETED; tracking feeds Activity/Available
 // ---------------------------------------------------------------------------
 
@@ -891,6 +1317,15 @@ export async function addCategoryItem(
     .limit(1);
   if (!group) throw new Error("Group not found");
 
+  const [monthB] = await db
+    .select({ budgetId: monthBudgets.budgetId })
+    .from(monthBudgets)
+    .where(eq(monthBudgets.id, group.monthBudgetId))
+    .limit(1);
+  const templateId = monthB
+    ? await getOrCreateCategoryTemplate(monthB.budgetId, trimmed, group.name)
+    : null;
+
   const [lastItem] = await db
     .select({ sortOrder: budgetCategoriesTable.sortOrder })
     .from(budgetCategoriesTable)
@@ -907,6 +1342,7 @@ export async function addCategoryItem(
     .insert(budgetCategoriesTable)
     .values({
       groupId,
+      templateId,
       name: trimmed,
       dueDate: null,
       planned: String(planned),
@@ -930,6 +1366,14 @@ export async function addCategoryItem(
     received: 0,
     remaining: 0,
     transactionCount: 0,
+    templateId,
+    targetType: "NONE",
+    targetAmount: 0,
+    targetDue: null,
+    targetDate: null,
+    targetMonthDay: null,
+    needed: 0,
+    trend: [],
   };
 }
 

@@ -22,12 +22,15 @@ interface PlanningBudgetGroupCardProps {
   onReorder: (orderedIds: string[]) => void;
   onReorderEnd: (orderedIds: string[]) => void;
   onUpdateItem: (itemId: string, patch: { name: string; planned: number }) => void;
+  onAssignAmount: (item: GroupItem, amount: number) => void;
 
   busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
   onArmDelete: (id: string | null) => void;
   onDeleteItem: (item: GroupItem, groupId: string) => void;
   onReceiveIncome: (item: GroupItem) => void;
+  selectedItemId: string | null;
+  onSelectItem: (item: GroupItem) => void;
 
   addItemGroup: string | null;
   onBeginAdd: () => void;
@@ -50,11 +53,14 @@ function PlanningBudgetGroupCard({
   onReorder,
   onReorderEnd,
   onUpdateItem,
+  onAssignAmount,
   busy,
   deleteArmingId,
   onArmDelete,
   onDeleteItem,
   onReceiveIncome,
+  selectedItemId,
+  onSelectItem,
   addItemGroup,
   onBeginAdd,
   newItemName,
@@ -144,7 +150,7 @@ function PlanningBudgetGroupCard({
 
   return (
     <div className={`${sharedClasses.card} ${classes.groupCard}`}>
-      <div className={classes.gHeader}>
+      <div className={`${classes.gHeader} ${group.isIncome ? classes.gHeaderIncome : classes.gHeaderExpense}`}>
         <button
           type="button"
           className={classes.gTitleBtn}
@@ -157,9 +163,21 @@ function PlanningBudgetGroupCard({
             className={`${classes.gChev} ${isExpanded ? '' : classes.open}`}
           />
         </button>
-        <span className={classes.gCol}>Planned</span>
-        <span className={classes.gCol}>{group.isIncome ? 'Received' : 'Spent'}</span>
-        <span className={classes.gCol}>Remaining</span>
+        {group.isIncome ? (
+          <>
+            <span className={classes.gCol}>Planned</span>
+            <span className={classes.gCol}>Received</span>
+            <span aria-hidden="true" />
+          </>
+        ) : (
+          <>
+            <span aria-hidden="true" />
+            <span className={classes.gCol}>Assigned</span>
+            <span className={classes.gCol}>Activity</span>
+            <span className={classes.gCol}>Available</span>
+            <span aria-hidden="true" />
+          </>
+        )}
       </div>
 
       <Collapse expanded={isExpanded}>
@@ -180,12 +198,15 @@ function PlanningBudgetGroupCard({
                     groupId={group.id}
                     isIncome={group.isIncome}
                     isDragging={draggingItemId === item.id}
+                    isSelected={selectedItemId === item.id}
+                    onSelectItem={onSelectItem}
                     busy={busy}
                     deleteArmingId={deleteArmingId}
                     onArmDelete={onArmDelete}
                     onDeleteItem={onDeleteItem}
                     onReceiveIncome={onReceiveIncome}
                     onUpdateItem={onUpdateItem}
+                    onAssignAmount={onAssignAmount}
                     registerItemRef={registerItemRef}
                     onDragStart={handleDragStart}
                     onDrag={handleDrag}
@@ -223,7 +244,7 @@ function PlanningBudgetGroupCard({
           ) : (
             <div className={classes.gFooterBlock}>
               <div className={classes.gDivider} />
-              <div className={classes.gFooter}>
+              <div className={`${classes.gFooter} ${group.isIncome ? classes.gFooterIncome : ''}`}>
                 <button
                   type="button"
                   className={classes.gAdd}
@@ -243,9 +264,6 @@ function PlanningBudgetGroupCard({
                         const value = group.isIncome ? it.received : it.spent;
                         return sum + value;
                       }, 0))}
-                    </span>
-                    <span className={`${classes.gTotal} ${classes.gTotalRemaining}`}>
-                      {formatMoney(group.items.reduce((sum, it) => sum + it.remaining, 0))}
                     </span>
                   </>
                 )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DonutChart } from '@mantine/charts';
 import {
   Box,
@@ -10,12 +10,14 @@ import {
   Center,
 } from '@mantine/core';
 import type { BudgetTransactionDTO } from '@/types/budget';
-import type { PlanningCategory } from '../types';
+import type { GroupItem, PlanningCategory } from '../types';
 import sharedClasses from '../styles/PlanningShared.module.css';
 import PlanningViewToggle from './PlanningViewToggle';
 import PlanningStatusSubtabs from './PlanningStatusSubtabs';
 import PlanningTransactionSearch from './PlanningTransactionSearch';
 import PlanningTransactionList from './PlanningTransactionList';
+import PlanningCategoryHub from './PlanningCategoryHub';
+import PlanningTargetModal, { type TargetFormState } from './PlanningTargetModal';
 import listClasses from './PlanningTransactionList.module.css';
 import classes from './PlanningTransactionsPanel.module.css';
 
@@ -34,6 +36,14 @@ interface PlanningTransactionsPanelProps {
   onTrack: (id: string) => void;
   onDelete: (id: string) => void;
   plannedCategories: PlanningCategory[];
+  selectedItem: GroupItem | null;
+  onClearSelected: () => void;
+  onAssign: (item: GroupItem) => void;
+  readyToAssign: number;
+  onSaveTarget: (item: GroupItem, form: TargetFormState) => void;
+  targetBusy: boolean;
+  onAssignAll: () => void;
+  assignAllBusy: boolean;
 }
 
 const CATEGORY_COLORS = [
@@ -53,8 +63,8 @@ type SummaryMetric = 'planned' | 'spent' | 'remaining';
 
 const SUMMARY_METRIC_LABELS: Record<SummaryMetric, string> = {
   planned: 'Planned',
-  spent: 'Spent',
-  remaining: 'Remaining',
+  spent: 'Activity',
+  remaining: 'Available',
 };
 
 function SummaryDonutChart({
@@ -175,52 +185,110 @@ export default function PlanningTransactionsPanel({
   onTrack,
   onDelete,
   plannedCategories,
+  selectedItem,
+  onClearSelected,
+  onAssign,
+  readyToAssign,
+  onSaveTarget,
+  targetBusy,
+  onAssignAll,
+  assignAllBusy,
 }: PlanningTransactionsPanelProps) {
   const [metric, setMetric] = useState<SummaryMetric>('spent');
+  const [targetItem, setTargetItem] = useState<GroupItem | null>(null);
+
+  const categoryTx = useMemo(() => {
+    if (!selectedItem) return [];
+    return filteredTx.filter((t) => t.categoryId === selectedItem.id);
+  }, [selectedItem, filteredTx]);
 
   return (
-    <aside className={classes.rightCol}>
-      <PlanningViewToggle activeView={activeView} onViewChange={onViewChange} />
+    <aside className={classes.rightCol} data-hub-panel>
+      <div className={classes.headerRow}>
+        <PlanningViewToggle activeView={activeView} onViewChange={onViewChange} />
+        <button
+          type="button"
+          className={classes.assignAll}
+          onClick={onAssignAll}
+          disabled={assignAllBusy || readyToAssign <= 0}
+        >
+          {assignAllBusy ? 'Assigning…' : 'Assign to Targets'}
+        </button>
+      </div>
 
-      {activeView === 'transactions' && (
-        <PlanningStatusSubtabs activeTab={activeTab} onTabChange={onTabChange} />
-      )}
-
-      {activeView === 'transactions' ? (
+      {selectedItem ? (
         <>
-          <PlanningTransactionSearch
-            searchQuery={searchQuery}
-            onChange={onSearchQueryChange}
-          />
-
-          <PlanningTransactionList
-            groups={[...txByMonth.entries()].map(([label, txs]) => ({
-              label,
-              txs,
-            }))}
+          <PlanningCategoryHub
+            item={selectedItem}
+            transactions={categoryTx}
             busy={busy}
             onTrack={onTrack}
             onDelete={onDelete}
+            onBack={onClearSelected}
+            onAssign={onAssign}
+            readyToAssign={readyToAssign}
+            assignBusy={busy === 'row'}
+            onEditTarget={(item) => setTargetItem(item)}
           />
-
-          {filteredTx.length === 0 && (
-            <div className={listClasses.monthGroup}>
-              <div className={listClasses.monthLabel}>{month}</div>
-              <div className={listClasses.empty}>No transactions</div>
-            </div>
-          )}
-
           {error && <div className={sharedClasses.error}>{error}</div>}
         </>
       ) : (
-        <div className={classes.summaryView}>
-          <SummaryDonutChart plannedCategories={plannedCategories} metric={metric} />
-          <SummaryTable
-            plannedCategories={plannedCategories}
-            metric={metric}
-            onMetricChange={setMetric}
-          />
-        </div>
+        <>
+          {activeView === 'transactions' && (
+            <PlanningStatusSubtabs activeTab={activeTab} onTabChange={onTabChange} />
+          )}
+
+          {activeView === 'transactions' ? (
+            <>
+              <PlanningTransactionSearch
+                searchQuery={searchQuery}
+                onChange={onSearchQueryChange}
+              />
+
+              <PlanningTransactionList
+                groups={[...txByMonth.entries()].map(([label, txs]) => ({
+                  label,
+                  txs,
+                }))}
+                busy={busy}
+                onTrack={onTrack}
+                onDelete={onDelete}
+              />
+
+              {filteredTx.length === 0 && (
+                <div className={listClasses.monthGroup}>
+                  <div className={listClasses.monthLabel}>{month}</div>
+                  <div className={listClasses.empty}>No transactions</div>
+                </div>
+              )}
+
+              {error && <div className={sharedClasses.error}>{error}</div>}
+            </>
+          ) : (
+            <div className={classes.summaryView}>
+              <SummaryDonutChart plannedCategories={plannedCategories} metric={metric} />
+              <SummaryTable
+                plannedCategories={plannedCategories}
+                metric={metric}
+                onMetricChange={setMetric}
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {targetItem && (
+        <PlanningTargetModal
+          key={targetItem.id}
+          opened
+          onClose={() => setTargetItem(null)}
+          item={targetItem}
+          busy={targetBusy}
+          onSave={(form) => {
+            onSaveTarget(targetItem, form);
+            setTargetItem(null);
+          }}
+        />
       )}
     </aside>
   );

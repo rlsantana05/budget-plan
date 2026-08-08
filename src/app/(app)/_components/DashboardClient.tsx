@@ -41,7 +41,7 @@ export default function DashboardClient({
 
         <Stack align="center" mb={48}>
           <Text size="sm" c="dimmed">
-            Available to Allocate
+            Available to Assign
           </Text>
           <Text
             fz={48}
@@ -66,7 +66,7 @@ export default function DashboardClient({
 
           <Card withBorder padding="lg" radius="md" bg="surface.1" className={classes.nestedCard}>
             <Text size="sm" c="dimmed" mb={4}>
-              Funded
+              Assigned
             </Text>
             <Text size="xl" fw={700} c="teal">
               $0.00
@@ -75,7 +75,7 @@ export default function DashboardClient({
 
           <Card withBorder padding="lg" radius="md" bg="surface.1" className={classes.nestedCard}>
             <Text size="sm" c="dimmed" mb={4}>
-              Spent
+              Activity
             </Text>
             <Text size="xl" fw={700} c="orange">
               $0.00
@@ -84,7 +84,7 @@ export default function DashboardClient({
 
           <Card withBorder padding="lg" radius="md" bg="surface.1" className={classes.nestedCard}>
             <Text size="sm" c="dimmed" mb={4}>
-              Remaining
+              Available
             </Text>
             <Text size="xl" fw={700}>
               $0.00

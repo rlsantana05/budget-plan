@@ -1,3 +1,10 @@
+export interface BudgetCategoryTrendDTO {
+  /** Short month label, e.g. "Aug". */
+  month: string;
+  /** Rollup activity (spending) for that month. */
+  activity: number;
+}
+
 export interface BudgetCategoryItemDTO {
   id: string;
   groupId: string;
@@ -13,6 +20,21 @@ export interface BudgetCategoryItemDTO {
   received: number;
   remaining: number;
   transactionCount: number;
+  /** Durable category identity (ADR-0002). Null for legacy/unlinked rows. */
+  templateId: string | null;
+  /** Category target rule: "NONE" | "ONCE" | "MONTHLY" (ADR-0002). */
+  targetType: "NONE" | "ONCE" | "MONTHLY";
+  targetAmount: number;
+  /** Due-date label, e.g. "Aug 21". Null when no target. */
+  targetDue: string | null;
+  /** Absolute ISO date (yyyy-mm-dd) for ONCE targets; null otherwise. */
+  targetDate: string | null;
+  /** Day-of-month (1–31) for MONTHLY targets; null otherwise. */
+  targetMonthDay: number | null;
+  /** Shortfall = target − assigned, clamped ≥ 0 (only meaningful with a target). */
+  needed: number;
+  /** Up to 3 most recent months of spending (rollup activity) for the durable category (ADR-0003). */
+  trend: BudgetCategoryTrendDTO[];
 }
 
 export interface BudgetCategoryGroupDTO {
@@ -45,6 +67,8 @@ export interface BudgetTransactionDTO {
   date: string;
   status: TransactionStatus;
   categoryName: string | null;
+  /** Owning category id (matches a BudgetCategoryItemDTO.id). Null when uncategorized. */
+  categoryId: string | null;
   accountName: string | null;
   isIncome: boolean;
 }
@@ -68,53 +92,6 @@ export interface MonthBudgetPlanDTO {
   note: string | null;
   transactions: BudgetTransactionDTO[];
   accounts: BudgetAccountOptionDTO[];
-}
-
-export interface BudgetScreenCategoryItemDTO {
-  id: string;
-  groupId: string;
-  name: string;
-  planned: number;
-  dueDate: string | null;
-  assigned: number;
-  activity: number;
-  available: number;
-  availableStatus: "positive" | "negative" | "neutral";
-  status?: string;
-}
-
-export interface BudgetScreenCategoryGroupDTO {
-  id: string;
-  monthBudgetId: string;
-  name: string;
-  sortOrder: number;
-  collapsed: boolean;
-  assigned: number;
-  activity: number;
-  available: number;
-  items: BudgetScreenCategoryItemDTO[];
-}
-
-export interface BudgetScreenDTO {
-  id: string;
-  month: string;
-  year: number;
-  note: string | null;
-  readyToAssign: {
-    amount: number;
-    label: "Ready to Assign";
-    action: "Assign";
-  };
-  filterTabs: {
-    active: string;
-    options: string[];
-  };
-  toolbar: {
-    actions: string[];
-    viewToggle: string[];
-  };
-  columns: string[];
-  categoryGroups: BudgetScreenCategoryGroupDTO[];
 }
 
 export interface DefaultItemSet {

@@ -8,6 +8,7 @@ import {
   receivePlannedIncome,
   reorderCategoryItems,
   restoreCategoryItem,
+  setCategoryAssigned,
   updateCategoryItem,
 } from '@/actions/budget-planning';
 import { MOCK_GROUPS } from '../constants';
@@ -108,10 +109,19 @@ export function useBudgetGroups(
               name,
               dueDate: null,
               planned,
+              funded: 0,
               spent: 0,
               received: 0,
               remaining: 0,
               transactionCount: 0,
+              templateId: null,
+              targetType: 'NONE',
+              targetAmount: 0,
+              targetDue: null,
+              targetDate: null,
+              targetMonthDay: null,
+              needed: 0,
+              trend: [],
             },
           ],
         }
@@ -132,9 +142,19 @@ export function useBudgetGroups(
                 name: created.name,
                 dueDate: created.dueDate,
                 planned: created.planned,
+                funded: Number(created.funded ?? 0),
                 spent: created.spent,
                 received: created.received ?? 0,
                 remaining: created.remaining,
+                transactionCount: created.transactionCount,
+                templateId: created.templateId ?? null,
+                targetType: created.targetType ?? 'NONE',
+                targetAmount: Number(created.targetAmount ?? 0),
+                targetDue: created.targetDue ?? null,
+                targetDate: created.targetDate ?? null,
+                targetMonthDay: created.targetMonthDay ?? null,
+                needed: Number(created.needed ?? 0),
+                trend: created.trend ?? [],
               }
               : it)),
           }
@@ -157,6 +177,30 @@ export function useBudgetGroups(
 
       runTxAction('row', async () => {
         await updateCategoryItem(itemId, { name, planned });
+      });
+    },
+    [runTxAction],
+  );
+
+  const handleAssignAmount = useCallback(
+    (item: GroupItem, amount: number) => {
+      const delta = amount - item.funded;
+      if (Math.abs(delta) < 0.005) return;
+
+      setGroups((prev) => prev.map((g) => ({
+        ...g,
+        items: g.items.map((it) => (it.id === item.id
+          ? {
+            ...it,
+            funded: amount,
+            remaining: it.remaining + delta,
+            needed: Math.max(it.targetAmount - amount, 0),
+          }
+          : it)),
+      })));
+
+      runTxAction('row', async () => {
+        await setCategoryAssigned(item.id, amount);
       });
     },
     [runTxAction],
@@ -259,6 +303,7 @@ export function useBudgetGroups(
     setDeleteArmingId,
     handleDeleteItem,
     handleUpdateItem,
+    handleAssignAmount,
     receiveHint,
     handleReceiveIncome,
     handleReorderItems,

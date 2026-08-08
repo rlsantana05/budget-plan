@@ -3,10 +3,19 @@ export interface GroupItem {
   name: string;
   dueDate: string | null;
   planned: number;
+  funded: number;
   spent: number;
   received: number;
   remaining: number;
   transactionCount: number;
+  templateId: string | null;
+  targetType: 'NONE' | 'ONCE' | 'MONTHLY';
+  targetAmount: number;
+  targetDue: string | null;
+  targetDate: string | null;
+  targetMonthDay: number | null;
+  needed: number;
+  trend: Array<{ month: string; activity: number }>;
 }
 
 export interface PlanningCategory {

@@ -13,12 +13,15 @@ interface PlanningBudgetGroupListProps {
   onReorder: (groupId: string, orderedIds: string[]) => void;
   onReorderCommit: (groupId: string, orderedIds: string[]) => void;
   onUpdateItem: (itemId: string, patch: { name: string; planned: number }) => void;
+  onAssignAmount: (item: GroupItem, amount: number) => void;
 
   busy: 'add' | 'row' | null;
   deleteArmingId: string | null;
   onArmDelete: (id: string | null) => void;
   onDeleteItem: (item: GroupItem, groupId: string) => void;
   onReceiveIncome: (item: GroupItem) => void;
+  selectedItemId: string | null;
+  onSelectItem: (item: GroupItem) => void;
 
   addItemGroup: string | null;
   onBeginAddItem: (groupId: string) => void;
@@ -51,11 +54,14 @@ export default function PlanningBudgetGroupList(
             onReorder={(ordered) => props.onReorder(group.id, ordered)}
             onReorderEnd={(ordered) => props.onReorderCommit(group.id, ordered)}
             onUpdateItem={props.onUpdateItem}
+            onAssignAmount={props.onAssignAmount}
             busy={props.busy}
             deleteArmingId={props.deleteArmingId}
             onArmDelete={props.onArmDelete}
             onDeleteItem={props.onDeleteItem}
             onReceiveIncome={props.onReceiveIncome}
+            selectedItemId={props.selectedItemId}
+            onSelectItem={props.onSelectItem}
             addItemGroup={props.addItemGroup}
             onBeginAdd={() => props.onBeginAddItem(group.id)}
             newItemName={props.newItemName}
