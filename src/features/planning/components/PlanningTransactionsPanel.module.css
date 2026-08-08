@@ -21,7 +21,51 @@
 .categoryCell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  max-width: 196px;
+}
+
+.categoryName {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.summaryTabList {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.summaryTab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0%;
+  padding: 0 0 10px;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  user-select: none;
+}
+
+.summaryTab[data-active='true'] {
+  color: var(--accent-bright);
+  font-weight: 700;
+}
+
+.summaryTabUnderline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent-bright);
 }
 
 .categoryDot {

@@ -9,6 +9,8 @@ export interface BudgetCategoryItemDTO {
   accountId: string | null;
   funded: number;
   spent: number;
+  /** Money marked received for income categories (0 for expense categories). */
+  received: number;
   remaining: number;
   transactionCount: number;
 }

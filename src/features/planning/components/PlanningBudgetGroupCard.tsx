@@ -239,7 +239,10 @@ function PlanningBudgetGroupCard({
                       {formatMoney(group.items.reduce((sum, it) => sum + it.planned, 0))}
                     </span>
                     <span className={`${classes.gTotal} ${classes.gTotalSpent}`}>
-                      {formatMoney(group.items.reduce((sum, it) => sum + it.spent, 0))}
+                      {formatMoney(group.items.reduce((sum, it) => {
+                        const value = group.isIncome ? it.received : it.spent;
+                        return sum + value;
+                      }, 0))}
                     </span>
                     <span className={`${classes.gTotal} ${classes.gTotalRemaining}`}>
                       {formatMoney(group.items.reduce((sum, it) => sum + it.remaining, 0))}

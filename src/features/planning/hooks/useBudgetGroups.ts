@@ -109,6 +109,7 @@ export function useBudgetGroups(
               dueDate: null,
               planned,
               spent: 0,
+              received: 0,
               remaining: 0,
               transactionCount: 0,
             },
@@ -132,6 +133,7 @@ export function useBudgetGroups(
                 dueDate: created.dueDate,
                 planned: created.planned,
                 spent: created.spent,
+                received: created.received ?? 0,
                 remaining: created.remaining,
               }
               : it)),

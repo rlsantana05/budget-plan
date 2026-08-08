@@ -63,6 +63,7 @@ export function useTransactionsPanel(
     const memo = txMemo.trim() || null;
     const category = categoryOptions.find((c) => c.value === categoryId);
     const account = accounts.find((a) => a.id === accountId);
+    if (!accountId) return;
     const tempId = `pending-${Date.now()}`;
 
     setTransactions((prev) => [

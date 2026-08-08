@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
+import { DonutChart } from '@mantine/charts';
 import {
   Box,
   Table,
+  Tabs,
   Text,
   Center,
 } from '@mantine/core';
@@ -33,16 +36,6 @@ interface PlanningTransactionsPanelProps {
   plannedCategories: PlanningCategory[];
 }
 
-function SummaryCircleChart() {
-  return (
-    <Box h={200}>
-      <Center h="100%">
-        <Text c="dimmed">Circle Chart Placeholder</Text>
-      </Center>
-    </Box>
-  );
-}
-
 const CATEGORY_COLORS = [
   'var(--mantine-color-indigo-5)',
   'var(--mantine-color-teal-5)',
@@ -56,24 +49,52 @@ const CATEGORY_COLORS = [
   'var(--mantine-color-yellow-5)',
 ];
 
-function SummaryTable({ plannedCategories }: { plannedCategories: PlanningCategory[] }) {
-  const headers = ['Planned', 'Spent', 'Remaining'];
+type SummaryMetric = 'planned' | 'spent' | 'remaining';
+
+const SUMMARY_METRIC_LABELS: Record<SummaryMetric, string> = {
+  planned: 'Planned',
+  spent: 'Spent',
+  remaining: 'Remaining',
+};
+
+function SummaryDonutChart({
+  plannedCategories,
+  metric,
+}: {
+  plannedCategories: PlanningCategory[];
+  metric: SummaryMetric;
+}) {
+  const data = plannedCategories
+    .filter((cat) => !cat.isIncome)
+    .map((cat, index) => ({
+      name: cat.name,
+      value: cat[metric],
+      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+    }))
+    .filter((item) => item.value > 0);
 
   return (
-    <Table>
-      <Table.Thead>
-        <Table.Tr>
-          {headers.map((label) => (
-            <Table.Th key={label} align="center">
-              <Text size="xs" fw={700} c="dimmed">
-                {label}
-              </Text>
-            </Table.Th>
-          ))}
-        </Table.Tr>
-      </Table.Thead>
+    <Box h={200}>
+      <Center h="100%">
+        <DonutChart size={180} thickness={22} withTooltip data={data} />
+      </Center>
+    </Box>
+  );
+}
+
+const SUMMARY_METRICS: SummaryMetric[] = ['planned', 'spent', 'remaining'];
+
+function SummaryValueTable({
+  categories,
+  metric,
+}: {
+  categories: PlanningCategory[];
+  metric: SummaryMetric;
+}) {
+  return (
+    <Table horizontalSpacing={8} verticalSpacing={6}>
       <Table.Tbody>
-        {plannedCategories.map((cat, index) => {
+        {categories.map((cat, index) => {
           const color = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
           return (
             <Table.Tr key={cat.name}>
@@ -83,19 +104,15 @@ function SummaryTable({ plannedCategories }: { plannedCategories: PlanningCatego
                     className={classes.categoryDot}
                     style={{ backgroundColor: color }}
                   />
-                  <Text fw={500} c={color}>{cat.name}</Text>
+                  <Text size="sm" fw={500} c={color} className={classes.categoryName}>
+                    {cat.name}
+                  </Text>
                 </div>
               </Table.Td>
-              <Table.Td align="center">
-                <Text fw={500}>
+              <Table.Td style={{ textAlign: 'right' }}>
+                <Text size="sm" fw={600} tabular-nums>
                   $
-                  {cat.spent.toFixed(2)}
-                </Text>
-              </Table.Td>
-              <Table.Td align="center">
-                <Text fw={500}>
-                  $
-                  {cat.remaining.toFixed(2)}
+                  {cat[metric].toFixed(2)}
                 </Text>
               </Table.Td>
             </Table.Tr>
@@ -103,6 +120,43 @@ function SummaryTable({ plannedCategories }: { plannedCategories: PlanningCatego
         })}
       </Table.Tbody>
     </Table>
+  );
+}
+
+function SummaryTable({
+  plannedCategories,
+  metric,
+  onMetricChange,
+}: {
+  plannedCategories: PlanningCategory[];
+  metric: SummaryMetric;
+  onMetricChange: (metric: SummaryMetric) => void;
+}) {
+  const categories = plannedCategories.filter((cat) => !cat.isIncome);
+
+  return (
+    <Tabs
+      value={metric}
+      onChange={(value) => {
+        if (value) onMetricChange(value as SummaryMetric);
+      }}
+      unstyled
+    >
+      <Tabs.List classNames={{ list: classes.summaryTabList }}>
+        {SUMMARY_METRICS.map((m) => (
+          <Tabs.Tab key={m} value={m} classNames={{ tab: classes.summaryTab }}>
+            {SUMMARY_METRIC_LABELS[m]}
+            {metric === m && <span className={classes.summaryTabUnderline} />}
+          </Tabs.Tab>
+        ))}
+      </Tabs.List>
+
+      {SUMMARY_METRICS.map((m) => (
+        <Tabs.Panel key={m} value={m} pt="sm">
+          <SummaryValueTable categories={categories} metric={m} />
+        </Tabs.Panel>
+      ))}
+    </Tabs>
   );
 }
 
@@ -122,6 +176,8 @@ export default function PlanningTransactionsPanel({
   onDelete,
   plannedCategories,
 }: PlanningTransactionsPanelProps) {
+  const [metric, setMetric] = useState<SummaryMetric>('spent');
+
   return (
     <aside className={classes.rightCol}>
       <PlanningViewToggle activeView={activeView} onViewChange={onViewChange} />
@@ -158,8 +214,12 @@ export default function PlanningTransactionsPanel({
         </>
       ) : (
         <div className={classes.summaryView}>
-          <SummaryCircleChart />
-          <SummaryTable plannedCategories={plannedCategories} />
+          <SummaryDonutChart plannedCategories={plannedCategories} metric={metric} />
+          <SummaryTable
+            plannedCategories={plannedCategories}
+            metric={metric}
+            onMetricChange={setMetric}
+          />
         </div>
       )}
     </aside>

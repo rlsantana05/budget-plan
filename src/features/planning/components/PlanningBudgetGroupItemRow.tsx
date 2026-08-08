@@ -161,7 +161,9 @@ function PlanningBudgetGroupItemRow({
           onChange={(e) => setDraftAmount(sanitizeAmountText(e.target.value))}
           onKeyDown={handleAmountKeyDown}
         />
-        <span className={classes.gValue}>{formatMoney(item.spent)}</span>
+        <span className={classes.gValue}>
+          {formatMoney(isIncome ? item.received : item.spent)}
+        </span>
         <span className={`${classes.gValue} ${classes.gRemaining}`}>
           {formatMoney(item.remaining)}
         </span>

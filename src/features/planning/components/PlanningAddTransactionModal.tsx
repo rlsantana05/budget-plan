@@ -101,7 +101,7 @@ export default function PlanningAddTransactionModal({
             data={accountOptions.map((a) => ({ value: a.id, label: a.name }))}
             value={txAccount}
             onChange={onTxAccountChange}
-            clearable
+            required
             placeholder="Select an account"
           />
         </div>
@@ -118,7 +118,7 @@ export default function PlanningAddTransactionModal({
             type="button"
             className={classes.modalButton}
             onClick={onSubmit}
-            disabled={busy === 'add' || txAmount <= 0}
+            disabled={busy === 'add' || txAmount <= 0 || txAccount === null}
           >
             {busy === 'add' ? 'Saving…' : 'Add transaction'}
           </button>

@@ -20,6 +20,7 @@ export function toGroups(dto: MonthBudgetPlanDTO): Group[] {
       dueDate: it.dueDate ?? null,
       planned: Number(it.planned),
       spent: Number(it.spent),
+      received: Number(it.received ?? 0),
       remaining: Number(it.remaining),
       transactionCount: it.transactionCount,
     })),

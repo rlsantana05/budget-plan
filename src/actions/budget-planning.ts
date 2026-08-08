@@ -27,6 +27,9 @@ import type {
 
 const DEV_EMAIL = "dev@budgetplan.app";
 
+/** Queryable client: the shared `db` or a `db.transaction` transaction handle. */
+type DbClient = Pick<typeof db, "insert" | "update" | "select" | "delete">;
+
 // Default EveryDollar group order + default items (used to seed a new month)
 const DEFAULT_GROUPS: Array<{ name: string; items: string[] }> = [
   { name: "Income", items: [] },
@@ -243,6 +246,28 @@ export async function getMonthBudgetPlan(
     }
   }
 
+  const incomeCategoryIds = new Set<string>();
+  for (const g of groups) {
+    if (g.name !== "Income") continue;
+    for (const it of itemsByGroup.get(g.id) ?? []) {
+      incomeCategoryIds.add(it.id);
+    }
+  }
+  const receivedByCategory = new Map<string, number>();
+  for (const tx of txRows) {
+    if (
+      tx.categoryId
+      && tx.status === "TRACKED"
+      && incomeCategoryIds.has(tx.categoryId)
+      && Number(tx.amount) > 0
+    ) {
+      receivedByCategory.set(
+        tx.categoryId,
+        (receivedByCategory.get(tx.categoryId) ?? 0) + Number(tx.amount),
+      );
+    }
+  }
+
   const groupDTOs = groups.map((g) => {
     const items = itemsByGroup.get(g.id) ?? [];
 
@@ -272,6 +297,9 @@ export async function getMonthBudgetPlan(
         accountId: it.accountId,
         funded,
         spent,
+        received: g.name === "Income"
+          ? (receivedByCategory.get(it.id) ?? 0)
+          : 0,
         remaining,
         transactionCount: txCountByCategory.get(it.id) ?? 0,
       };
@@ -304,11 +332,9 @@ export async function getMonthBudgetPlan(
   const diff = planExpenses - planIncome;
 
   const categoryNameById = new Map<string, string>();
-  const incomeCategoryIds = new Set<string>();
   for (const g of groupDTOs) {
     for (const it of g.items) {
       categoryNameById.set(it.id, it.name);
-      if (g.name === "Income") incomeCategoryIds.add(it.id);
     }
   }
 
@@ -514,8 +540,9 @@ function incrementRollup(
   monthBudgetId: string,
   categoryId: string,
   deltas: { assigned?: number; activity?: number; available?: number },
+  client: DbClient = db,
 ) {
-  return db
+  return client
     .insert(categoryRollups)
     .values({
       monthBudgetId,
@@ -533,6 +560,25 @@ function incrementRollup(
         updatedAt: new Date(),
       },
     });
+}
+
+/**
+ * Update a cached account balance by an incremental delta. Income is applied
+ * with a positive delta, spending with a negative one. No-op without an account.
+ */
+async function applyBalanceDelta(
+  accountId: string | null,
+  delta: number,
+  client: DbClient = db,
+): Promise<void> {
+  if (!accountId || delta === 0) return;
+  await client
+    .update(accounts)
+    .set({
+      balance: sql`${accounts.balance} + ${String(delta)}`,
+      updatedAt: new Date(),
+    })
+    .where(eq(accounts.id, accountId));
 }
 
 async function getReadyToAssign(monthBudgetId: string): Promise<number> {
@@ -801,11 +847,16 @@ export async function undoLastMove(): Promise<void> {
 function revalidateBudgetPages() {
   revalidatePath("/budget");
   revalidatePath("/planning");
+  revalidatePath("/accounts");
+  revalidatePath("/");
 }
 
 /** True when the category lives in the Income group (money in vs. spending). */
-async function isIncomeCategory(categoryId: string): Promise<boolean> {
-  const [row] = await db
+async function isIncomeCategory(
+  categoryId: string,
+  client: DbClient = db,
+): Promise<boolean> {
+  const [row] = await client
     .select({ groupName: categoryGroupsTable.name })
     .from(budgetCategoriesTable)
     .innerJoin(
@@ -876,6 +927,7 @@ export async function addCategoryItem(
     accountId: null,
     funded: 0,
     spent: 0,
+    received: 0,
     remaining: 0,
     transactionCount: 0,
   };
@@ -1005,9 +1057,11 @@ async function getMonthTransaction(id: string) {
   return { tx, mb };
 }
 
-async function getDefaultAccountId(): Promise<string | null> {
+async function getDefaultAccountId(
+  client: DbClient = db,
+): Promise<string | null> {
   const budget = await getOrCreateDefaultBudget();
-  const [account] = await db
+  const [account] = await client
     .select({ id: accounts.id })
     .from(accounts)
     .where(
@@ -1034,6 +1088,7 @@ export async function addTransaction(input: {
   date?: Date;
 }): Promise<{ id: string; date: string }> {
   assertAmount(input.amount);
+  if (!input.accountId) throw new Error("Account is required");
 
   const budget = await getOrCreateDefaultBudget();
   const { mb } = await getOrCreateMonthBudget(budget.id);
@@ -1060,69 +1115,87 @@ export async function addTransaction(input: {
 
 /**
  * Move a NEW transaction into TRACKED.
- * - Expense category: applies its rollup effect (activity up, available down).
+ * - Expense category: applies its rollup effect (activity up, available down)
+ *   and decrements the linked account balance.
  * - Income category: money coming in — creates a paycheck (feeds Ready to
- *   Assign) instead of touching rollups.
+ *   Assign) and increments the account balance.
+ * All legs run atomically.
  */
 export async function trackTransaction(id: string): Promise<void> {
   const { tx, mb } = await getMonthTransaction(id);
   if (!tx || tx.status !== "NEW") return;
   if (!tx.categoryId) throw new Error("Assign a category before tracking");
 
-  await db
-    .update(transactions)
-    .set({ status: "TRACKED" })
-    .where(eq(transactions.id, id));
-
+  const categoryId = tx.categoryId;
   const amount = Number(tx.amount);
-  if (await isIncomeCategory(tx.categoryId)) {
-    const accountId = tx.accountId ?? (await getDefaultAccountId());
-    if (accountId) {
-      await db.insert(paychecks).values({
-        monthBudgetId: mb.id,
-        accountId,
-        amount: String(amount),
-        date: tx.date,
-        note: tx.payee,
-        transactionId: tx.id,
-      });
+  await db.transaction(async (client) => {
+    await client
+      .update(transactions)
+      .set({ status: "TRACKED" })
+      .where(eq(transactions.id, id));
+
+    if (await isIncomeCategory(categoryId, client)) {
+      const accountId = tx.accountId ?? (await getDefaultAccountId(client));
+      if (accountId) {
+        await client.insert(paychecks).values({
+          monthBudgetId: mb.id,
+          accountId,
+          amount: String(amount),
+          date: tx.date,
+          note: tx.payee,
+          transactionId: tx.id,
+        });
+        await applyBalanceDelta(accountId, amount, client);
+      }
+    } else {
+      await incrementRollup(mb.id, categoryId, {
+        activity: amount,
+        available: -amount,
+      }, client);
+      await applyBalanceDelta(tx.accountId, -amount, client);
     }
-  } else {
-    await incrementRollup(mb.id, tx.categoryId, {
-      activity: amount,
-      available: -amount,
-    });
-  }
+  });
 
   revalidateBudgetPages();
 }
 
 /**
  * Mark a transaction DELETED (soft). Reverses its effect: rollup deltas for
- * expenses, or the linked paycheck for income. Remaining is restored.
+ * expenses, or the linked paycheck for income, plus the account balance
+ * delta applied when it was tracked. All legs run atomically.
  */
 export async function deleteTransaction(id: string): Promise<void> {
   const { tx, mb } = await getMonthTransaction(id);
   if (!tx || tx.status === "DELETED") return;
 
-  if (tx.status === "TRACKED") {
-    if (tx.categoryId && !(await isIncomeCategory(tx.categoryId))) {
-      const amount = Number(tx.amount);
-      await incrementRollup(mb.id, tx.categoryId, {
-        activity: -amount,
-        available: amount,
-      });
-    } else {
-      await db
-        .delete(paychecks)
-        .where(eq(paychecks.transactionId, tx.id));
+  await db.transaction(async (client) => {
+    if (tx.status === "TRACKED") {
+      if (tx.categoryId && !(await isIncomeCategory(tx.categoryId, client))) {
+        const amount = Number(tx.amount);
+        await incrementRollup(mb.id, tx.categoryId, {
+          activity: -amount,
+          available: amount,
+        }, client);
+        await applyBalanceDelta(tx.accountId, amount, client);
+      } else {
+        const [paycheck] = await client
+          .select({ accountId: paychecks.accountId })
+          .from(paychecks)
+          .where(eq(paychecks.transactionId, tx.id))
+          .limit(1);
+        const amount = Number(tx.amount);
+        await client
+          .delete(paychecks)
+          .where(eq(paychecks.transactionId, tx.id));
+        await applyBalanceDelta(paycheck?.accountId ?? tx.accountId, -amount, client);
+      }
     }
-  }
 
-  await db
-    .update(transactions)
-    .set({ status: "DELETED" })
-    .where(eq(transactions.id, id));
+    await client
+      .update(transactions)
+      .set({ status: "DELETED" })
+      .where(eq(transactions.id, id));
+  });
 
   revalidateBudgetPages();
 }

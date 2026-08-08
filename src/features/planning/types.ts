@@ -4,6 +4,7 @@ export interface GroupItem {
   dueDate: string | null;
   planned: number;
   spent: number;
+  received: number;
   remaining: number;
   transactionCount: number;
 }
