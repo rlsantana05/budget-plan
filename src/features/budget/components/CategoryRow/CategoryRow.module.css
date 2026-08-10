@@ -1,0 +1,96 @@
+.gRow {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr 1fr 1fr;
+  align-items: center;
+  column-gap: 12px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border-bottom: 1px solid var(--budget-hairline);
+  transition: background-color 0.15s ease;
+}
+
+.gRow:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.gRow:last-child {
+  border-bottom: none;
+}
+
+.gCategoryCell {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gName {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--budget-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+}
+
+.gCell {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--budget-ink);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.gFaint {
+  font-weight: 500;
+  color: var(--budget-ink-faint);
+}
+
+.gAvailable {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  font-size: 14.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.positive {
+  color: var(--budget-green);
+}
+
+.negative {
+  color: var(--budget-red);
+}
+
+.due {
+  color: var(--budget-amber);
+}
+
+.neutral {
+  color: var(--budget-ink-faint);
+  font-weight: 600;
+}
+
+.warnIcon {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--budget-red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

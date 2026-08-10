@@ -1,25 +1,27 @@
 'use client';
 
 import {
-  useCallback, useEffect, useMemo, useState,
+  useCallback, useEffect, useMemo,
 } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import type { MonthBudgetPlanDTO } from '@/types/budget';
 import { assignToTargets, setCategoryTarget } from '@/actions/budget-planning';
 import type { GroupItem } from './types';
-import type { TargetFormState } from './components/PlanningTargetModal';
+import type { TargetFormState } from './components/category/TargetModal/TargetModal';
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { usePlanningActionState } from './hooks/usePlanningActionState';
-import { useBudgetGroups } from './hooks/useBudgetGroups';
+import { useBudgetGroupsStore } from './store/budgetGroupsStore';
 import { useTransactionsPanel } from './hooks/useTransactionsPanel';
 import { usePlannedSummary } from './hooks/usePlannedSummary';
-import PlanningMonthHeader from './components/PlanningMonthHeader';
-import PlanningBudgetBanner from './components/PlanningBudgetBanner';
-import PlanningBudgetGroupList from './components/PlanningBudgetGroupList';
-import PlanningTransactionsPanel from './components/PlanningTransactionsPanel';
-import PlanningAddTransactionFab from './components/PlanningAddTransactionFab';
-import PlanningAddTransactionModal from './components/PlanningAddTransactionModal';
-import PlanningUndoToast from './components/PlanningUndoToast';
+import MonthHeader from './components/layout/MonthHeader/MonthHeader';
+import BudgetBanner from './components/budget/BudgetBanner/BudgetBanner';
+import { BudgetGroupsProvider } from './components/budget-group/BudgetGroupsProvider/BudgetGroupsProvider';
+import BudgetGroupList from './components/budget-group/BudgetGroupList/BudgetGroupList';
+import { BudgetColumnHeader } from './components/budget-group/BudgetColumnHeader/BudgetColumnHeader';
+import TransactionsPanel from './components/transactions/TransactionsPanel/TransactionsPanel';
+import TransactionsFab from './components/transactions/TransactionsFab/TransactionsFab';
+import TransactionsModal from './components/transactions/TransactionsModal/TransactionsModal';
+import UndoToast from './components/layout/UndoToast/UndoToast';
 import classes from './Planning.module.css';
 
 interface PlanningProps {
@@ -30,14 +32,15 @@ interface PlanningProps {
 export default function Planning({ initialData, selectedMonth }: PlanningProps) {
   const nav = useMonthNavigation(selectedMonth, initialData?.month);
   const action = usePlanningActionState();
-  const groups = useBudgetGroups(initialData, action);
+  const groups = useBudgetGroupsStore((s) => s.groups);
   const panel = useTransactionsPanel(initialData, action);
-  const { categories: plannedCategories } = usePlannedSummary(groups.groups);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const { categories: plannedCategories } = usePlannedSummary(groups);
+  const selectedItemId = useBudgetGroupsStore((s) => s.selectedItemId);
+  const setSelectedItemId = useBudgetGroupsStore((s) => s.setSelectedItemId);
 
-  const selectedItem = useMemo(() => groups.groups
+  const selectedItem = useMemo(() => groups
     .flatMap((g) => g.items)
-    .find((it) => it.id === selectedItemId) ?? null, [groups.groups, selectedItemId]);
+    .find((it) => it.id === selectedItemId) ?? null, [groups, selectedItemId]);
 
   const reduceMotion = useReducedMotion();
   const motionTransition = {
@@ -46,30 +49,30 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
   };
 
   const bannerAmount = useMemo(() => {
-    const income = groups.groups
+    const income = groups
       .filter((g) => g.isIncome)
       .flatMap((g) => g.items)
       .reduce((sum, it) => sum + it.planned, 0);
-    const spending = groups.groups
+    const spending = groups
       .filter((g) => !g.isIncome)
       .flatMap((g) => g.items)
       .reduce((sum, it) => sum + it.planned, 0);
     return income - spending;
-  }, [groups.groups]);
+  }, [groups]);
   let bannerLabel = 'on budget';
   if (bannerAmount < 0) bannerLabel = 'over budget';
   if (bannerAmount > 0) bannerLabel = 'left to budget';
 
   const readyToAssign = useMemo(() => {
-    const received = groups.groups
+    const received = groups
       .filter((g) => g.isIncome)
       .flatMap((g) => g.items)
       .reduce((sum, it) => sum + it.received, 0);
-    const assigned = groups.groups
+    const assigned = groups
       .flatMap((g) => g.items)
       .reduce((sum, it) => sum + it.funded, 0);
     return received - assigned;
-  }, [groups.groups]);
+  }, [groups]);
 
   const handleAssign = useCallback(
     (item: GroupItem) => {
@@ -116,10 +119,6 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
     [action],
   );
 
-  const handleSelectItem = useCallback((item: GroupItem) => {
-    setSelectedItemId(item.id);
-  }, []);
-
   useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
       const target = event.target as Element | null;
@@ -130,11 +129,11 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
     };
     document.addEventListener('click', handleDocumentClick);
     return () => document.removeEventListener('click', handleDocumentClick);
-  }, []);
+  }, [setSelectedItemId]);
 
   return (
     <div className={classes.page}>
-      <PlanningMonthHeader
+      <MonthHeader
         month={nav.month}
         year={nav.year}
         pickerOpened={nav.pickerOpened}
@@ -158,43 +157,22 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
             exit={{ opacity: 0, x: nav.navDir * -28 }}
             transition={motionTransition}
           >
-            <PlanningBudgetGroupList
-              banner={(
-                <PlanningBudgetBanner
-                  amount={bannerAmount}
-                  label={bannerLabel}
-                />
-              )}
-              groups={groups.groups}
-              expandedGroups={groups.expandedGroups}
-              onToggleGroup={groups.toggleGroup}
-              onReorder={groups.handleReorderItems}
-              onReorderCommit={groups.handleReorderCommit}
-              onUpdateItem={groups.handleUpdateItem}
-              onAssignAmount={groups.handleAssignAmount}
-              busy={action.busy}
-              deleteArmingId={groups.deleteArmingId}
-              onArmDelete={groups.setDeleteArmingId}
-              onDeleteItem={groups.handleDeleteItem}
-              onReceiveIncome={groups.handleReceiveIncome}
-              selectedItemId={selectedItem?.id ?? null}
-              onSelectItem={handleSelectItem}
-              addItemGroup={groups.addItemGroup}
-              onBeginAddItem={groups.beginAddItem}
-              newItemName={groups.newItemName}
-              onNewItemNameChange={groups.setNewItemName}
-              amountText={groups.amountText}
-              onAmountChange={groups.handleAmountInputChange}
-              onAddItem={groups.handleAddItem}
-              onCancelAdd={groups.cancelAddItem}
-              nameInputRef={groups.nameInputRef}
-              amountInputRef={groups.amountInputRef}
-              receiveHint={groups.receiveHint}
-            />
+            <BudgetGroupsProvider initialData={initialData} action={action}>
+              <BudgetGroupList
+                banner={(
+                  <BudgetBanner
+                    amount={bannerAmount}
+                    label={bannerLabel}
+                  >
+                    <BudgetColumnHeader />
+                  </BudgetBanner>
+                )}
+              />
+            </BudgetGroupsProvider>
           </motion.div>
         </AnimatePresence>
 
-        <PlanningTransactionsPanel
+        <TransactionsPanel
           activeView={panel.activeView}
           onViewChange={panel.setActiveView}
           activeTab={panel.activeTab}
@@ -220,9 +198,9 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
         />
       </div>
 
-      <PlanningAddTransactionFab onClick={() => panel.setAddOpen(true)} />
+      <TransactionsFab onClick={() => panel.setAddOpen(true)} />
 
-      <PlanningAddTransactionModal
+      <TransactionsModal
         opened={panel.addOpen}
         onClose={() => panel.setAddOpen(false)}
         categoryOptions={panel.categoryOptions}
@@ -242,7 +220,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
         error={action.error}
       />
 
-      <PlanningUndoToast undo={groups.undo} onUndo={groups.handleUndoDelete} />
+      <UndoToast />
     </div>
   );
 }

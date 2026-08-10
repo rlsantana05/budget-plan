@@ -1,0 +1,37 @@
+.wrap {
+  border-top: 1px solid var(--budget-hairline);
+}
+
+.addItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 18px;
+  background: rgba(167, 139, 250, 0.04);
+  color: var(--budget-indigo);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.addItem:hover {
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--budget-indigo);
+  flex-shrink: 0;
+}
+
+.label {
+  white-space: nowrap;
+}

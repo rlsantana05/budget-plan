@@ -1,0 +1,67 @@
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.card + .card {
+  margin-top: 14px;
+}
+
+.addItemSave {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--bg, #0d0d12);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.addItemSave:hover {
+  filter: brightness(1.08);
+}
+
+.addItemSave:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.addItemCancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 18px;
+  font-family: inherit;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.addItemCancel:hover {
+  background: var(--card-border);
+  color: var(--ink);
+}
+
+.error {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(221, 78, 59, 0.12);
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 500;
+}

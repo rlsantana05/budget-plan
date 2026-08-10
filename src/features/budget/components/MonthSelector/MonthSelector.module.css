@@ -1,0 +1,149 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  color: var(--budget-ink);
+  cursor: pointer;
+}
+
+.title strong {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.year {
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--budget-ink-faint);
+}
+
+.chev {
+  align-self: center;
+  color: var(--budget-ink-faint);
+  transition: color 0.15s ease;
+}
+
+.title:hover .chev {
+  color: var(--budget-ink-soft);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--budget-hairline-strong);
+  background: transparent;
+  color: var(--budget-ink-soft);
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.nav button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--budget-ink);
+}
+
+.nav button:focus-visible {
+  outline: 1px solid var(--budget-indigo);
+  outline-offset: 2px;
+}
+
+.picker {
+  background: var(--budget-bg-card-raised);
+  border: 1px solid var(--budget-hairline-strong);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.yearNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 12px;
+}
+
+.yearNav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--budget-ink-soft);
+  cursor: pointer;
+}
+
+.yearNav button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--budget-ink);
+}
+
+.yearNav span {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--budget-ink);
+}
+
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.monthTile {
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 9px 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--budget-ink-soft);
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.monthTile:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--budget-ink);
+}
+
+.tileCurrent {
+  color: var(--budget-ink);
+}
+
+.tileActive {
+  background: var(--budget-indigo-soft);
+  border-color: var(--budget-indigo);
+  color: var(--budget-ink);
+  font-weight: 700;
+}

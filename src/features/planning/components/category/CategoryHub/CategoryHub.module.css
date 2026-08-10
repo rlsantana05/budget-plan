@@ -1,0 +1,236 @@
+.hub {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.backChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-bright);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.backChip:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.hubTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hubName {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.targetBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent-bright);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.hubPlanned {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.statBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}
+
+.statValue {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.statAssigned {
+  color: var(--accent-bright);
+}
+
+.statSpent {
+  color: var(--red, #dd4e3b);
+}
+
+.statAvailable {
+  color: var(--ink);
+}
+
+.statAvailableNegative {
+  color: var(--red, #dd4e3b);
+}
+
+.trendCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.trendLabels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.trendLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.targetNote {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--card-border);
+  font-size: 13px;
+}
+
+.targetCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.targetCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.targetCardLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}
+
+.editTargetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-bright);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.editTargetBtn:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.targetNoteShort {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.targetNoteMet {
+  color: var(--ink-soft);
+}
+
+.targetRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+
+.assignBtn {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--accent-bright);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+
+.assignBtn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.assignBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.txHeader {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.txList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--ink-soft);
+  font-style: italic;
+  padding: 26px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}

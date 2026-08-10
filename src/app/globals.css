@@ -1,6 +1,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --col-template: 0.9fr 2fr 1.5fr 1.5fr 1.5fr 20px;
+  --col-gap: 12px;
+  --row-inset: 8px 16px; /* margin-x padding-x pattern, adjust as needed */
 }
 
 @media (prefers-color-scheme: dark) {

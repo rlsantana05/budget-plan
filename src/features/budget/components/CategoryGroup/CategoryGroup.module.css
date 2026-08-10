@@ -1,0 +1,64 @@
+.card {
+  background: var(--budget-bg-card);
+  border: 1px solid var(--budget-hairline);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.card + .card {
+  margin-top: 14px;
+}
+
+.gHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 18px;
+  background: var(--budget-bg-card-raised);
+  border-bottom: 1px solid var(--budget-hairline);
+}
+
+.gTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--budget-ink);
+  cursor: pointer;
+}
+
+.gTitle:focus-visible {
+  outline: 1px solid var(--budget-indigo);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.gChev {
+  color: var(--budget-ink-soft);
+  transition: transform 0.22s ease;
+}
+
+.gChev.collapsed {
+  transform: rotate(-90deg);
+}
+
+.gSubtotal {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--budget-ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gBody {
+  max-height: 800px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.gBodyCollapsed {
+  max-height: 0;
+}
