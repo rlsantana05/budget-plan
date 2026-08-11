@@ -65,16 +65,47 @@
 }
 
 .gAdd {
-  background: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  grid-column: 1;
+  width: 5.25rem;
   border: none;
-  padding: 4px 0;
-  justify-self: start;
+  padding: 10px 0;
+  background: transparent;
   color: #8b5cf6;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   font-family: inherit;
+  text-align: left;
   cursor: pointer;
   transition: color 0.15s ease;
+}
+
+.gAdd:hover {
+  color: #a78bfa;
+}
+
+.gAddIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #8b5cf6;
+  flex-shrink: 0;
+  color: #8b5cf6;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.gAdd:hover .gAddIcon {
+  border-color: #a78bfa;
+  color: #a78bfa;
+}
+
+.gAddLabel {
+  white-space: nowrap;
 }
 
 .gFooterLeft {
@@ -85,8 +116,8 @@
 }
 
 .gTotal {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -108,8 +139,4 @@
   grid-column: 4;
   text-align: right;
   padding-right: 8px;
-}
-
-.gAdd:hover {
-  color: #a78bfa;
 }

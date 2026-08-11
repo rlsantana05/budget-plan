@@ -18,6 +18,21 @@
   margin-top: 20px;
 }
 
+.status,
+.statusMet {
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
+.status {
+  color: var(--ink-soft);
+}
+
+.statusMet {
+  color: var(--mantine-color-orange-6);
+}
+
 .cancel,
 .save {
   font-size: 13px;

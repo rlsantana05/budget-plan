@@ -7,6 +7,8 @@ import type { KeyboardEvent, PointerEvent } from 'react';
 import { Check, GripVertical, Trash } from 'lucide-react';
 import type { GroupItem } from '../../../types';
 import { formatMoney, parseAmountText, sanitizeAmountText } from '../../../utils/formatters';
+import { getAvailableStatus, resolveTargetDueDate } from '../../../utils/status';
+import type { AvailableStatus } from '../../../utils/status';
 import { useBudgetGroupsStore } from '../../../store/budgetGroupsStore';
 import classes from './BudgetGroupCardItem.module.css';
 
@@ -54,7 +56,7 @@ function BudgetGroupCardItem({
     if (!amountFocusedRef.current && !draftAmount.includes('-') && !draftAmount.includes('.')) {
       setDraftAmount(String(initialAmount));
     }
-  }, [item.planned]);
+  }, [draftAmount, initialAmount, item.planned]);
 
   useEffect(() => {
     if (!assignedFocusedRef.current) setDraftAssigned(String(item.funded));
@@ -163,9 +165,21 @@ function BudgetGroupCardItem({
     : formatMoney(parseAmountText(draftAssigned));
   if (assignedFocused && draftAssigned !== '') assignedDisplay = draftAssigned;
 
-  let remainingClass = classes.gZero;
-  if (item.remaining > 0) remainingClass = classes.gPositive;
-  else if (item.remaining < 0) remainingClass = classes.gNegative;
+  const status: AvailableStatus = getAvailableStatus(
+    item.funded,
+    item.targetAmount,
+    resolveTargetDueDate(item),
+  );
+  const statusClass = {
+    complete: classes.statusComplete,
+    'at-risk': classes.statusAtRisk,
+    'in-progress': classes.statusInProgress,
+    unset: classes.statusUnset,
+  }[status];
+  const showCaption = !isIncome
+    && (status === 'at-risk' || status === 'in-progress')
+    && item.targetDue
+    && item.needed > 0;
 
   return (
     <>
@@ -213,26 +227,22 @@ function BudgetGroupCardItem({
             onChange={(e) => setDraftName(e.target.value)}
             onKeyDown={handleNameKeyDown}
           />
-          {!isIncome && (
-            <span className={classes.gNote}>
-              {item.targetType !== 'NONE' && (
-                item.needed > 0 ? (
-                  <>
-                    {formatMoney(item.needed)}
-                    {' '}
-                    needed by
-                    {' '}
-                    {item.targetDue}
-                  </>
-                ) : (
-                  <>
-                    Target met ·
-                    {' '}
-                    {item.targetDue}
-                  </>
-                )
-              )}
+          {!isIncome && status === 'complete' && (
+            <span
+              className={classes.gComplete}
+              aria-label={`${item.name} target met`}
+            >
+              <Check size={14} />
             </span>
+          )}
+          {showCaption && (
+            <div className={classes.gCaption}>
+              {formatMoney(item.needed)}
+              {' '}
+              {status === 'at-risk' ? 'needed by' : 'more by'}
+              {' '}
+              {item.targetDue}
+            </div>
           )}
         </span>
         {isIncome && (
@@ -278,8 +288,8 @@ function BudgetGroupCardItem({
               onKeyDown={handleAssignedKeyDown}
             />
             <span className={classes.gValue}>{formatMoney(item.spent)}</span>
-            <span className={`${classes.gValue} ${remainingClass}`}>
-              {formatMoney(item.remaining)}
+            <span className={`${classes.pill} ${statusClass}`}>
+              <span className={classes.pillText}>{formatMoney(item.remaining)}</span>
             </span>
           </>
         )}

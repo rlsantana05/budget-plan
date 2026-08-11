@@ -5,6 +5,7 @@ import {
 } from 'react';
 import { AnimatePresence, Reorder } from 'framer-motion';
 import { Collapse } from '@mantine/core';
+import { Plus } from 'lucide-react';
 import type { Group } from '../../../types';
 import sharedClasses from '../../shared/BudgetPlanShared.module.css';
 import classes from './BudgetGroupCard.module.css';
@@ -107,7 +108,7 @@ function BudgetGroupCard({ group }: BudgetGroupCardProps) {
 
   const available = group.isIncome
     ? group.items.reduce((sum, it) => sum + (it.received - it.planned), 0)
-    : group.items.reduce((sum, it) => sum + (it.planned - it.spent), 0);
+    : group.items.reduce((sum, it) => sum + it.remaining, 0);
 
   return (
     <div className={`${sharedClasses.card} ${classes.groupCard}`}>
@@ -170,9 +171,12 @@ function BudgetGroupCard({ group }: BudgetGroupCardProps) {
                   className={classes.gAdd}
                   onClick={() => beginAddItem(group.id)}
                 >
-                  +
-                  {' '}
-                  {group.isIncome ? 'Add income' : 'Add item'}
+                  <span className={classes.gAddIcon} aria-hidden="true">
+                    <Plus size={14} />
+                  </span>
+                  <span className={classes.gAddLabel}>
+                    {group.isIncome ? 'Add income' : 'Add item'}
+                  </span>
                 </button>
                 {group.isIncome && (
                   <>

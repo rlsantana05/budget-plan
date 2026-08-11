@@ -11,7 +11,9 @@
   letter-spacing: 0.7px;
   color: var(--ink-soft);
 }
-
+.header span:first-child {
+  margin-left: -8.5rem;
+}
 .header span:nth-child(n + 2):nth-child(-n + 4) {
   text-align: right;
 }

@@ -21,7 +21,7 @@
   padding: 4px 0;
   font-family: inherit;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
@@ -44,9 +44,9 @@
 
 .available {
   grid-column: 4;
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }

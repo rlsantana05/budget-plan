@@ -40,6 +40,7 @@
 }
 
 .gNameCell {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -80,15 +81,15 @@
 
 .gNameInput {
   min-width: 0;
-  flex: 1;
-  padding: 4px;
+  flex: 0 0 auto;
+  padding: 2px 4px;
   margin-left: -4px;
   background: transparent;
   border: none;
   border-radius: 6px;
   font-family: inherit;
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 14.5px;
+  font-weight: 700;
   color: var(--ink);
   letter-spacing: 0.01em;
   outline: none;
@@ -116,13 +117,13 @@
   width: 100%;
   min-width: 0;
   justify-self: end;
-  padding: 4px 8px;
+  padding: 2px 8px;
   background: transparent;
   border: none;
   border-radius: 6px;
   font-family: inherit;
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -147,25 +148,13 @@
 }
 
 .gValue {
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-align: right;
   padding-right: 8px;
-}
-
-.gPositive {
-  color: var(--green, #22c55e);
-}
-
-.gNegative {
-  color: var(--red, #dd4e3b);
-}
-
-.gZero {
-  color: var(--orange, #f59e0b);
 }
 
 .gActions {
@@ -276,11 +265,52 @@
   font-weight: 600;
 }
 
-.gNote {
-  margin-right: 0.5rem;
+.gComplete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--green, #22c55e);
+}
+
+.gCaption {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  align-self: flex-end;
+  margin-left: auto;
+  padding: 2px 0;
+  height: 100%;
   font-size: 12px;
-  color: var(--ink-soft);
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  min-width: 0;
+  color: var(--ink-soft);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
+  font-size: 14.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.statusComplete {
+  color: var(--green, #22c55e);
+}
+
+.statusAtRisk {
+  color: var(--orange, #f59e0b);
+}
+
+.statusInProgress {
+  color: var(--accent-bright);
+}
+
+.statusUnset {
+  color: var(--ink-soft);
 }
