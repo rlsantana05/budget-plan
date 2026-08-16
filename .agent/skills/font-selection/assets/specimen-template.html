@@ -1,0 +1,97 @@
+<!--
+  specimen-template.html
+
+  Structure for a live font specimen/comparison page. Populate the <link> tag(s) with the
+  actual Google Fonts embed for the candidate(s) being evaluated, and duplicate the
+  .specimen-block for each candidate when comparing more than one font.
+
+  Intended use: read this structure, then generate a populated HTML artifact via the
+  Visualizer (show_widget, HTML mode) so the user sees real rendered type rather than a
+  prose description of it. Do not just paste this file's placeholder text — replace the
+  font-family and Google Fonts <link> with the actual candidates from Step 3.
+-->
+<!-- 1. Replace this link with the real Google Fonts embed for the candidate(s), e.g.:
+     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+-->
+<link href="https://fonts.googleapis.com/css2?family=REPLACE_ME:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  .specimen-block {
+    font-family: 'REPLACE_ME', sans-serif; /* replace with candidate font-family */
+    padding: 24px;
+    border-bottom: 1px solid #e2e2e2;
+  }
+  .specimen-label {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 16px;
+  }
+  .specimen-display {
+    font-size: 48px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .specimen-heading {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+  .specimen-body {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    max-width: 60ch;
+    margin-bottom: 12px;
+  }
+  .specimen-label-text {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .specimen-numerals {
+    font-size: 20px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+  }
+  .specimen-caps {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+</style>
+
+<div class="specimen-block">
+  <div class="specimen-label">REPLACE_ME — Regular / Medium / Semibold</div>
+
+  <!-- Pangram at display size -->
+  <div class="specimen-display">The quick brown fox jumps</div>
+
+  <!-- Pangram at heading size -->
+  <div class="specimen-heading">Over the lazy dog near the quay</div>
+
+  <!-- Pangram at body size, realistic line length -->
+  <div class="specimen-body">
+    Pack my box with five dozen liquor jugs. This paragraph is set at body size to check
+    reading comfort, counter openness, and overall texture at the size real users will
+    actually read.
+  </div>
+
+  <!-- UI label -->
+  <div class="specimen-label-text">Account Balance</div>
+
+  <!-- Numeral / disambiguation test: 0 vs O, 1 vs l vs I, tabular alignment -->
+  <div class="specimen-numerals">$1,048,203.10 — 10 O0 l1I — 01234 56789</div>
+
+  <!-- All-caps behavior -->
+  <div class="specimen-caps">All Caps Label Test</div>
+</div>
+
+<!-- Duplicate the .specimen-block above (with its own font-family override) for each
+     additional candidate when comparing multiple fonts side by side. -->

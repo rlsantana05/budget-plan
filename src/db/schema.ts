@@ -104,6 +104,7 @@ export const accounts = pgTable(
       .default("0"),
     lastReconciledAt: timestamp("last_reconciled_at", { withTimezone: true }),
     isLiquid: boolean("is_liquid").notNull().default(true),
+    creditTransactionCount: integer("credit_transaction_count").default(0),
     isActive: boolean("is_active").notNull().default(true),
     budgetId: uuid("budget_id")
       .notNull()

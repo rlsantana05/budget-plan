@@ -14,6 +14,7 @@ const surface: MantineColorsTuple = [
 ];
 
 export const theme = createTheme({
+  fontFamily: "var(--font-sans, system-ui, sans-serif)",
   colors: {
     surface,
   },

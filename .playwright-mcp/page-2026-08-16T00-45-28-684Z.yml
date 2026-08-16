@@ -1,0 +1,175 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - paragraph [ref=e7]: Budget Plan
+      - button "Notifications" [ref=e8] [cursor=pointer]
+      - button "Toggle color scheme" [ref=e13] [cursor=pointer]
+      - generic "User" [ref=e18]: U
+    - generic [ref=e19]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - link "Dashboard" [ref=e23] [cursor=pointer]:
+            - /url: /
+          - link "Planning" [ref=e31] [cursor=pointer]:
+            - /url: /planning
+          - link "Accounts" [ref=e37] [cursor=pointer]:
+            - /url: /accounts
+          - link "Goals" [ref=e43] [cursor=pointer]:
+            - /url: /goals
+        - link "Settings" [ref=e48] [cursor=pointer]:
+          - /url: /settings
+      - generic [ref=e55]:
+        - banner [ref=e56]:
+          - button "August 2026" [ref=e57] [cursor=pointer]:
+            - strong [ref=e58]: August
+            - generic [ref=e59]: "2026"
+          - generic [ref=e62]:
+            - button "Previous month" [ref=e63] [cursor=pointer]
+            - button "Next month" [ref=e66] [cursor=pointer]
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - generic [ref=e72]: over budget
+              - generic [ref=e76]: $240.00
+            - generic [ref=e78]:
+              - generic [ref=e79]:
+                - button "Add Group" [ref=e82] [cursor=pointer]
+                - columnheader "Category Assigned Activity Available" [ref=e87]:
+                  - generic [ref=e88]: Category
+                  - generic [ref=e89]: Assigned
+                  - generic [ref=e90]: Activity
+                  - generic [ref=e91]: Available
+              - generic [ref=e92]:
+                - button "Giving Empty group $0.00 $0.00 $0.00 Add item to Giving" [ref=e95]:
+                  - generic [ref=e98] [cursor=pointer]:
+                    - generic [ref=e99]:
+                      - generic [ref=e102]: Giving
+                      - generic "Empty group" [ref=e104]: Empty
+                    - generic [ref=e105]: $0.00
+                    - generic [ref=e106]: $0.00
+                    - generic [ref=e107]: $0.00
+                    - button "Add item to Giving" [ref=e108]
+                - generic [ref=e111]:
+                  - button "Housing $0.00 $0.00 $0.00 Add item to Housing" [expanded] [ref=e112]:
+                    - generic [ref=e115] [cursor=pointer]:
+                      - generic [ref=e116]: Housing
+                      - generic [ref=e121]: $0.00
+                      - generic [ref=e122]: $0.00
+                      - generic [ref=e123]: $0.00
+                      - button "Add item to Housing" [ref=e124]
+                  - region "Housing $0.00 $0.00 $0.00 Add item to Housing" [ref=e126]:
+                    - generic [ref=e129]:
+                      - generic:
+                        - list
+                      - generic [ref=e130]: No categories yet — add your first item.
+                - button "Savings Empty group $0.00 $0.00 $0.00 Add item to Savings" [ref=e133]:
+                  - generic [ref=e136] [cursor=pointer]:
+                    - generic [ref=e137]:
+                      - generic [ref=e140]: Savings
+                      - generic "Empty group" [ref=e142]: Empty
+                    - generic [ref=e143]: $0.00
+                    - generic [ref=e144]: $0.00
+                    - generic [ref=e145]: $0.00
+                    - button "Add item to Savings" [ref=e146]
+                - generic [ref=e149]:
+                  - button "Transportation $0.00 $0.00 $0.00 Add item to Transportation" [expanded] [ref=e150]:
+                    - generic [ref=e153] [cursor=pointer]:
+                      - generic [ref=e154]: Transportation
+                      - generic [ref=e159]: $0.00
+                      - generic [ref=e160]: $0.00
+                      - generic [ref=e161]: $0.00
+                      - button "Add item to Transportation" [ref=e162]
+                  - region "Transportation $0.00 $0.00 $0.00 Add item to Transportation" [ref=e164]:
+                    - list [ref=e169]:
+                      - listitem [ref=e170]:
+                        - button "Drag to reorder Gas Gas $0.00 $0.00 $0.00 Delete Gas" [ref=e171]:
+                          - generic [ref=e172]:
+                            - button "Drag to reorder Gas" [ref=e173]
+                            - textbox "Item name" [ref=e181]: Gas
+                          - textbox "Assigned amount for Gas" [ref=e182]: $0.00
+                          - generic [ref=e183]: $0.00
+                          - generic [ref=e184]: $0.00
+                          - button "Delete Gas" [ref=e187] [cursor=pointer]
+                      - listitem [ref=e191]:
+                        - button "Drag to reorder Maintenance Maintenance $0.00 $0.00 $0.00 Delete Maintenance" [ref=e192]:
+                          - generic [ref=e193]:
+                            - button "Drag to reorder Maintenance" [ref=e194]
+                            - textbox "Item name" [ref=e202]: Maintenance
+                          - textbox "Assigned amount for Maintenance" [ref=e203]: $0.00
+                          - generic [ref=e204]: $0.00
+                          - generic [ref=e205]: $0.00
+                          - button "Delete Maintenance" [ref=e208] [cursor=pointer]
+                - button "Food Empty group $0.00 $0.00 $0.00 Add item to Food" [ref=e214]:
+                  - generic [ref=e217] [cursor=pointer]:
+                    - generic [ref=e218]:
+                      - generic [ref=e221]: Food
+                      - generic "Empty group" [ref=e223]: Empty
+                    - generic [ref=e224]: $0.00
+                    - generic [ref=e225]: $0.00
+                    - generic [ref=e226]: $0.00
+                    - button "Add item to Food" [ref=e227]
+                - button "Personal Empty group $0.00 $0.00 $0.00 Add item to Personal" [ref=e231]:
+                  - generic [ref=e234] [cursor=pointer]:
+                    - generic [ref=e235]:
+                      - generic [ref=e238]: Personal
+                      - generic "Empty group" [ref=e240]: Empty
+                    - generic [ref=e241]: $0.00
+                    - generic [ref=e242]: $0.00
+                    - generic [ref=e243]: $0.00
+                    - button "Add item to Personal" [ref=e244]
+                - button "Lifestyle Empty group $0.00 $0.00 $0.00 Add item to Lifestyle" [ref=e248]:
+                  - generic [ref=e251] [cursor=pointer]:
+                    - generic [ref=e252]:
+                      - generic [ref=e255]: Lifestyle
+                      - generic "Empty group" [ref=e257]: Empty
+                    - generic [ref=e258]: $0.00
+                    - generic [ref=e259]: $0.00
+                    - generic [ref=e260]: $0.00
+                    - button "Add item to Lifestyle" [ref=e261]
+                - button "Health Empty group $0.00 $0.00 $0.00 Add item to Health" [ref=e265]:
+                  - generic [ref=e268] [cursor=pointer]:
+                    - generic [ref=e269]:
+                      - generic [ref=e272]: Health
+                      - generic "Empty group" [ref=e274]: Empty
+                    - generic [ref=e275]: $0.00
+                    - generic [ref=e276]: $0.00
+                    - generic [ref=e277]: $0.00
+                    - button "Add item to Health" [ref=e278]
+                - button "Insurance Empty group $0.00 $0.00 $0.00 Add item to Insurance" [ref=e282]:
+                  - generic [ref=e285] [cursor=pointer]:
+                    - generic [ref=e286]:
+                      - generic [ref=e289]: Insurance
+                      - generic "Empty group" [ref=e291]: Empty
+                    - generic [ref=e292]: $0.00
+                    - generic [ref=e293]: $0.00
+                    - generic [ref=e294]: $0.00
+                    - button "Add item to Insurance" [ref=e295]
+                - button "Debt Empty group $0.00 $0.00 $0.00 Add item to Debt" [ref=e299]:
+                  - generic [ref=e302] [cursor=pointer]:
+                    - generic [ref=e303]:
+                      - generic [ref=e306]: Debt
+                      - generic "Empty group" [ref=e308]: Empty
+                    - generic [ref=e309]: $0.00
+                    - generic [ref=e310]: $0.00
+                    - generic [ref=e311]: $0.00
+                    - button "Add item to Debt" [ref=e312]
+          - complementary [ref=e314]:
+            - generic [ref=e315]:
+              - generic [ref=e316]:
+                - button "Summary" [ref=e317] [cursor=pointer]:
+                  - generic [ref=e318]: ◐
+                  - text: Summary
+                - button "Transactions" [ref=e319] [cursor=pointer]:
+                  - generic [ref=e320]: $
+                  - text: Transactions
+              - button "Assign to Targets" [ref=e321] [cursor=pointer]
+            - generic [ref=e322]:
+              - button "New" [ref=e323] [cursor=pointer]
+              - button "Tracked" [ref=e325] [cursor=pointer]
+              - button "Deleted" [ref=e326] [cursor=pointer]
+            - textbox "Search" [ref=e333]
+            - generic [ref=e334]:
+              - generic [ref=e335]: August
+              - generic [ref=e336]: No transactions
+        - button "Add transaction" [ref=e337] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e344] [cursor=pointer]

@@ -84,6 +84,11 @@ export interface MonthBudgetPlanDTO {
   month: string;
   year: number;
   budgetStatus: BudgetStatusDTO;
+  /**
+   * The amount of money available to assign to categories this month.
+   * Computed from liquid account balances minus money already assigned.
+   */
+  availableToAssign: number;
   viewTabs: {
     active: string;
     options: string[];

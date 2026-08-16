@@ -82,7 +82,14 @@ export async function getAccountTotal(): Promise<number> {
   const rows = await db
     .select({ balance: accounts.balance })
     .from(accounts)
-    .where(and(eq(accounts.budgetId, budget.id), isNull(accounts.deletedAt)));
+    .where(
+      and(
+        eq(accounts.budgetId, budget.id),
+        isNull(accounts.deletedAt),
+        eq(accounts.isLiquid, true),
+        eq(accounts.isActive, true),
+      ),
+    );
 
   return rows.reduce((sum, row) => sum + Number(row.balance), 0);
 }

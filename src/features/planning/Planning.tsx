@@ -16,8 +16,7 @@ import { usePlannedSummary } from './hooks/usePlannedSummary';
 import MonthHeader from './components/layout/MonthHeader/MonthHeader';
 import BudgetBanner from './components/budget/BudgetBanner/BudgetBanner';
 import { BudgetGroupsProvider } from './components/budget-group/BudgetGroupsProvider/BudgetGroupsProvider';
-import BudgetGroupList from './components/budget-group/BudgetGroupList/BudgetGroupList';
-import { BudgetColumnHeader } from './components/budget-group/BudgetColumnHeader/BudgetColumnHeader';
+import BudgetGroupListWithHeader from './components/budget-group/BudgetGroupListWithHeader/BudgetGroupListWithHeader';
 import TransactionsPanel from './components/transactions/TransactionsPanel/TransactionsPanel';
 import TransactionsFab from './components/transactions/TransactionsFab/TransactionsFab';
 import TransactionsModal from './components/transactions/TransactionsModal/TransactionsModal';
@@ -37,6 +36,10 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
   const { categories: plannedCategories } = usePlannedSummary(groups);
   const selectedItemId = useBudgetGroupsStore((s) => s.selectedItemId);
   const setSelectedItemId = useBudgetGroupsStore((s) => s.setSelectedItemId);
+
+  useEffect(() => {
+    setSelectedItemId(null);
+  }, [nav.selectedValue, setSelectedItemId]);
 
   const selectedItem = useMemo(() => groups
     .flatMap((g) => g.items)
@@ -63,16 +66,10 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
   if (bannerAmount < 0) bannerLabel = 'over budget';
   if (bannerAmount > 0) bannerLabel = 'left to budget';
 
-  const readyToAssign = useMemo(() => {
-    const received = groups
-      .filter((g) => g.isIncome)
-      .flatMap((g) => g.items)
-      .reduce((sum, it) => sum + it.received, 0);
-    const assigned = groups
-      .flatMap((g) => g.items)
-      .reduce((sum, it) => sum + it.funded, 0);
-    return received - assigned;
-  }, [groups]);
+  const readyToAssign = useMemo(
+    () => initialData?.availableToAssign ?? 0,
+    [initialData],
+  );
 
   const handleAssign = useCallback(
     (item: GroupItem) => {
@@ -158,16 +155,8 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
             transition={motionTransition}
           >
             <BudgetGroupsProvider initialData={initialData} action={action}>
-              <BudgetGroupList
-                banner={(
-                  <BudgetBanner
-                    amount={bannerAmount}
-                    label={bannerLabel}
-                  >
-                    <BudgetColumnHeader />
-                  </BudgetBanner>
-                )}
-              />
+              <BudgetBanner amount={bannerAmount} label={bannerLabel} />
+              <BudgetGroupListWithHeader />
             </BudgetGroupsProvider>
           </motion.div>
         </AnimatePresence>

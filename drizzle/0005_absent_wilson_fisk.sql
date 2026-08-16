@@ -1,0 +1,1 @@
+ALTER TABLE "accounts" ADD COLUMN "credit_transaction_count" integer DEFAULT 0;

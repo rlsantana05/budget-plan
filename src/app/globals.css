@@ -16,6 +16,8 @@
 body {
   background: var(--mantine-color-surface-3);
   color: var(--foreground);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-variant-numeric: tabular-nums;
 }
 
 code,

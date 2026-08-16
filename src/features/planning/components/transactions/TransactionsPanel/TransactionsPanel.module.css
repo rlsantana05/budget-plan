@@ -8,9 +8,21 @@
   width: 332px;
   height: 760px;
   overflow-y: auto;
+  position: relative;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(31, 33, 41, 0.75);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
 }
 
 .headerRow {

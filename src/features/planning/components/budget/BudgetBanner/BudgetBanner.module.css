@@ -2,40 +2,111 @@
   position: sticky;
   top: 0;
   z-index: 3;
-  text-align: center;
-  border-radius: 16px;
-  background: var(--card-bg);
+  border-radius: 18px;
+  background:
+    radial-gradient(130% 130% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 60%),
+    var(--card-bg);
+  border: 1px solid var(--card-border);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 8px 20px rgba(0, 0, 0, 0.3);
-  padding: 18px 26px 0;
-  margin: 0 -8px 14px;
+    0 10px 28px rgba(0, 0, 0, 0.35);
+  padding: 22px 26px 8px;
+  margin: 0;
+  transition:
+    box-shadow 0.24s ease,
+    border-color 0.24s ease;
+}
+
+.banner[data-status='complete'] {
+  border-color: rgba(34, 197, 94, 0.28);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 10px 28px rgba(34, 197, 94, 0.18);
+}
+
+.banner[data-status='over'] {
+  border-color: rgba(221, 78, 59, 0.32);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.banner[data-status='in-progress'] {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 10px 28px rgba(99, 102, 241, 0.2);
+}
+
+.flat[data-status],
+.flat {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  background: transparent;
+  position: relative;
+}
+
+.bannerEyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.bannerLed {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.bannerDot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentcolor;
+  box-shadow: 0 0 6px currentcolor;
+}
+
+.bannerCheck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green);
 }
 
 .bannerAmount {
   font-size: 48px;
   font-weight: 800;
   line-height: 1;
-  color: var(--red);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  transition: color 0.24s ease;
 }
 
-.bannerOver {
+.bannerDivider {
+  height: 1px;
+  margin: 8px 0;
+  background: var(--line);
+}
+
+.statusComplete {
+  color: var(--green);
+}
+
+.statusInProgress {
+  color: var(--accent-bright);
+}
+
+.statusOver {
   color: var(--red);
-}
-
-.bannerUnder {
-  color: #4ade80;
-}
-
-.bannerOnTrack {
-  color: #f59e0b;
-}
-
-.bannerLabel {
-  margin-top: 6px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--mantine-color-dimmed);
 }

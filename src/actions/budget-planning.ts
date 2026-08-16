@@ -22,6 +22,7 @@ import type {
   BudgetTransactionDTO,
   MonthBudgetPlanDTO,
 } from "@/types/budget";
+import { calculateAvailableToAssign } from "@/lib/pool";
 
 const DEV_EMAIL = "dev@budgetplan.app";
 
@@ -614,6 +615,8 @@ export async function getMonthBudgetPlan(
     }),
   );
 
+  const availableToAssign = await getReadyToAssign(mb.id);
+
   return {
     id: mb.id,
     budgetId: budget.id,
@@ -624,6 +627,7 @@ export async function getMonthBudgetPlan(
       overBudgetAmount: diff > 0 ? diff : 0,
       label: diff > 0 ? "over budget" : diff < 0 ? "under budget" : "on track",
     },
+    availableToAssign,
     viewTabs: { active: "transactions", options: ["summary", "transactions"] },
     categories: groupDTOs.map((g) => ({
       id: g.id,
@@ -706,18 +710,7 @@ async function applyBalanceDelta(
 }
 
 async function getReadyToAssign(monthBudgetId: string): Promise<number> {
-  const [paycheckTotal] = await db
-    .select({ total: sql<string | null>`coalesce(sum(${paychecks.amount}), 0)` })
-    .from(paychecks)
-    .where(eq(paychecks.monthBudgetId, monthBudgetId));
-  const [assignedTotal] = await db
-    .select({ total: sql<string | null>`coalesce(sum(${categoryRollups.assigned}), 0)` })
-    .from(categoryRollups)
-    .where(eq(categoryRollups.monthBudgetId, monthBudgetId));
-
-  return (
-    Number(paycheckTotal?.total ?? 0) - Number(assignedTotal?.total ?? 0)
-  );
+  return calculateAvailableToAssign(monthBudgetId);
 }
 
 async function getCategoryMonthBudgetId(categoryId: string): Promise<string> {

@@ -1,14 +1,26 @@
 .groupCard {
-  border: none;
+  margin: 0;
 }
 
-.groupCard + .groupCard {
-  margin-top: 14px;
+.controlLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.item {
+  transition:
+    background-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.panel {
+  padding: 0 0 8px;
+  background-color: #191a21;
 }
 
 .gDivider {
   height: 1px;
-  background: #2b2d36;
+  background: var(--line);
 }
 
 .items {
@@ -23,6 +35,15 @@
 
 .reorderWrap {
   position: relative;
+}
+
+.emptyState {
+  margin: 0 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  text-align: center;
 }
 
 .dropIndicator {
@@ -43,100 +64,11 @@
 .reorderItem {
 }
 
-.gFooterBlock {
-  padding-top: 4px;
-}
-
-.gFooter {
-  display: grid;
-  grid-template-columns: 2.2fr 1fr 1fr 1fr 40px;
-  align-items: center;
-  column-gap: 12px;
-  min-height: 54px;
-  padding: 0 24px;
-}
-
-.gFooterIncome {
-  grid-template-columns: 1.5fr 1fr 1fr 64px;
-}
-
-.gFooterForm {
-  grid-column: 1 / -1;
-}
-
-.gAdd {
+.gAddForm {
   display: flex;
   align-items: center;
   gap: 8px;
-  grid-column: 1;
-  width: 5.25rem;
-  border: none;
-  padding: 10px 0;
-  background: transparent;
-  color: #8b5cf6;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: color 0.15s ease;
-}
-
-.gAdd:hover {
-  color: #a78bfa;
-}
-
-.gAddIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1.5px solid #8b5cf6;
-  flex-shrink: 0;
-  color: #8b5cf6;
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.gAdd:hover .gAddIcon {
-  border-color: #a78bfa;
-  color: #a78bfa;
-}
-
-.gAddLabel {
-  white-space: nowrap;
-}
-
-.gFooterLeft {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  grid-column: 1;
-}
-
-.gTotal {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.gTotalPlanned {
-  grid-column: 2;
-  text-align: right;
-  padding-right: 8px;
-}
-
-.gTotalSpent {
-  grid-column: 3;
-  text-align: right;
-  padding-right: 8px;
-}
-
-.gTotalRemaining {
-  grid-column: 4;
-  text-align: right;
-  padding-right: 8px;
+  margin: 6px 8px;
+  padding: 0 16px;
+  min-height: 48px;
 }

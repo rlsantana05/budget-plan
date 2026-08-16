@@ -1,0 +1,147 @@
+- generic [ref=f8e1]:
+  - generic [ref=f8e2]:
+    - generic [ref=f8e3]:
+      - button [ref=f8e4] [cursor=pointer]
+      - paragraph [ref=f8e9]: Budget Plan
+      - button "Notifications" [ref=f8e10] [cursor=pointer]
+      - button "Toggle color scheme" [ref=f8e15] [cursor=pointer]
+      - generic "User" [ref=f8e24]: U
+    - generic [ref=f8e27]:
+      - banner [ref=f8e28]:
+        - button "August 2026" [ref=f8e29] [cursor=pointer]:
+          - strong [ref=f8e30]: August
+          - generic [ref=f8e31]: "2026"
+        - generic [ref=f8e34]:
+          - button "Previous month" [ref=f8e35] [cursor=pointer]
+          - button "Next month" [ref=f8e38] [cursor=pointer]
+      - generic [ref=f8e41]:
+        - generic [ref=f8e42]:
+          - generic [ref=f8e43]:
+            - generic [ref=f8e44]: over budget
+            - generic [ref=f8e48]: $240.00
+          - generic [ref=f8e50]:
+            - generic [ref=f8e51]:
+              - button "Add Group" [ref=f8e54] [cursor=pointer]
+              - columnheader "Category Assigned Activity Available" [ref=f8e59]:
+                - generic [ref=f8e60]: Category
+                - generic [ref=f8e61]: Assigned
+                - generic [ref=f8e62]: Activity
+                - generic [ref=f8e63]: Available
+            - generic [ref=f8e64]:
+              - button "Giving $0.00 $0.00 $0.00 Add item to Giving" [ref=f8e67]:
+                - generic [ref=f8e70] [cursor=pointer]:
+                  - generic [ref=f8e71]: Giving
+                  - generic [ref=f8e76]: $0.00
+                  - generic [ref=f8e77]: $0.00
+                  - generic [ref=f8e78]: $0.00
+                  - button "Add item to Giving" [ref=f8e79]
+              - generic [ref=f8e82]:
+                - button "Housing $0.00 $0.00 $0.00 Add item to Housing" [expanded] [ref=f8e83]:
+                  - generic [ref=f8e86] [cursor=pointer]:
+                    - generic [ref=f8e87]: Housing
+                    - generic [ref=f8e92]: $0.00
+                    - generic [ref=f8e93]: $0.00
+                    - generic [ref=f8e94]: $0.00
+                    - button "Add item to Housing" [ref=f8e95]
+                - region "Housing $0.00 $0.00 $0.00 Add item to Housing" [ref=f8e97]:
+                  - generic [ref=f8e100]:
+                    - generic:
+                      - list
+                    - generic [ref=f8e101]: No categories yet — add your first item.
+              - button "Savings $0.00 $0.00 $0.00 Add item to Savings" [ref=f8e104]:
+                - generic [ref=f8e107] [cursor=pointer]:
+                  - generic [ref=f8e108]: Savings
+                  - generic [ref=f8e113]: $0.00
+                  - generic [ref=f8e114]: $0.00
+                  - generic [ref=f8e115]: $0.00
+                  - button "Add item to Savings" [ref=f8e116]
+              - generic [ref=f8e119]:
+                - button "Transportation $0.00 $0.00 $0.00 Add item to Transportation" [expanded] [ref=f8e120]:
+                  - generic [ref=f8e123] [cursor=pointer]:
+                    - generic [ref=f8e124]: Transportation
+                    - generic [ref=f8e129]: $0.00
+                    - generic [ref=f8e130]: $0.00
+                    - generic [ref=f8e131]: $0.00
+                    - button "Add item to Transportation" [ref=f8e132]
+                - region "Transportation $0.00 $0.00 $0.00 Add item to Transportation" [ref=f8e134]:
+                  - list [ref=f8e139]:
+                    - listitem [ref=f8e140]:
+                      - button "Drag to reorder Gas Gas $0.00 $0.00 $0.00 Delete Gas" [ref=f8e141]:
+                        - generic [ref=f8e142]:
+                          - button "Drag to reorder Gas" [ref=f8e143]
+                          - textbox "Item name" [ref=f8e151]: Gas
+                        - textbox "Assigned amount for Gas" [ref=f8e152]: $0.00
+                        - generic [ref=f8e153]: $0.00
+                        - generic [ref=f8e154]: $0.00
+                        - button "Delete Gas" [ref=f8e157] [cursor=pointer]
+                    - listitem [ref=f8e161]:
+                      - button "Drag to reorder Maintenance Maintenance $0.00 $0.00 $0.00 Delete Maintenance" [ref=f8e162]:
+                        - generic [ref=f8e163]:
+                          - button "Drag to reorder Maintenance" [ref=f8e164]
+                          - textbox "Item name" [ref=f8e172]: Maintenance
+                        - textbox "Assigned amount for Maintenance" [ref=f8e173]: $0.00
+                        - generic [ref=f8e174]: $0.00
+                        - generic [ref=f8e175]: $0.00
+                        - button "Delete Maintenance" [ref=f8e178] [cursor=pointer]
+              - button "Food $0.00 $0.00 $0.00 Add item to Food" [ref=f8e184]:
+                - generic [ref=f8e187] [cursor=pointer]:
+                  - generic [ref=f8e188]: Food
+                  - generic [ref=f8e193]: $0.00
+                  - generic [ref=f8e194]: $0.00
+                  - generic [ref=f8e195]: $0.00
+                  - button "Add item to Food" [ref=f8e196]
+              - button "Personal $0.00 $0.00 $0.00 Add item to Personal" [ref=f8e200]:
+                - generic [ref=f8e203] [cursor=pointer]:
+                  - generic [ref=f8e204]: Personal
+                  - generic [ref=f8e209]: $0.00
+                  - generic [ref=f8e210]: $0.00
+                  - generic [ref=f8e211]: $0.00
+                  - button "Add item to Personal" [ref=f8e212]
+              - button "Lifestyle $0.00 $0.00 $0.00 Add item to Lifestyle" [ref=f8e216]:
+                - generic [ref=f8e219] [cursor=pointer]:
+                  - generic [ref=f8e220]: Lifestyle
+                  - generic [ref=f8e225]: $0.00
+                  - generic [ref=f8e226]: $0.00
+                  - generic [ref=f8e227]: $0.00
+                  - button "Add item to Lifestyle" [ref=f8e228]
+              - button "Health $0.00 $0.00 $0.00 Add item to Health" [ref=f8e232]:
+                - generic [ref=f8e235] [cursor=pointer]:
+                  - generic [ref=f8e236]: Health
+                  - generic [ref=f8e241]: $0.00
+                  - generic [ref=f8e242]: $0.00
+                  - generic [ref=f8e243]: $0.00
+                  - button "Add item to Health" [ref=f8e244]
+              - button "Insurance $0.00 $0.00 $0.00 Add item to Insurance" [ref=f8e248]:
+                - generic [ref=f8e251] [cursor=pointer]:
+                  - generic [ref=f8e252]: Insurance
+                  - generic [ref=f8e257]: $0.00
+                  - generic [ref=f8e258]: $0.00
+                  - generic [ref=f8e259]: $0.00
+                  - button "Add item to Insurance" [ref=f8e260]
+              - button "Debt $0.00 $0.00 $0.00 Add item to Debt" [ref=f8e264]:
+                - generic [ref=f8e267] [cursor=pointer]:
+                  - generic [ref=f8e268]: Debt
+                  - generic [ref=f8e273]: $0.00
+                  - generic [ref=f8e274]: $0.00
+                  - generic [ref=f8e275]: $0.00
+                  - button "Add item to Debt" [ref=f8e276]
+        - complementary [ref=f8e278]:
+          - generic [ref=f8e279]:
+            - generic [ref=f8e280]:
+              - button "Summary" [ref=f8e281] [cursor=pointer]:
+                - generic [ref=f8e282]: ◐
+                - text: Summary
+              - button "Transactions" [ref=f8e283] [cursor=pointer]:
+                - generic [ref=f8e284]: $
+                - text: Transactions
+            - button "Assign to Targets" [ref=f8e285] [cursor=pointer]
+          - generic [ref=f8e286]:
+            - button "New" [ref=f8e287] [cursor=pointer]
+            - button "Tracked" [ref=f8e289] [cursor=pointer]
+            - button "Deleted" [ref=f8e290] [cursor=pointer]
+          - textbox "Search" [ref=f8e297]
+          - generic [ref=f8e298]:
+            - generic [ref=f8e299]: August
+            - generic [ref=f8e300]: No transactions
+      - button "Add transaction" [ref=f8e301] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=f8e308] [cursor=pointer]

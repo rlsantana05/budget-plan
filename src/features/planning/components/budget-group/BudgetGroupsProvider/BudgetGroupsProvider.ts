@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import type { MonthBudgetPlanDTO } from '@/types/budget';
 import { MOCK_GROUPS } from '../../../constants';
 import { toGroups } from '../../../utils/mappers';
@@ -18,18 +18,6 @@ export function BudgetGroupsProvider({
   children,
 }: BudgetGroupsProviderProps) {
   const store = useBudgetGroupsStore;
-  const [applied, setApplied] = useState(false);
-
-  /**
-   * Seed the store with the initial budget data (server payload or mock) on the
-   * first render, so SSR and the first paint show the real groups. Safe here:
-   * no store subscriber is mounted yet, so zustand's synchronous notify cannot
-   * trigger React's "update during render" error.
-   */
-  if (!applied) {
-    setApplied(true);
-    store.getState().hydrateGroups(initialData ? toGroups(initialData) : MOCK_GROUPS);
-  }
 
   /**
    * Re-sync the store whenever the server payload changes (e.g. after
@@ -51,6 +39,10 @@ export function BudgetGroupsProvider({
 
   useEffect(() => {
     store.getState().setHasAccounts((initialData?.accounts ?? []).length > 0);
+  }, [initialData, store]);
+
+  useEffect(() => {
+    store.getState().setAvailableToAssign(initialData?.availableToAssign ?? 0);
   }, [initialData, store]);
 
   return children;

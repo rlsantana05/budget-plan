@@ -1,0 +1,163 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - paragraph [ref=f1e7]: Budget Plan
+      - button "Notifications" [ref=f1e8] [cursor=pointer]
+      - button "Toggle color scheme" [ref=f1e13] [cursor=pointer]
+      - generic "User" [ref=f1e18]: U
+    - generic [ref=f1e19]:
+      - generic [ref=f1e21]:
+        - generic [ref=f1e22]:
+          - link "Dashboard" [ref=f1e23] [cursor=pointer]:
+            - /url: /
+          - link "Planning" [ref=f1e31] [cursor=pointer]:
+            - /url: /planning
+          - link "Accounts" [ref=f1e37] [cursor=pointer]:
+            - /url: /accounts
+          - link "Goals" [ref=f1e43] [cursor=pointer]:
+            - /url: /goals
+        - link "Settings" [ref=f1e48] [cursor=pointer]:
+          - /url: /settings
+      - generic [ref=f1e55]:
+        - banner [ref=f1e56]:
+          - button "August 2026" [ref=f1e57] [cursor=pointer]:
+            - strong [ref=f1e58]: August
+            - generic [ref=f1e59]: "2026"
+          - generic [ref=f1e62]:
+            - button "Previous month" [ref=f1e63] [cursor=pointer]
+            - button "Next month" [ref=f1e66] [cursor=pointer]
+        - generic [ref=f1e69]:
+          - generic [ref=f1e72]:
+            - generic [ref=f1e73]:
+              - generic [ref=f1e74]:
+                - generic [ref=f1e75]: over budget
+                - generic [ref=f1e79]: $240.00
+              - generic [ref=f1e81]:
+                - generic [ref=f1e82]:
+                  - paragraph [ref=f1e83]: Available to Assign
+                  - heading "$0.00" [level=2] [ref=f1e88]
+                - generic [ref=f1e89]:
+                  - generic [ref=f1e90]: 1 income group
+                  - button "Add Group" [ref=f1e91] [cursor=pointer]
+              - columnheader "Category Assigned Activity Available" [ref=f1e96]:
+                - generic [ref=f1e97]: Category
+                - generic [ref=f1e98]: Assigned
+                - generic [ref=f1e99]: Activity
+                - generic [ref=f1e100]: Available
+            - generic [ref=f1e101]:
+              - button "Income $0.00 $0.00 $0.00" [ref=f1e104]:
+                - generic [ref=f1e107] [cursor=pointer]:
+                  - generic [ref=f1e108]: Income
+                  - generic [ref=f1e112]: $0.00
+                  - generic [ref=f1e113]: $0.00
+                  - generic [ref=f1e114]: $0.00
+              - button "Giving $0.00 $0.00 $0.00" [ref=f1e117]:
+                - generic [ref=f1e120] [cursor=pointer]:
+                  - generic [ref=f1e121]: Giving
+                  - generic [ref=f1e125]: $0.00
+                  - generic [ref=f1e126]: $0.00
+                  - generic [ref=f1e127]: $0.00
+              - generic [ref=f1e129]:
+                - button "Housing $0.00 $0.00 $0.00" [expanded] [ref=f1e130]:
+                  - generic [ref=f1e133] [cursor=pointer]:
+                    - generic [ref=f1e134]: Housing
+                    - generic [ref=f1e140]: $0.00
+                    - generic [ref=f1e141]: $0.00
+                    - generic [ref=f1e142]: $0.00
+                - region "Housing $0.00 $0.00 $0.00" [ref=f1e143]:
+                  - generic [ref=f1e146]:
+                    - generic:
+                      - list
+                    - generic [ref=f1e147]: No categories yet — add your first item.
+                    - button "Add item" [ref=f1e151] [cursor=pointer]
+              - button "Savings $0.00 $0.00 $0.00" [ref=f1e157]:
+                - generic [ref=f1e160] [cursor=pointer]:
+                  - generic [ref=f1e161]: Savings
+                  - generic [ref=f1e165]: $0.00
+                  - generic [ref=f1e166]: $0.00
+                  - generic [ref=f1e167]: $0.00
+              - generic [ref=f1e169]:
+                - button "Transportation $0.00 $0.00 $0.00" [expanded] [ref=f1e170]:
+                  - generic [ref=f1e173] [cursor=pointer]:
+                    - generic [ref=f1e174]: Transportation
+                    - generic [ref=f1e180]: $0.00
+                    - generic [ref=f1e181]: $0.00
+                    - generic [ref=f1e182]: $0.00
+                - region "Transportation $0.00 $0.00 $0.00" [ref=f1e183]:
+                  - generic [ref=f1e186]:
+                    - list [ref=f1e188]:
+                      - listitem [ref=f1e189]:
+                        - button "Drag to reorder Gas Gas $0.00 $0.00 $0.00 Delete Gas" [ref=f1e190]:
+                          - generic [ref=f1e191]:
+                            - button "Drag to reorder Gas" [ref=f1e192]
+                            - textbox "Item name" [ref=f1e200]: Gas
+                          - textbox "Assigned amount for Gas" [ref=f1e201]: $0.00
+                          - generic [ref=f1e202]: $0.00
+                          - generic [ref=f1e203]: $0.00
+                          - button "Delete Gas" [ref=f1e206] [cursor=pointer]
+                      - listitem [ref=f1e210]:
+                        - button "Drag to reorder Maintenance Maintenance $0.00 $0.00 $0.00 Delete Maintenance" [ref=f1e211]:
+                          - generic [ref=f1e212]:
+                            - button "Drag to reorder Maintenance" [ref=f1e213]
+                            - textbox "Item name" [ref=f1e221]: Maintenance
+                          - textbox "Assigned amount for Maintenance" [ref=f1e222]: $0.00
+                          - generic [ref=f1e223]: $0.00
+                          - generic [ref=f1e224]: $0.00
+                          - button "Delete Maintenance" [ref=f1e227] [cursor=pointer]
+                    - button "Add item" [ref=f1e234] [cursor=pointer]
+              - button "Food $0.00 $0.00 $0.00" [ref=f1e240]:
+                - generic [ref=f1e243] [cursor=pointer]:
+                  - generic [ref=f1e244]: Food
+                  - generic [ref=f1e248]: $0.00
+                  - generic [ref=f1e249]: $0.00
+                  - generic [ref=f1e250]: $0.00
+              - button "Personal $0.00 $0.00 $0.00" [ref=f1e253]:
+                - generic [ref=f1e256] [cursor=pointer]:
+                  - generic [ref=f1e257]: Personal
+                  - generic [ref=f1e261]: $0.00
+                  - generic [ref=f1e262]: $0.00
+                  - generic [ref=f1e263]: $0.00
+              - button "Lifestyle $0.00 $0.00 $0.00" [ref=f1e266]:
+                - generic [ref=f1e269] [cursor=pointer]:
+                  - generic [ref=f1e270]: Lifestyle
+                  - generic [ref=f1e274]: $0.00
+                  - generic [ref=f1e275]: $0.00
+                  - generic [ref=f1e276]: $0.00
+              - button "Health $0.00 $0.00 $0.00" [ref=f1e279]:
+                - generic [ref=f1e282] [cursor=pointer]:
+                  - generic [ref=f1e283]: Health
+                  - generic [ref=f1e287]: $0.00
+                  - generic [ref=f1e288]: $0.00
+                  - generic [ref=f1e289]: $0.00
+              - button "Insurance $0.00 $0.00 $0.00" [ref=f1e292]:
+                - generic [ref=f1e295] [cursor=pointer]:
+                  - generic [ref=f1e296]: Insurance
+                  - generic [ref=f1e300]: $0.00
+                  - generic [ref=f1e301]: $0.00
+                  - generic [ref=f1e302]: $0.00
+              - button "Debt $0.00 $0.00 $0.00" [ref=f1e305]:
+                - generic [ref=f1e308] [cursor=pointer]:
+                  - generic [ref=f1e309]: Debt
+                  - generic [ref=f1e313]: $0.00
+                  - generic [ref=f1e314]: $0.00
+                  - generic [ref=f1e315]: $0.00
+          - complementary [ref=f1e316]:
+            - generic [ref=f1e317]:
+              - generic [ref=f1e318]:
+                - button "Summary" [ref=f1e319] [cursor=pointer]:
+                  - generic [ref=f1e320]: ◐
+                  - text: Summary
+                - button "Transactions" [ref=f1e321] [cursor=pointer]:
+                  - generic [ref=f1e322]: $
+                  - text: Transactions
+              - button "Assign to Targets" [ref=f1e323] [cursor=pointer]
+            - generic [ref=f1e324]:
+              - button "New" [ref=f1e325] [cursor=pointer]
+              - button "Tracked" [ref=f1e327] [cursor=pointer]
+              - button "Deleted" [ref=f1e328] [cursor=pointer]
+            - textbox "Search" [ref=f1e335]
+            - generic [ref=f1e336]:
+              - generic [ref=f1e337]: August
+              - generic [ref=f1e338]: No transactions
+        - button "Add transaction" [ref=f1e339] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=f1e346] [cursor=pointer]

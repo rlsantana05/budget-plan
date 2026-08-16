@@ -16,13 +16,14 @@ export function usePlanningActionState(): PlanningActionState {
     async (key: 'add' | 'row', fn: () => Promise<void>) => {
       setBusy(key);
       setError(null);
+      let succeeded = false;
       try {
         await fn();
+        succeeded = true;
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Something went wrong');
       } finally {
-        // Reconcile local state with the server in the background.
-        router.refresh();
+        if (!succeeded) router.refresh();
         setBusy(null);
       }
     },

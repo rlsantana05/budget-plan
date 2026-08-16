@@ -33,6 +33,11 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
+.gRow:focus-visible {
+  outline: 1px solid var(--accent-bright);
+  outline-offset: -1px;
+}
+
 .gRow.dragging {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
   z-index: 10;

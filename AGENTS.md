@@ -1,54 +1,28 @@
-# Budget Plan
+---
 
-Personal budgeting app (Next.js 16, React 19, TypeScript 5, Mantine v9).
+agent_type: ui-ux-specialist
+version: 1.1.0
+model: gpt-4-turbo
+temperature: 0.5
 
-## Commands
+system_prompt_source: "./system.md"
 
-| Action     | Command                                                 |
-| ---------- | ------------------------------------------------------- |
-| Dev server | `pnpm dev`                                              |
-| Build      | `pnpm build`                                            |
-| Lint       | `pnpm lint` (ESLint 9)                                  |
-| Typecheck  | `pnpm exec tsc --noEmit` (no npm script — run manually) |
-| Test       | Not configured yet                                      |
+filesystem_mounts:
 
-Use **pnpm**, not npm/yarn/bun.
+- path: "./.agent"
+  alias: "AGENT_KB"
+  permissions: "read-only"
 
-## Project map
+available_tools: [list_dir, read_file, search_files]
 
-- `src/app/` — Next.js App Router pages/layouts
-- `@/*` — path alias for `./src/*`
-- `public/` — static assets
+auto_inject_on_start:
 
-## Stack notes
+- ".agent/knowledge/brand-guidelines.md"
+- ".agent/knowledge/project-context.md" # <-- Externalized project details
+- ".agent/templates/design-rationale.md"
 
-- App Router, default Server Components. Client Components only when interactivity requires them.
-- **Mantine v9** UI library (`@mantine/core`, `@mantine/hooks`)
-- `next/font/google` for Geist typeface
-- `lucide-react` for icons
-- Strict TypeScript (`strict: true` in tsconfig)
+guardrails:
 
-## Domain model (must preserve)
-
-The app separates **planning** from **funding**:
-
-```
-Plan Month → Receive Income → Fund Categories → Spend Money → Weekly Review → Adjust Funding → Close Month
-```
-
-| Concept               | Rule                                                     |
-| --------------------- | -------------------------------------------------------- |
-| Planned               | Aspirational — may exceed available cash                 |
-| Funded                | Real money assigned — never exceed Available to Allocate |
-| Spent                 | Reduces Remaining (funded − spent)                       |
-| Remaining             | Safe-to-spend amount                                     |
-| Available to Allocate | Income received − money already funded                   |
-
-- Account balances and budgeting are separate systems
-- Moving money between categories never changes total funded
-- Transactions reduce funded money; never modify planned budget
-- Weekly reviews are checkpoints, not budgeting periods
-
-## Existing instruction files
-
-- `PHILOSOPHY.md` — legacy product philosophy doc (607 lines). Key domain rules are summarized above.
+- "Before suggesting UI changes, check `.agent/knowledge/user-personas.md`."
+- "For usability reviews, load `.agent/skills/ui-audit.md` and follow it strictly."
+- "For stack/domain constraints, refer to `.agent/knowledge/project-context.md` before proposing technical designs."

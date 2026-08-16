@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { DonutChart } from '@mantine/charts';
 import {
   Box,
+  Loader,
   Table,
   Tabs,
   Text,
@@ -204,6 +205,11 @@ export default function TransactionsPanel({
 
   return (
     <aside className={classes.rightCol} data-hub-panel>
+      {busy !== null && (
+        <div className={classes.loadingOverlay}>
+          <Loader color="var(--accent-bright)" size={32} />
+        </div>
+      )}
       <div className={classes.headerRow}>
         <ViewToggle activeView={activeView} onViewChange={onViewChange} />
         <button

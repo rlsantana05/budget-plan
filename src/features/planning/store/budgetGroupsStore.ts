@@ -10,6 +10,7 @@ import {
   updateCategoryItem,
 } from '@/actions/budget-planning';
 
+import { MOCK_GROUPS } from '../constants';
 import { parseAmountText, sanitizeAmountText } from '../utils/formatters';
 import type { Group, GroupItem } from '../types';
 
@@ -30,6 +31,7 @@ interface BudgetGroupsStore {
   receiveHint: string | null;
   undo: BudgetGroupUndo | null;
   hasAccounts: boolean;
+  availableToAssign: number;
   nameInputRef: RefObject<HTMLInputElement | null>;
   amountInputRef: RefObject<HTMLInputElement | null>;
   busy: 'add' | 'row' | null;
@@ -38,6 +40,7 @@ interface BudgetGroupsStore {
 
   hydrateGroups: (groups: Group[]) => void;
   setHasAccounts: (has: boolean) => void;
+  setAvailableToAssign: (amount: number) => void;
   setBusy: (busy: 'add' | 'row' | null) => void;
   registerTxActions: (run: BudgetGroupsStore['runTxAction']) => void;
   toggleGroup: (id: string) => void;
@@ -63,7 +66,7 @@ let undoTimeoutRef: ReturnType<typeof setTimeout> | null = null;
 const noopRun = async () => {};
 
 export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
-  groups: [],
+  groups: MOCK_GROUPS,
   expandedGroups: {},
   addItemGroup: null,
   newItemName: '',
@@ -73,6 +76,7 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
   receiveHint: null,
   undo: null,
   hasAccounts: true,
+  availableToAssign: 0,
   nameInputRef: { current: null },
   amountInputRef: { current: null },
   busy: null,
@@ -82,6 +86,8 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
   hydrateGroups: (groups) => set({ groups }),
 
   setHasAccounts: (has) => set({ hasAccounts: has }),
+
+  setAvailableToAssign: (amount) => set({ availableToAssign: amount }),
 
   setBusy: (busy) => set({ busy }),
 

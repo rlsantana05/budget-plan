@@ -1,28 +1,23 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import pageClasses from '../../../Planning.module.css';
 import { useBudgetGroupsStore } from '../../../store/budgetGroupsStore';
-import BudgetGroupCard from '../BudgetGroupCard/BudgetGroupCard';
+import { BudgetCategoryContainer } from '../BudgetCategoryContainer/BudgetCategoryContainer';
 
-interface BudgetGroupListProps {
-  banner?: ReactNode;
-}
-
-export default function BudgetGroupList({ banner }: BudgetGroupListProps) {
+export default function BudgetGroupList() {
   const groups = useBudgetGroupsStore((s) => s.groups);
+  const busy = useBudgetGroupsStore((s) => s.busy);
+  const hasAccounts = useBudgetGroupsStore((s) => s.hasAccounts);
+
+  const handleAddGroup = () => {
+    // TODO: open the "create group" form inside the container
+  };
 
   return (
-    <div className={pageClasses.budgetScroll}>
-      {banner}
-      {groups
-        .filter((group) => !group.isIncome)
-        .map((group) => (
-          <BudgetGroupCard
-            key={group.id}
-            group={group}
-          />
-        ))}
-    </div>
+    <BudgetCategoryContainer
+      groups={groups}
+      hasAccounts={hasAccounts}
+      onAddGroup={handleAddGroup}
+      busy={busy}
+    />
   );
 }

@@ -1,0 +1,10 @@
+{
+  "allow-list": [
+    "read",
+    "bash"
+  ],
+  "commands": {},
+  "hooks": {},
+  "mcpServers": {},
+  "outputStyles": "default"
+}

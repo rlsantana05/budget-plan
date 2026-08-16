@@ -1,0 +1,161 @@
+[    1213ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[    1227ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[   57903ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[   57918ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  107275ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  107306ms] [LOG] [Fast Refresh] done in 10ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  158916ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  158946ms] [LOG] [Fast Refresh] done in 13ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  161429ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  161458ms] [LOG] [Fast Refresh] done in 11ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  275897ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  275912ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  338578ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  338651ms] [LOG] [Fast Refresh] done in 37ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  761885ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  761915ms] [LOG] [Fast Refresh] done in 37ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  907280ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  907312ms] [LOG] [Fast Refresh] done in 11ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  909377ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[  909406ms] [LOG] [Fast Refresh] done in 10ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1036648ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1036678ms] [LOG] [Fast Refresh] done in 13ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1116453ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1116487ms] [LOG] [Fast Refresh] done in 14ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1208199ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1208235ms] [LOG] [Fast Refresh] done in 12ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1319039ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1319072ms] [LOG] [Fast Refresh] done in 11ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1428208ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1428242ms] [LOG] [Fast Refresh] done in 18ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1429683ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1429720ms] [LOG] [Fast Refresh] done in 13ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1519478ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 1519509ms] [LOG] [Fast Refresh] done in 11ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2032799ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2032863ms] [LOG] [Fast Refresh] done in 25ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2034889ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2034947ms] [LOG] [Fast Refresh] done in 13ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2038199ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2038207ms] [ERROR] In HTML, %s cannot be a descendant of <%s>.
+This will cause a hydration error.%s <button> button 
+
+  ...
+    <div className="BudgetCate...">
+      <div>
+      <div className="BudgetCate...">
+        <BudgetGroupCard group={{id:"419bbe...", ...}}>
+          <@mantine/core/Accordion unstyled={true} value={null} onChange={function BudgetGroupCard.useCallback[onToggle]} ...>
+            <@mantine/core/Box className="BudgetGrou..." style={{...}} id="mantine-l8..." variant="default" ...>
+              <div ref={undefined} style={{...}} className="BudgetGrou..." data-variant="default" data-size={undefined} ...>
+                <@mantine/core/AccordionItem value="419bbe07-0...">
+                  <@mantine/core/Box mod={[...]} className="BudgetGrou..." style={{}}>
+                    <div ref={undefined} style={{}} className="BudgetGrou..." data-variant={undefined} ...>
+                      <@mantine/core/AccordionControl>
+                        <@mantine/core/UnstyledButton className="mantine-Ac..." style={{display:"flex", ...}} ...>
+                          <@mantine/core/Box className="mantine-Ac..." style={{display:"flex", ...}} component="button" ...>
+>                           <button
+>                             ref={undefined}
+>                             style={{display:"flex",flexDirection:"row-reverse",alignItems:"center",width:"100%",padding:0, ...}}
+>                             className="mantine-Accordion-control mantine-UnstyledButton-root"
+>                             data-variant={undefined}
+>                             data-size={undefined}
+>                             size={undefined}
+>                             data-accordion-control={true}
+>                             data-chevron-position="right"
+>                             type="button"
+>                             onClick={function onClick}
+>                             aria-expanded={false}
+>                             aria-controls="mantine-l8yn6ixfh-panel-419bbe07-065f-49ff-8635-7a939653d485"
+>                             id="mantine-l8yn6ixfh-control-419bbe07-065f-49ff-8635-7a939653d485"
+>                             onKeyDown={function}
+>                           >
+                              <@mantine/core/Box>
+                              ...
+                                <@mantine/core/Box className="BudgetGrou..." style={{}}>
+                                  <div ref={undefined} style={{}} className="BudgetGrou..." data-variant={undefined} ...>
+                                    <div className="BudgetGrou..." style={{}} data-expanded={undefined}>
+                                      <span>
+                                      <div>
+                                      <div>
+                                      <div>
+>                                     <button
+>                                       type="button"
+>                                       className="mantine-BudgetGroupHeader-addItem"
+>                                       style={{}}
+>                                       onClick={undefined}
+>                                       aria-label="Add item to Income"
+>                                     >
+                      ...
+        ...
+ @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:3330
+[ 2038208ms] [ERROR] <%s> cannot contain a nested %s.
+See this log for the ancestor stack trace. button <button> @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:3330
+[ 2038271ms] [LOG] [Fast Refresh] done in 63ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2040655ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2040722ms] [LOG] [Fast Refresh] done in 29ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2042901ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2042930ms] [LOG] [Fast Refresh] done in 10ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2047046ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2047104ms] [LOG] [Fast Refresh] done in 24ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2051803ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2051859ms] [LOG] [Fast Refresh] done in 62ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2056112ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2056167ms] [LOG] [Fast Refresh] done in 22ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2061345ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2061403ms] [LOG] [Fast Refresh] done in 37ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2071869ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2071898ms] [LOG] [Fast Refresh] done in 14ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2073764ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2073792ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2077209ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2077239ms] [LOG] [Fast Refresh] done in 13ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2092117ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2092180ms] [ERROR] ./src/features/planning/components/budget-group/BudgetCategoryHeader/BudgetCategoryHeader.module.css
+Error evaluating Node.js code
+CssSyntaxError: /Users/leonardosantana/Developer/budget-plan/src/features/planning/components/budget-group/BudgetCategoryHeader/BudgetCategoryHeader.module.css:62:1: Unclosed block
+    [at Input.error (turbopack:///[project]/node_modules/.pnpm/postcss@8.4.31/node_modules/postcss/lib/input.js:106:16)]
+    [at Parser.unclosedBlock (turbopack:///[project]/node_modules/.pnpm/postcss@8.4.31/node_modules/postcss/lib/parser.js:574:22)]
+    [at Parser.endFile (turbopack:///[project]/node_modules/.pnpm/postcss@8.4.31/node_modules/postcss/lib/parser.js:336:35)]
+    [at Parser.parse (turbopack:///[project]/node_modules/.pnpm/postcss@8.4.31/node_modules/postcss/lib/parser.js:475:10)]
+    [at parser (turbopack:///[project]/node_modules/.pnpm/postcss@8.4.31/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/.pnpm/postcss@8.4.31/node_modules/postcss/lib/lazy-result.js:133:16)]
+    [at Processor.process (turbopack:///[project]/node_modules/.pnpm/postcss@8.4.31/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:112:11)]
+
+Import traces:
+  Client Component Browser:
+    ./src/features/planning/components/budget-group/BudgetCategoryHeader/BudgetCategoryHeader.module.css [Client Component Browser]
+    ./src/features/planning/components/budget-group/BudgetCategoryHeader/BudgetCategoryHeader.tsx [Client Component Browser]
+    ./src/features/planning/components/budget-group/BudgetCategoryContainer/BudgetCategoryContainer.tsx [Client Component Browser]
+    ./src/features/planning/components/budget-group/BudgetGroupList/BudgetGroupList.tsx [Client Component Browser]
+    ./src/features/planning/components/budget-group/BudgetGroupListWithHeader/BudgetGroupListWithHeader.tsx [Client Component Browser]
+    ./src/features/planning/Planning.tsx [Client Component Browser]
+    ./src/features/planning/Planning.tsx [Server Component]
+    ./src/app/(app)/planning/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/features/planning/components/budget-group/BudgetCategoryHeader/BudgetCategoryHeader.module.css [Client Component SSR]
+    ./src/features/planning/components/budget-group/BudgetCategoryHeader/BudgetCategoryHeader.tsx [Client Component SSR]
+    ./src/features/planning/components/budget-group/BudgetCategoryContainer/BudgetCategoryContainer.tsx [Client Component SSR]
+    ./src/features/planning/components/budget-group/BudgetGroupList/BudgetGroupList.tsx [Client Component SSR]
+    ./src/features/planning/components/budget-group/BudgetGroupListWithHeader/BudgetGroupListWithHeader.tsx [Client Component SSR]
+    ./src/features/planning/Planning.tsx [Client Component SSR]
+    ./src/features/planning/Planning.tsx [Server Component]
+    ./src/app/(app)/planning/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:3330
+[ 2096787ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2096838ms] [LOG] [Fast Refresh] done in 40ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2118013ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2118117ms] [LOG] [Fast Refresh] done in 19ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2120095ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2120125ms] [LOG] [Fast Refresh] done in 22ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2123623ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2123653ms] [LOG] [Fast Refresh] done in 13ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2126770ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2126800ms] [LOG] [Fast Refresh] done in 10ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2130461ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2130492ms] [LOG] [Fast Refresh] done in 12ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2140921ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489
+[ 2141190ms] [LOG] [Fast Refresh] done in 347ms @ http://localhost:3000/_next/static/chunks/13-7_next_dist_1lflez5._.js:2489

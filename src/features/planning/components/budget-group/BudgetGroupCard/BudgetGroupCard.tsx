@@ -4,16 +4,13 @@ import {
   memo, useCallback, useEffect, useRef, useState,
 } from 'react';
 import { AnimatePresence, Reorder } from 'framer-motion';
-import { Collapse } from '@mantine/core';
-import { Plus } from 'lucide-react';
+import { Accordion } from '@mantine/core';
 import type { Group } from '../../../types';
-import sharedClasses from '../../shared/BudgetPlanShared.module.css';
 import classes from './BudgetGroupCard.module.css';
 import { useBudgetGroupsStore } from '../../../store/budgetGroupsStore';
 import { BudgetGroupHeader } from '../BudgetGroupHeader/BudgetGroupHeader';
 import BudgetGroupReorderItem from '../BudgetGroupReorderItem/BudgetGroupReorderItem';
 import BudgetGroupAddItemForm from '../BudgetGroupAddItemForm/BudgetGroupAddItemForm';
-import { formatMoney } from '../../../utils/formatters';
 import rowClasses from './BudgetGroupCardItem.module.css';
 
 interface BudgetGroupCardProps {
@@ -110,90 +107,106 @@ function BudgetGroupCard({ group }: BudgetGroupCardProps) {
     ? group.items.reduce((sum, it) => sum + (it.received - it.planned), 0)
     : group.items.reduce((sum, it) => sum + it.remaining, 0);
 
+  const totalAssigned = group.items.reduce(
+    (sum, it) => sum + (group.isIncome ? it.planned : it.funded),
+    0,
+  );
+  const totalActivity = group.items.reduce(
+    (sum, it) => sum + (group.isIncome ? it.received : it.spent),
+    0,
+  );
+  let availableTone: 'pos' | 'neg' | 'zero' = 'zero';
+  if (available > 0) availableTone = 'pos';
+  else if (available < 0) availableTone = 'neg';
+
   return (
-    <div className={`${sharedClasses.card} ${classes.groupCard}`}>
-      <BudgetGroupHeader
-        title={group.name}
-        available={formatMoney(available)}
-        isExpanded={isExpanded}
-        onToggle={onToggle}
-      />
+    <Accordion
+      unstyled
+      value={isExpanded ? group.id : null}
+      onChange={onToggle}
+      chevron={null}
+      className={classes.groupCard}
+      classNames={{
+        label: classes.controlLabel,
+        item: classes.item,
+        panel: classes.panel,
+      }}
+      styles={{
+        control: {
+          display: 'flex',
+          flexDirection: 'row-reverse',
+          alignItems: 'center',
+          width: '100%',
+          padding: 0,
+          backgroundColor: 'transparent',
+          border: 0,
+        },
+      }}
+    >
+      <Accordion.Item value={group.id}>
+        <Accordion.Control>
+          <BudgetGroupHeader
+            title={group.name}
+            assigned={totalAssigned}
+            activity={totalActivity}
+            available={available}
+            availableTone={availableTone}
+            isExpanded={isExpanded}
+            itemCount={group.items.length}
+            onAddItem={() => beginAddItem(group.id)}
+          />
+        </Accordion.Control>
 
-      <Collapse expanded={isExpanded}>
-        <div className={classes.gDivider} />
-        <div className={classes.items}>
-          <div className={classes.reorderWrap} ref={reorderWrapRef}>
-            <Reorder.Group
-              axis="y"
-              values={group.items.map((it) => it.id)}
-              onReorder={handleLiveReorder}
-              className={classes.reorderGroup}
-            >
-              <AnimatePresence initial={false} mode="popLayout">
-                {group.items.map((item) => (
-                  <BudgetGroupReorderItem
-                    key={item.id}
-                    item={item}
-                    groupId={group.id}
-                    isIncome={group.isIncome}
-                    isDragging={draggingItemId === item.id}
-                    registerItemRef={registerItemRef}
-                    onDragStart={handleDragStart}
-                    onDrag={handleDrag}
-                    onDragEnd={handleDragEnd}
-                  />
-                ))}
-              </AnimatePresence>
-            </Reorder.Group>
-            <div className={classes.dropIndicator} ref={indicatorRef} />
+        <Accordion.Panel>
+          <div className={classes.gDivider} />
+          <div className={classes.items}>
+            <div className={classes.reorderWrap} ref={reorderWrapRef}>
+              <Reorder.Group
+                axis="y"
+                values={group.items.map((it) => it.id)}
+                onReorder={handleLiveReorder}
+                className={classes.reorderGroup}
+              >
+                <AnimatePresence initial={false} mode="popLayout">
+                  {group.items.map((item) => (
+                    <BudgetGroupReorderItem
+                      key={item.id}
+                      item={item}
+                      groupId={group.id}
+                      isIncome={group.isIncome}
+                      isDragging={draggingItemId === item.id}
+                      registerItemRef={registerItemRef}
+                      onDragStart={handleDragStart}
+                      onDrag={handleDrag}
+                      onDragEnd={handleDragEnd}
+                    />
+                  ))}
+                </AnimatePresence>
+              </Reorder.Group>
+              <div className={classes.dropIndicator} ref={indicatorRef} />
+            </div>
+
+            {group.items.length === 0 && (
+              <div className={classes.emptyState}>
+                {group.isIncome
+                  ? 'No income recorded yet — add your first income source.'
+                  : 'No categories yet — add your first item.'}
+              </div>
+            )}
+
+            {group.isIncome && receiveHint && (
+              <div className={rowClasses.receiveHint}>{receiveHint}</div>
+            )}
+
+            {addItemGroup === group.id && (
+              <div className={classes.gAddForm}>
+                <BudgetGroupAddItemForm isIncome={group.isIncome} />
+              </div>
+            )}
           </div>
-
-          {group.isIncome && receiveHint && (
-            <div className={rowClasses.receiveHint}>{receiveHint}</div>
-          )}
-
-          {addItemGroup === group.id ? (
-            <div className={classes.gFooterBlock}>
-              <div className={classes.gDivider} />
-              <div className={classes.gFooter}>
-                <BudgetGroupAddItemForm
-                  className={classes.gFooterForm}
-                  isIncome={group.isIncome}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className={classes.gFooterBlock}>
-              <div className={classes.gDivider} />
-              <div className={`${classes.gFooter} ${group.isIncome ? classes.gFooterIncome : ''}`}>
-                <button
-                  type="button"
-                  className={classes.gAdd}
-                  onClick={() => beginAddItem(group.id)}
-                >
-                  <span className={classes.gAddIcon} aria-hidden="true">
-                    <Plus size={14} />
-                  </span>
-                  <span className={classes.gAddLabel}>
-                    {group.isIncome ? 'Add income' : 'Add item'}
-                  </span>
-                </button>
-                {group.isIncome && (
-                  <>
-                    <span className={`${classes.gTotal} ${classes.gTotalPlanned}`}>
-                      {formatMoney(group.items.reduce((sum, it) => sum + it.planned, 0))}
-                    </span>
-                    <span className={`${classes.gTotal} ${classes.gTotalSpent}`}>
-                      {formatMoney(group.items.reduce((sum, it) => sum + it.received, 0))}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </Collapse>
-    </div>
+        </Accordion.Panel>
+      </Accordion.Item>
+    </Accordion>
   );
 }
 
