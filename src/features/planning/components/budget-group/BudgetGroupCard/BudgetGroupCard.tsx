@@ -123,6 +123,7 @@ function BudgetGroupCard({ group }: BudgetGroupCardProps) {
       value={isExpanded ? group.id : null}
       onChange={onToggle}
       chevron={null}
+      transitionDuration={0}
       className={classes.groupCard}
       classNames={{
         label: classes.controlLabel,
