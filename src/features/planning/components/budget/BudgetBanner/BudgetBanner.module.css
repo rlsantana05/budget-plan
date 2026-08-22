@@ -3,9 +3,7 @@
   top: 0;
   z-index: 3;
   border-radius: 16px;
-  background:
-    radial-gradient(130% 130% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 60%),
-    var(--card-bg);
+  background: var(--card-bg);
   border: 1px solid var(--card-border);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.04) inset,
