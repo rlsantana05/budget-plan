@@ -48,7 +48,7 @@ function BudgetGroupReorderItem({
       dragListener={false}
       dragControls={dragControls}
       className={classes.reorderItem}
-      initial={{ opacity: 0, scale: 0.98 }}
+      initial={false}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98, height: 0 }}
       transition={{
