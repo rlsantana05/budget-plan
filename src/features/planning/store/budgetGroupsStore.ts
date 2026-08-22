@@ -102,6 +102,7 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
             ...g.items,
             {
               id: tempId,
+              clientId: tempId,
               name: 'New income',
               dueDate: null,
               planned: 0,
@@ -173,6 +174,7 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
             ...g.items,
             {
               id: tempId,
+              clientId: tempId,
               name: 'New category',
               dueDate: null,
               planned: 0,

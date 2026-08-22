@@ -215,7 +215,7 @@ export default function Income() {
         >
           {items.map((item) => (
             <Reorder.Item
-              key={item.id}
+              key={item.clientId ?? item.id}
               value={item}
               className={classes.reorderItem}
               whileDrag={{ zIndex: 50 }}

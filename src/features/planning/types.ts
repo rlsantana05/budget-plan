@@ -1,5 +1,7 @@
 export interface GroupItem {
   id: string;
+  /** Stable client-side id that never changes, even after the server assigns `id`. Use as React key. Optional for legacy/mock data (falls back to `id`). */
+  clientId?: string;
   name: string;
   dueDate: string | null;
   planned: number;
