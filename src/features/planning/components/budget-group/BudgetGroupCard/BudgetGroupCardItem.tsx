@@ -47,6 +47,14 @@ function BudgetGroupCardItem({
   const amountFocusedRef = useRef(false);
   const assignedFocusedRef = useRef(false);
   const revertRef = useRef(false);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (item.name === 'New category' && item.planned === 0) {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.select();
+    }
+  }, [item.name, item.planned]);
 
   useEffect(() => {
     if (!nameFocusedRef.current) setDraftName(item.name);
@@ -213,6 +221,7 @@ function BudgetGroupCardItem({
             <GripVertical size={14} />
           </button>
           <input
+            ref={nameInputRef}
             className={classes.gNameInput}
             value={draftName}
             aria-label="Item name"

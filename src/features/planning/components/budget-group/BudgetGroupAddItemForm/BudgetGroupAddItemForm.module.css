@@ -1,9 +1,0 @@
-.addItemForm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.addItemForm input {
-  flex: 1;
-}

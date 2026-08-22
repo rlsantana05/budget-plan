@@ -11,7 +11,6 @@ import {
 } from '@/actions/budget-planning';
 
 import { MOCK_GROUPS } from '../constants';
-import { parseAmountText, sanitizeAmountText } from '../utils/formatters';
 import type { Group, GroupItem } from '../types';
 
 export interface BudgetGroupUndo {
@@ -23,10 +22,6 @@ export interface BudgetGroupUndo {
 interface BudgetGroupsStore {
   groups: Group[];
   expandedGroups: Record<string, boolean>;
-  addItemGroup: string | null;
-  newItemName: string;
-  newItemAmount: number;
-  amountText: string;
   deleteArmingId: string | null;
   receiveHint: string | null;
   undo: BudgetGroupUndo | null;
@@ -44,12 +39,10 @@ interface BudgetGroupsStore {
   setBusy: (busy: 'add' | 'row' | null) => void;
   registerTxActions: (run: BudgetGroupsStore['runTxAction']) => void;
   toggleGroup: (id: string) => void;
-  beginAddItem: (groupId: string) => void;
-  cancelAddItem: () => void;
-  handleAmountInputChange: (value: string) => void;
-  handleAddItem: (groupId: string) => void;
   /** Add a brand-new "New income" row ($0) and persist it. Returns the temp id. */
   addIncomeSource: (groupId: string) => string;
+  /** Insert a new 'New category' row ($0) inline and persist it. Returns the temp id. */
+  addCategoryRow: (groupId: string) => string;
   handleUpdateItem: (itemId: string, patch: { name: string; planned: number }) => void;
   handleAssignAmount: (item: GroupItem, amount: number) => void;
   handleDeleteItem: (item: GroupItem, groupId: string) => void;
@@ -58,7 +51,6 @@ interface BudgetGroupsStore {
   handleReorderCommit: (groupId: string, orderedIds: string[]) => void;
   handleReceiveIncome: (item: GroupItem) => void;
   setDeleteArmingId: (id: string | null) => void;
-  setNewItemName: (name: string) => void;
   selectedItemId: string | null;
   setSelectedItemId: (id: string | null) => void;
 }
@@ -70,10 +62,6 @@ const noopRun = async () => {};
 export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
   groups: MOCK_GROUPS,
   expandedGroups: {},
-  addItemGroup: null,
-  newItemName: '',
-  newItemAmount: 0,
-  amountText: '',
   deleteArmingId: null,
   receiveHint: null,
   undo: null,
@@ -100,101 +88,6 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
     const group = state.groups.find((g) => g.id === id);
     const wasExpanded = state.expandedGroups[id] ?? group?.defaultExpanded ?? false;
     set({ expandedGroups: { ...state.expandedGroups, [id]: !wasExpanded } });
-  },
-
-  beginAddItem: (groupId) => set({
-    newItemName: '',
-    amountText: '',
-    newItemAmount: 0,
-    addItemGroup: groupId,
-  }),
-
-  cancelAddItem: () => set({
-    newItemName: '',
-    amountText: '',
-    newItemAmount: 0,
-    addItemGroup: null,
-  }),
-
-  handleAmountInputChange: (value) => {
-    const sanitized = sanitizeAmountText(value);
-    set({ amountText: sanitized, newItemAmount: parseAmountText(sanitized) });
-  },
-
-  setNewItemName: (name) => set({ newItemName: name }),
-
-  handleAddItem: (groupId) => {
-    const state = get();
-    const name = state.newItemName.trim();
-    if (!name || state.busy !== null) return;
-    const planned = state.newItemAmount;
-    const tempId = `pending-${Date.now()}`;
-
-    set((s) => ({
-      groups: s.groups.map((g) => (g.id === groupId
-        ? {
-          ...g,
-          items: [
-            ...g.items,
-            {
-              id: tempId,
-              name,
-              dueDate: null,
-              planned,
-              funded: 0,
-              spent: 0,
-              received: 0,
-              remaining: 0,
-              transactionCount: 0,
-              templateId: null,
-              targetType: 'NONE',
-              targetAmount: 0,
-              targetDue: null,
-              targetDate: null,
-              targetMonthDay: null,
-              needed: 0,
-              trend: [],
-            },
-          ],
-        }
-        : g)),
-    }));
-    set({ newItemName: '', amountText: '', newItemAmount: 0 });
-
-    state.runTxAction('row', async () => {
-      const created = await addCategoryItem(groupId, name, planned);
-      set((s) => ({
-        groups: s.groups.map((g) => (g.id === groupId
-          ? {
-            ...g,
-            items: g.items.map((it) => (it.id === tempId
-              ? {
-                ...it,
-                id: created.id,
-                name: created.name,
-                dueDate: created.dueDate,
-                planned: created.planned,
-                funded: Number(created.funded ?? 0),
-                spent: created.spent,
-                received: created.received ?? 0,
-                remaining: created.remaining,
-                transactionCount: created.transactionCount,
-                templateId: created.templateId ?? null,
-                targetType: created.targetType ?? 'NONE',
-                targetAmount: Number(created.targetAmount ?? 0),
-                targetDue: created.targetDue ?? null,
-                targetDate: created.targetDate ?? null,
-                targetMonthDay: created.targetMonthDay ?? null,
-                needed: Number(created.needed ?? 0),
-                trend: created.trend ?? [],
-              }
-              : it)),
-          }
-          : g)),
-      }));
-    });
-
-    state.nameInputRef.current?.focus();
   },
 
   addIncomeSource: (groupId) => {
@@ -234,6 +127,77 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
     state.runTxAction('row', async () => {
       const planned = 0;
       const created = await addCategoryItem(groupId, 'New income', planned);
+      set((s) => ({
+        groups: s.groups.map((g) => (g.id === groupId
+          ? {
+            ...g,
+            items: g.items.map((it) => (it.id === tempId
+              ? {
+                ...it,
+                id: created.id,
+                name: created.name,
+                dueDate: created.dueDate,
+                planned: created.planned,
+                funded: Number(created.funded ?? 0),
+                spent: created.spent,
+                received: created.received ?? 0,
+                remaining: created.remaining,
+                transactionCount: created.transactionCount,
+                templateId: created.templateId ?? null,
+                targetType: created.targetType ?? 'NONE',
+                targetAmount: Number(created.targetAmount ?? 0),
+                targetDue: created.targetDue ?? null,
+                targetDate: created.targetDate ?? null,
+                targetMonthDay: created.targetMonthDay ?? null,
+                needed: Number(created.needed ?? 0),
+                trend: created.trend ?? [],
+              }
+              : it)),
+          }
+          : g)),
+      }));
+    });
+
+    return tempId;
+  },
+
+  addCategoryRow: (groupId) => {
+    const state = get();
+    const tempId = `cat-${Date.now()}`;
+
+    set((s) => ({
+      groups: s.groups.map((g) => (g.id === groupId
+        ? {
+          ...g,
+          items: [
+            ...g.items,
+            {
+              id: tempId,
+              name: 'New category',
+              dueDate: null,
+              planned: 0,
+              funded: 0,
+              spent: 0,
+              received: 0,
+              remaining: 0,
+              transactionCount: 0,
+              templateId: null,
+              targetType: 'NONE' as const,
+              targetAmount: 0,
+              targetDue: null,
+              targetDate: null,
+              targetMonthDay: null,
+              needed: 0,
+              trend: [],
+            },
+          ],
+        }
+        : g)),
+    }));
+
+    state.runTxAction('row', async () => {
+      const planned = 0;
+      const created = await addCategoryItem(groupId, 'New category', planned);
       set((s) => ({
         groups: s.groups.map((g) => (g.id === groupId
           ? {
