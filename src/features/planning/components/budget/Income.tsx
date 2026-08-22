@@ -101,7 +101,6 @@ function IncomeRow({
             }
           }}
         />
-        <span className={classes.name}>{item.name}</span>
       </span>
 
       <input
