@@ -4,15 +4,9 @@
   z-index: 3;
   border-radius: 16px;
   background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 10px 28px rgba(0, 0, 0, 0.35);
   padding: 12px 26px;
   margin: 0;
-  transition:
-    box-shadow 0.24s ease,
-    border-color 0.24s ease;
+  transition: box-shadow 0.24s ease;
 }
 
 .flat[data-status],
