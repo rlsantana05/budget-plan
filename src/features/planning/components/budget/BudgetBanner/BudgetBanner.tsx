@@ -9,9 +9,9 @@ import classes from './BudgetBanner.module.css';
 
 interface BudgetBannerProps {
   amount: number;
-  label: string;
   children?: ReactNode;
   flat?: boolean;
+  message?: string;
 }
 
 type BannerStatus = 'in-progress' | 'complete' | 'over';
@@ -23,16 +23,16 @@ const statusByAmount = (amount: number): BannerStatus => {
 };
 
 const STATUS_CLASS: Record<BannerStatus, string> = {
-  complete: classes.statusComplete,
-  'in-progress': classes.statusInProgress,
-  over: classes.statusOver,
+  complete: 'bannerAmount--complete',
+  'in-progress': 'bannerAmount--in-progress',
+  over: 'bannerAmount--over',
 };
 
 export default function BudgetBanner({
   amount,
-  label,
   children,
   flat = false,
+  message,
 }: BudgetBannerProps) {
   const reduceMotion = useReducedMotion();
   const transition = {
@@ -40,19 +40,27 @@ export default function BudgetBanner({
     ease: 'easeOut' as const,
   };
   const status = statusByAmount(amount);
-  const statusClass = STATUS_CLASS[status];
+  const amountStatusClass = STATUS_CLASS[status];
 
   return (
     <div
       className={`${sharedClasses.card} ${classes.banner} ${flat ? classes.flat : ''}`}
       data-status={status}
     >
-      <div className={classes.bannerEyebrow}>
-        <span className={classes.bannerLed}>
-          <span className={`${classes.bannerDot} ${statusClass}`} aria-hidden="true" />
-          <span className={classes.bannerLabel}>{label}</span>
-        </span>
-        <AnimatePresence>
+      {/* Compact row - no eyebrow, message to right of amount */}
+      <AnimatePresence mode="popLayout">
+        <motion.div
+          key={`${status}-${amount}`}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 4 }}
+          transition={transition}
+          className={classes.bannerRow}
+        >
+          <span className={`${classes.bannerAmount} ${amountStatusClass}`}>
+            {formatMoney(Math.abs(amount))}
+            {message && <span className={classes.bannerMessage}>{message}</span>}
+          </span>
           {status === 'complete' && (
             <motion.span
               key="check"
@@ -66,19 +74,6 @@ export default function BudgetBanner({
               <Check size={16} />
             </motion.span>
           )}
-        </AnimatePresence>
-      </div>
-
-      <AnimatePresence mode="popLayout">
-        <motion.div
-          key={`${status}-${amount}`}
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 6 }}
-          transition={transition}
-          className={`${classes.bannerAmount} ${statusClass}`}
-        >
-          {formatMoney(Math.abs(amount))}
         </motion.div>
       </AnimatePresence>
 

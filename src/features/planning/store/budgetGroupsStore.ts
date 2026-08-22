@@ -48,6 +48,8 @@ interface BudgetGroupsStore {
   cancelAddItem: () => void;
   handleAmountInputChange: (value: string) => void;
   handleAddItem: (groupId: string) => void;
+  /** Add a brand-new "New income" row ($0) and persist it. Returns the temp id. */
+  addIncomeSource: (groupId: string) => string;
   handleUpdateItem: (itemId: string, patch: { name: string; planned: number }) => void;
   handleAssignAmount: (item: GroupItem, amount: number) => void;
   handleDeleteItem: (item: GroupItem, groupId: string) => void;
@@ -193,6 +195,77 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
     });
 
     state.nameInputRef.current?.focus();
+  },
+
+  addIncomeSource: (groupId) => {
+    const state = get();
+    const tempId = `income-${Date.now()}`;
+
+    set((s) => ({
+      groups: s.groups.map((g) => (g.id === groupId
+        ? {
+          ...g,
+          items: [
+            ...g.items,
+            {
+              id: tempId,
+              name: 'New income',
+              dueDate: null,
+              planned: 0,
+              funded: 0,
+              spent: 0,
+              received: 0,
+              remaining: 0,
+              transactionCount: 0,
+              templateId: null,
+              targetType: 'NONE' as const,
+              targetAmount: 0,
+              targetDue: null,
+              targetDate: null,
+              targetMonthDay: null,
+              needed: 0,
+              trend: [],
+            },
+          ],
+        }
+        : g)),
+    }));
+
+    state.runTxAction('row', async () => {
+      const planned = 0;
+      const created = await addCategoryItem(groupId, 'New income', planned);
+      set((s) => ({
+        groups: s.groups.map((g) => (g.id === groupId
+          ? {
+            ...g,
+            items: g.items.map((it) => (it.id === tempId
+              ? {
+                ...it,
+                id: created.id,
+                name: created.name,
+                dueDate: created.dueDate,
+                planned: created.planned,
+                funded: Number(created.funded ?? 0),
+                spent: created.spent,
+                received: created.received ?? 0,
+                remaining: created.remaining,
+                transactionCount: created.transactionCount,
+                templateId: created.templateId ?? null,
+                targetType: created.targetType ?? 'NONE',
+                targetAmount: Number(created.targetAmount ?? 0),
+                targetDue: created.targetDue ?? null,
+                targetDate: created.targetDate ?? null,
+                targetMonthDay: created.targetMonthDay ?? null,
+                needed: Number(created.needed ?? 0),
+                trend: created.trend ?? [],
+              }
+              : it)),
+          }
+          : g)),
+      }));
+    });
+
+    return tempId;
   },
 
   handleUpdateItem: (itemId, patch) => {

@@ -15,6 +15,7 @@ import { useTransactionsPanel } from './hooks/useTransactionsPanel';
 import { usePlannedSummary } from './hooks/usePlannedSummary';
 import MonthHeader from './components/layout/MonthHeader/MonthHeader';
 import BudgetBanner from './components/budget/BudgetBanner/BudgetBanner';
+import Income from './components/budget/Income';
 import { BudgetGroupsProvider } from './components/budget-group/BudgetGroupsProvider/BudgetGroupsProvider';
 import BudgetGroupListWithHeader from './components/budget-group/BudgetGroupListWithHeader/BudgetGroupListWithHeader';
 import TransactionsPanel from './components/transactions/TransactionsPanel/TransactionsPanel';
@@ -62,9 +63,6 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
       .reduce((sum, it) => sum + it.planned, 0);
     return income - spending;
   }, [groups]);
-  let bannerLabel = 'on budget';
-  if (bannerAmount < 0) bannerLabel = 'over budget';
-  if (bannerAmount > 0) bannerLabel = 'left to budget';
 
   const readyToAssign = useMemo(
     () => initialData?.availableToAssign ?? 0,
@@ -155,7 +153,8 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
             transition={motionTransition}
           >
             <BudgetGroupsProvider initialData={initialData} action={action}>
-              <BudgetBanner amount={bannerAmount} label={bannerLabel} />
+              <Income />
+              <BudgetBanner amount={bannerAmount} message="Available to allocate" />
               <BudgetGroupListWithHeader />
             </BudgetGroupsProvider>
           </motion.div>

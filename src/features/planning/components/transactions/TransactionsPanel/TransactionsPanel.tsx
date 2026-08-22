@@ -210,18 +210,8 @@ export default function TransactionsPanel({
           <Loader color="var(--accent-bright)" size={32} />
         </div>
       )}
-      <div className={classes.headerRow}>
-        <ViewToggle activeView={activeView} onViewChange={onViewChange} />
-        <button
-          type="button"
-          className={classes.assignAll}
-          onClick={onAssignAll}
-          disabled={assignAllBusy || readyToAssign <= 0}
-        >
-          {assignAllBusy ? 'Assigning…' : 'Assign to Targets'}
-        </button>
-      </div>
 
+      {/* When an item is selected, show the CategoryHub with assign functionality */}
       {selectedItem ? (
         <>
           <CategoryHub
@@ -239,13 +229,14 @@ export default function TransactionsPanel({
           {error && <div className={sharedClasses.error}>{error}</div>}
         </>
       ) : (
+        /* When no item selected, show main transaction views */
         <>
-          {activeView === 'transactions' && (
-            <StatusSubtabs activeTab={activeTab} onTabChange={onTabChange} />
-          )}
+          <ViewToggle activeView={activeView} onViewChange={onViewChange} />
 
           {activeView === 'transactions' ? (
             <>
+              <StatusSubtabs activeTab={activeTab} onTabChange={onTabChange} />
+
               <TransactionSearch
                 searchQuery={searchQuery}
                 onChange={onSearchQueryChange}
@@ -271,6 +262,7 @@ export default function TransactionsPanel({
               {error && <div className={sharedClasses.error}>{error}</div>}
             </>
           ) : (
+            /* Summary view */
             <div className={classes.summaryView}>
               <SummaryDonutChart plannedCategories={plannedCategories} metric={metric} />
               <SummaryTable
@@ -283,6 +275,7 @@ export default function TransactionsPanel({
         </>
       )}
 
+      {/* Target modal - only shown when editing a target */}
       {targetItem && (
         <TargetModal
           key={targetItem.id}
