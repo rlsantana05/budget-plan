@@ -20,6 +20,12 @@ export default function TransactionSearch({
       onChange={(e) => onChange(e.target.value)}
       className={classes.search}
       leftSection={<Search size={16} />}
+      leftSectionWidth={36}
+      styles={{
+        input: {
+          paddingLeft: '36px',
+        },
+      }}
     />
   );
 }

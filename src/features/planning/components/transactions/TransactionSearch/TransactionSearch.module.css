@@ -1,10 +1,6 @@
 .search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  padding: 12px 16px;
   color: var(--ink-soft);
   font-size: 15px;
   margin-bottom: 6px;
