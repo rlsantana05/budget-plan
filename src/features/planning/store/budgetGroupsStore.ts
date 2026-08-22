@@ -209,7 +209,7 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
             ...g.items,
             {
               id: tempId,
-              name: 'New income',
+              name: 'New item',
               dueDate: null,
               planned: 0,
               funded: 0,
