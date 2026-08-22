@@ -24,15 +24,23 @@ import classes from './Income.module.css';
  */
 function IncomeRow({
   item,
+  onNameChange,
   onPlanChange,
   onDelete,
 }: {
   item: GroupItem;
-  onPlanChange: (amount: number) => void;
+  onNameChange: (itemId: string, name: string) => void;
+  onPlanChange: (itemId: string, amount: number) => void;
   onDelete: () => void;
 }) {
+  const [nameDraft, setNameDraft] = useState(item.name);
   const [planDraft, setPlanDraft] = useState(String(item.planned));
   const [planFocused, setPlanFocused] = useState(false);
+  const nameFocusRef = { current: false };
+
+  useEffect(() => {
+    if (!nameFocusRef.current) setNameDraft(item.name);
+  }, [item.name]);
 
   useEffect(() => {
     if (!planFocused) {
@@ -40,11 +48,25 @@ function IncomeRow({
     }
   }, [item.planned, planFocused]);
 
+  const commitName = () => {
+    nameFocusRef.current = false;
+    const name = nameDraft.trim();
+    if (!name) {
+      setNameDraft(item.name);
+      return;
+    }
+    if (name !== item.name) {
+      onNameChange(item.id, name);
+    }
+  };
+
   const commitPlan = () => {
     setPlanFocused(false);
     const amount = parseAmountText(planDraft);
     setPlanDraft(String(amount));
-    if (amount !== item.planned) onPlanChange(amount);
+    if (amount !== item.planned) {
+      onPlanChange(item.id, amount);
+    }
   };
 
   const remaining = item.planned - item.received;
@@ -62,6 +84,23 @@ function IncomeRow({
         >
           <GripVertical size={14} />
         </button>
+        <input
+          className={rowClasses.gNameInput}
+          value={nameDraft}
+          aria-label="Income name"
+          onFocus={(e) => {
+            nameFocusRef.current = true;
+            e.target.select();
+          }}
+          onBlur={commitName}
+          onChange={(e) => setNameDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === 'Escape') {
+              e.preventDefault();
+              e.currentTarget.blur();
+            }
+          }}
+        />
         <span className={classes.name}>{item.name}</span>
       </span>
 
@@ -115,9 +154,7 @@ export default function Income() {
   const handleDeleteItem = useBudgetGroupsStore((s) => s.handleDeleteItem);
   const addIncomeSource = useBudgetGroupsStore((s) => s.addIncomeSource);
   const handleReorder = useBudgetGroupsStore((s) => s.handleReorderItems);
-  const handleReorderCommit = useBudgetGroupsStore(
-    (s) => s.handleReorderCommit,
-  );
+  const handleReorderCommit = useBudgetGroupsStore((s) => s.handleReorderCommit);
 
   const group = groups.find((g) => g.isIncome);
   const [expanded, setExpanded] = useState(true);
@@ -126,8 +163,11 @@ export default function Income() {
 
   const items = group.items ?? [];
 
-  const handlePlanChange = (item: GroupItem, amount: number) =>
-    handleUpdateItem(item.id, { ...item, name: item.name, planned: amount });
+  const handleNameChange = (itemId: string, name: string) => {
+    const existingItem = items.find((i) => i.id === itemId);
+    const planned = existingItem?.planned ?? 0;
+    handleUpdateItem(itemId, { name, planned });
+  };
 
   return (
     <div className={classes.card}>
@@ -183,7 +223,10 @@ export default function Income() {
             >
               <IncomeRow
                 item={item}
-                onPlanChange={(amount) => handlePlanChange(item, amount)}
+                onNameChange={handleNameChange}
+                onPlanChange={(itemId, amount) =>
+                  handleUpdateItem(itemId, { ...item, name: item.name, planned: amount })
+                }
                 onDelete={() => handleDeleteItem(item, group.id)}
               />
             </Reorder.Item>
