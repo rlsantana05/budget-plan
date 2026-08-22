@@ -3,7 +3,7 @@
 import {
   memo, useCallback, useEffect, useRef, useState,
 } from 'react';
-import { AnimatePresence, Reorder } from 'framer-motion';
+import { Reorder } from 'framer-motion';
 import { Accordion } from '@mantine/core';
 import type { Group } from '../../../types';
 import classes from './BudgetGroupCard.module.css';
@@ -165,21 +165,19 @@ function BudgetGroupCard({ group }: BudgetGroupCardProps) {
                 onReorder={handleLiveReorder}
                 className={classes.reorderGroup}
               >
-                <AnimatePresence initial={false} mode="popLayout">
-                  {group.items.map((item) => (
-                    <BudgetGroupReorderItem
-                      key={item.id}
-                      item={item}
-                      groupId={group.id}
-                      isIncome={group.isIncome}
-                      isDragging={draggingItemId === item.id}
-                      registerItemRef={registerItemRef}
-                      onDragStart={handleDragStart}
-                      onDrag={handleDrag}
-                      onDragEnd={handleDragEnd}
-                    />
-                  ))}
-                </AnimatePresence>
+                {group.items.map((item) => (
+                  <BudgetGroupReorderItem
+                    key={item.id}
+                    item={item}
+                    groupId={group.id}
+                    isIncome={group.isIncome}
+                    isDragging={draggingItemId === item.id}
+                    registerItemRef={registerItemRef}
+                    onDragStart={handleDragStart}
+                    onDrag={handleDrag}
+                    onDragEnd={handleDragEnd}
+                  />
+                ))}
               </Reorder.Group>
               <div className={classes.dropIndicator} ref={indicatorRef} />
             </div>

@@ -3,7 +3,7 @@
 import { memo, useCallback } from 'react';
 import type { PointerEvent } from 'react';
 import {
-  Reorder, useDragControls, useReducedMotion,
+  Reorder, useDragControls,
 } from 'framer-motion';
 import type { GroupItem } from '../../../types';
 import classes from '../BudgetGroupCard/BudgetGroupCard.module.css';
@@ -30,7 +30,6 @@ function BudgetGroupReorderItem({
   onDrag,
   onDragEnd,
 }: BudgetGroupReorderItemProps) {
-  const reduceMotion = useReducedMotion();
   const dragControls = useDragControls();
 
   const handleGripPointerDown = useCallback(
@@ -48,13 +47,6 @@ function BudgetGroupReorderItem({
       dragListener={false}
       dragControls={dragControls}
       className={classes.reorderItem}
-      initial={false}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98, height: 0 }}
-      transition={{
-        duration: reduceMotion ? 0 : 0.18,
-        ease: 'easeOut',
-      }}
       onDragStart={() => onDragStart(item.id)}
       onDrag={onDrag}
       onDragEnd={onDragEnd}
