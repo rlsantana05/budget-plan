@@ -18,6 +18,7 @@ export default function BudgetGroupList() {
       hasAccounts={hasAccounts}
       onAddGroup={handleAddGroup}
       busy={busy}
+      showAddButton={false}
     />
   );
 }

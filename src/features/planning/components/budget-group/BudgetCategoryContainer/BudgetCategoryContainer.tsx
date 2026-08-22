@@ -10,6 +10,7 @@ interface BudgetCategoryContainerProps {
   hasAccounts: boolean;
   onAddGroup: () => void;
   busy: 'add' | 'row' | null;
+  showAddButton?: boolean;
 }
 
 export function BudgetCategoryContainer({
@@ -17,6 +18,7 @@ export function BudgetCategoryContainer({
   hasAccounts,
   onAddGroup,
   busy,
+  showAddButton = true,
 }: BudgetCategoryContainerProps) {
   const spendingGroups = groups.filter((g) => !g.isIncome);
 
@@ -26,6 +28,7 @@ export function BudgetCategoryContainer({
         <BudgetCategoryHeader
           onAddGroup={onAddGroup}
           hasAccounts={hasAccounts}
+          showAddButton={showAddButton}
         />
         <BudgetColumnHeader />
       </div>
