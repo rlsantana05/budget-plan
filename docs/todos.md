@@ -26,10 +26,11 @@ the test fix restores the safety net everything else depends on.
 
 - [ ] **Budget screen: envelope budgeting (YNAB-style real money)** — spec: `2026-08-22-budget-envelope-screen.md`
   - [ ] Phase 1 MVP: header strip (Cash on Hand / Assigned / Ready to Assign), paycheck inbox, envelope columns, assign flow, cover overspend
-- [ ] **Unify Income + Category rows into one `BudgetRow`** — spec: `2026-08-22-unify-row-components.md`
-  - [ ] Shared component w/ `isIncome` switch; single keyboard contract (Enter/Escape/blur)
-  - [ ] Shared reorder wrapper usage; adopt two-step delete for income
-  - [ ] Delete `IncomeRow` + duplicate CSS (target ≥ −300 LOC)
+- [x] **Unify Income + Category rows into one `BudgetRow`** — spec: `2026-08-22-unify-row-components.md` ✅ `f7a5274`/`50da16a`
+  - [x] Income renders BudgetGroupCardItem with isIncome (IncomeRow deleted, −156 LOC)
+  - [x] Single keyboard contract (Enter/Escape/blur) via shared component
+  - [x] Two-step armed delete for income rows (free parity gain)
+  - [x] Real `<button>` elements replace span/div role=button (header add, ghost card, TypeCard); row container keeps role=button (nested inputs) with aria-label/aria-pressed
 
 ## P2 — Hygiene
 
