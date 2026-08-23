@@ -1,156 +1,22 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   ChevronDown,
-  GripVertical,
   Plus,
-  Trash,
 } from 'lucide-react';
 import { Reorder } from 'framer-motion';
 import { useBudgetGroupsStore } from '../../store/budgetGroupsStore';
-import {
-  formatCents,
-  parseAmountToCents,
-  sanitizeAmountText,
-} from '../../utils/money';
-import type { GroupItem } from '../../types';
-import rowClasses from '../budget-group/BudgetGroupCard/BudgetGroupCardItem.module.css';
+import BudgetGroupCardItem from '../budget-group/BudgetGroupCard/BudgetGroupCardItem';
 import classes from './Income.module.css';
 
-type Tone = 'pos' | 'neg' | 'zero';
-
-function getTone(value: number): Tone {
-  if (value > 0) return 'pos';
-  if (value < 0) return 'neg';
-  return 'zero';
-}
-
 /**
- * Single income source row, styled to match BudgetGroupCardItem.
- * Layout (5 cols): grip+name | plan | received | remaining | actions
- */
-function IncomeRow({
-  item,
-  onNameChange,
-  onPlanChange,
-  onDelete,
-}: {
-  item: GroupItem;
-  onNameChange: (itemId: string, name: string) => void;
-  onPlanChange: (itemId: string, amount: number) => void;
-  onDelete: () => void;
-}) {
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const [nameDraft, setNameDraft] = useState(item.name);
-  const [planFocused, setPlanFocused] = useState(false);
-  const [planDraft, setPlanDraft] = useState<string | null>(null);
-
-  const commitName = () => {
-    const name = nameDraft.trim();
-    if (!name) {
-      setNameDraft(item.name);
-      return;
-    }
-    if (name !== item.name) {
-      onNameChange(item.id, name);
-    }
-  };
-
-  const commitPlan = () => {
-    setPlanFocused(false);
-    setPlanDraft(null);
-    if (planDraft === null) return;
-    const amountCents = parseAmountToCents(planDraft);
-    if (amountCents !== item.plannedCents) {
-      onPlanChange(item.id, amountCents);
-    }
-  };
-
-  const remaining = item.plannedCents - item.receivedCents;
-  const remainingTone = getTone(remaining);
-
-  return (
-    <div
-      className={`${rowClasses.gRow} ${rowClasses.gRowIncome} ${classes.row}`}
-    >
-      <span className={rowClasses.gNameCell}>
-        <button
-          type="button"
-          className={rowClasses.grip}
-          data-row-drag
-          aria-label={`Drag to reorder ${item.name}`}
-        >
-          <GripVertical size={14} />
-        </button>
-        <input
-          ref={nameInputRef}
-          className={rowClasses.gNameInput}
-          key={`${item.clientId ?? item.id}:${item.name}`}
-          value={nameDraft}
-          aria-label="Income name"
-          onFocus={(e) => {
-            e.target.select();
-          }}
-          onBlur={commitName}
-          onChange={(e) => setNameDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === 'Escape') {
-              e.preventDefault();
-              e.currentTarget.blur();
-            }
-          }}
-        />
-      </span>
-
-      <input
-        className={`${rowClasses.gAmountInput} ${classes.planInput}`}
-        value={planFocused && planDraft !== null ? planDraft : formatCents(item.plannedCents)}
-        aria-label={`Plan for ${item.name}`}
-        inputMode="decimal"
-        onFocus={(e) => {
-          setPlanFocused(true);
-          e.target.select();
-        }}
-        onBlur={commitPlan}
-        onChange={(e) => setPlanDraft(sanitizeAmountText(e.target.value))}
-      />
-
-      <span className={rowClasses.gValue}>
-        {formatCents(item.receivedCents)}
-      </span>
-
-      <span
-        className={`${rowClasses.pill} ${classes.remaining}`}
-        data-tone={remainingTone}
-      >
-        <span className={rowClasses.pillText}>
-          {formatCents(remaining)}
-        </span>
-      </span>
-
-      <div className={rowClasses.gActions}>
-        <button
-          type="button"
-          className={`${rowClasses.gAction} ${rowClasses.gActionDanger}`}
-          aria-label={`Delete ${item.name}`}
-          onClick={onDelete}
-        >
-          <Trash size={15} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Income component - self-contained table of income sources, visually matching
- * the category group cards.
+ * Income card — renders the same BudgetGroupCardItem rows used by category
+ * groups (spec 2026-08-22-unify-row-components). One row component, two
+ * contexts; `isIncome` only switches which columns are editable.
  */
 export default function Income() {
   const groups = useBudgetGroupsStore((s) => s.groups);
-  const handleUpdateItem = useBudgetGroupsStore((s) => s.handleUpdateItem);
-  const handleDeleteItem = useBudgetGroupsStore((s) => s.handleDeleteItem);
   const addIncomeSource = useBudgetGroupsStore((s) => s.addIncomeSource);
   const handleReorder = useBudgetGroupsStore((s) => s.handleReorderItems);
   const handleReorderCommit = useBudgetGroupsStore((s) => s.handleReorderCommit);
@@ -161,12 +27,6 @@ export default function Income() {
   if (!group) return null;
 
   const items = group.items ?? [];
-
-  const handleNameChange = (itemId: string, name: string) => {
-    const existingItem = items.find((i) => i.id === itemId);
-    const plannedCents = existingItem?.plannedCents ?? 0;
-    handleUpdateItem(itemId, { name, plannedCents });
-  };
 
   return (
     <div className={classes.card}>
@@ -205,9 +65,8 @@ export default function Income() {
       {expanded && items.length > 0 && (
         <Reorder.Group
           axis="y"
-          values={items}
-          onReorder={(ordered) => {
-            const orderedIds = ordered.map((i) => i.id);
+          values={items.map((i) => i.id)}
+          onReorder={(orderedIds) => {
             handleReorder(group.id, orderedIds);
             handleReorderCommit(group.id, orderedIds);
           }}
@@ -216,18 +75,16 @@ export default function Income() {
           {items.map((item) => (
             <Reorder.Item
               key={item.clientId ?? item.id}
-              value={item}
+              value={item.id}
               className={classes.reorderItem}
               whileDrag={{ zIndex: 50 }}
             >
-              <IncomeRow
+              <BudgetGroupCardItem
                 item={item}
-                onNameChange={handleNameChange}
-                onPlanChange={(itemId, amount) => handleUpdateItem(itemId, {
-                  name: item.name,
-                  plannedCents: amount,
-                })}
-                onDelete={() => handleDeleteItem(item, group.id)}
+                groupId={group.id}
+                isIncome
+                isDragging={false}
+                onGripPointerDown={() => {}}
               />
             </Reorder.Item>
           ))}
