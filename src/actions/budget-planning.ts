@@ -24,6 +24,14 @@ import type {
 } from "@/types/budget";
 import { calculateAvailableToAssign } from "@/lib/pool";
 import { toCents } from "@/features/planning/utils/money";
+import {
+  addCategoryItemSchema,
+  addTransactionSchema,
+  formatValidationError,
+  setCategoryAssignedSchema,
+  setCategoryTargetSchema,
+  updateCategoryItemSchema,
+} from "./budget-planning.schemas";
 
 const DEV_EMAIL = "dev@budgetplan.app";
 
@@ -912,9 +920,8 @@ export async function setCategoryAssigned(
   categoryId: string,
   amountCents: number,
 ): Promise<void> {
-  if (!Number.isInteger(amountCents) || amountCents < 0) {
-    throw new Error("Assigned amount must be zero or positive");
-  }
+  const parsed = setCategoryAssignedSchema.safeParse({ categoryId, amountCents });
+  if (!parsed.success) throw new Error(formatValidationError(parsed.error));
 
   const monthBudgetId = await getCategoryMonthBudgetId(categoryId);
 
@@ -1066,25 +1073,10 @@ export interface CategoryTargetInput {
 }
 
 function assertTargetInput(input: CategoryTargetInput): void {
-  const { type, amountCents, dueDate, monthDay } = input;
-  if (type !== "NONE" && (!Number.isInteger(amountCents) || (amountCents as number) <= 0)) {
-    throw new Error("Target amount must be positive");
-  }
-  if (type === "ONCE" && !dueDate) {
-    throw new Error("A one-time target needs a due date");
-  }
-  if (type === "ONCE" && Number.isNaN(Date.parse(dueDate as string))) {
-    throw new Error("Due date is invalid");
-  }
-  if (
-    type === "MONTHLY"
-    && (monthDay == null || monthDay < 1 || monthDay > 31)
-  ) {
-    throw new Error("A monthly target needs a day of the month (1–31)");
-  }
-  if (type === "NONE" && monthDay != null) {
-    throw new Error("Cannot set a day without a target type");
-  }
+  // Superseded by setCategoryTargetSchema (spec 2026-08-22-server-action-validation).
+  // Kept as a thin delegate for any legacy callers.
+  const result = setCategoryTargetSchema.safeParse(input);
+  if (!result.success) throw new Error(formatValidationError(result.error));
 }
 
 /**
@@ -1096,7 +1088,8 @@ export async function setCategoryTarget(
   categoryItemId: string,
   input: CategoryTargetInput,
 ): Promise<void> {
-  assertTargetInput(input);
+  const parsed = setCategoryTargetSchema.safeParse(input);
+  if (!parsed.success) throw new Error(formatValidationError(parsed.error));
 
   const [item] = await db
     .select({
@@ -1305,16 +1298,19 @@ export async function addCategoryItem(
   name: string,
   planned = 0,
 ): Promise<BudgetCategoryItemDTO> {
-  const trimmed = name.trim();
-  if (!trimmed) throw new Error("Item name is required");
-  if (!Number.isFinite(planned) || planned < 0) {
-    throw new Error("Planned amount must be zero or positive");
-  }
+  const parsed = addCategoryItemSchema.safeParse({
+    groupId,
+    name,
+    plannedCents: planned,
+  });
+  if (!parsed.success) throw new Error(formatValidationError(parsed.error));
+  const { groupId: gid, name: cleanName, plannedCents } = parsed.data;
+  const trimmed = cleanName;
 
   const [group] = await db
     .select()
     .from(categoryGroupsTable)
-    .where(eq(categoryGroupsTable.id, groupId))
+    .where(eq(categoryGroupsTable.id, gid))
     .limit(1);
   if (!group) throw new Error("Group not found");
 
@@ -1342,11 +1338,11 @@ export async function addCategoryItem(
   const [created] = await db
     .insert(budgetCategoriesTable)
     .values({
-      groupId,
+      groupId: gid,
       templateId,
       name: trimmed,
       dueDate: null,
-      planned: String(planned),
+      planned: String(plannedCents / 100),
       sortOrder: (lastItem?.sortOrder ?? -1) + 1,
     })
     .returning();
@@ -1358,7 +1354,7 @@ export async function addCategoryItem(
     groupId: created.groupId,
     name: created.name,
     dueDate: null,
-    plannedCents: toCents(planned),
+    plannedCents,
     sortOrder: created.sortOrder,
     isPaymentCategory: false,
     accountId: null,
@@ -1386,14 +1382,10 @@ export async function updateCategoryItem(
   id: string,
   input: { name?: string; plannedCents?: number },
 ): Promise<void> {
-  const name = input.name?.trim();
-  if (name !== undefined && !name) throw new Error("Item name is required");
-  if (
-    input.plannedCents !== undefined &&
-    (!Number.isInteger(input.plannedCents) || input.plannedCents < 0)
-  ) {
-    throw new Error("Planned amount must be zero or positive");
-  }
+  const parsed = updateCategoryItemSchema.safeParse({ id, ...input });
+  if (!parsed.success) throw new Error(formatValidationError(parsed.error));
+  const name = parsed.data.name;
+  const plannedCents = parsed.data.plannedCents;
 
   const [cat] = await db
     .select()
@@ -1532,8 +1524,10 @@ export async function addTransaction(input: {
   memo?: string | null;
   date?: Date;
 }): Promise<{ id: string; date: string }> {
-  assertAmount(input.amount);
-  if (!input.accountId) throw new Error("Account is required");
+  const parsed = addTransactionSchema.safeParse(input);
+  if (!parsed.success) throw new Error(formatValidationError(parsed.error));
+  const data = parsed.data;
+  if (!data.accountId) throw new Error("Account is required");
 
   const budget = await getOrCreateDefaultBudget();
   const { mb } = await getOrCreateMonthBudget(budget.id);
