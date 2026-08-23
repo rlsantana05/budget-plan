@@ -21,7 +21,9 @@ export function sanitizeAmountText(text: string): string {
 
 export function parseAmountText(text: string): number {
   const value = text.replace(/\.$/, '');
-  return value === '' ? 0 : Number(value);
+  if (value === '') return 0;
+  const n = Number(value);
+  return Number.isNaN(n) ? 0 : n;
 }
 
 export function formatTxDate(date: string): string {

@@ -127,7 +127,7 @@ describe('status utils', () => {
     });
 
     it('returns next month when current day has passed', () => {
-      const now = new Date('2026-01-20T12:00:00.000Z');
+      const nowRef = new Date('2026-01-20T12:00:00.000Z');
       const item = {
         id: 'test-id',
         name: 'test',
@@ -147,14 +147,14 @@ describe('status utils', () => {
         needed: 0,
         trend: [],
       };
-      const result = resolveTargetDueDate(item, now);
+      const result = resolveTargetDueDate(item, nowRef);
       expect(result?.getFullYear()).toBe(2026);
       expect(result?.getMonth()).toBe(1); // February
       expect(result?.getDate()).toBe(15);
     });
 
     it('handles end of month edge case for MONTHLY target', () => {
-      const now = new Date('2026-01-31T12:00:00.000Z');
+      const nowRef = new Date('2026-02-20T12:00:00.000Z');
       const item = {
         id: 'test-id',
         name: 'test',
@@ -174,7 +174,8 @@ describe('status utils', () => {
         needed: 0,
         trend: [],
       };
-      const result = resolveTargetDueDate(item, now);
+      const result = resolveTargetDueDate(item, nowRef);
+      // February 2026 has 28 days (not a leap year) — day 31 clamps to 28
       expect(result?.getMonth()).toBe(1); // February
       expect(result?.getDate()).toBe(28); // 2026 is not a leap year
     });

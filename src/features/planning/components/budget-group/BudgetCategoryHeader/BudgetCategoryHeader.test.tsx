@@ -17,16 +17,21 @@ function renderHeader(props: Partial<ComponentProps<typeof BudgetCategoryHeader>
 }
 
 describe('BudgetCategoryHeader', () => {
-  it('renders add group button', () => {
+  it('renders add group button by default', () => {
     renderHeader();
     const addButton = screen.getByRole('button', { name: /add group/i });
     expect(addButton).toBeTruthy();
   });
 
-  it('disables add group button when no accounts', () => {
+  it('hides add group button when showAddButton is false', () => {
+    renderHeader({ showAddButton: false });
+    expect(screen.queryByRole('button', { name: /add group/i })).toBeNull();
+  });
+
+  it('renders nothing when there are no accounts', () => {
     renderHeader({ hasAccounts: false });
-    const addButton = screen.getByRole('button', { name: /add group/i });
-    expect(addButton.hasAttribute('disabled')).toBe(true);
+    expect(screen.queryByRole('button', { name: /add group/i })).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
   });
 
   it('calls onAddGroup when add group clicked', () => {
