@@ -10,6 +10,7 @@ import {
   Text,
   Center,
 } from '@mantine/core';
+import { useDelayedFlag } from '../../../hooks/useDelayedFlag';
 import type { BudgetTransactionDTO } from '@/types/budget';
 import type { GroupItem, PlanningCategory } from '../../../types';
 import sharedClasses from '../../shared/BudgetPlanShared.module.css';
@@ -197,6 +198,7 @@ export default function TransactionsPanel({
 }: TransactionsPanelProps) {
   const [metric, setMetric] = useState<SummaryMetric>('spent');
   const [targetItem, setTargetItem] = useState<GroupItem | null>(null);
+  const showSpinner = useDelayedFlag(busy !== null, 300);
 
   const categoryTx = useMemo(() => {
     if (!selectedItem) return [];
@@ -205,7 +207,7 @@ export default function TransactionsPanel({
 
   return (
     <aside className={classes.rightCol} data-hub-panel>
-      {busy !== null && (
+      {showSpinner && (
         <div className={classes.loadingOverlay}>
           <Loader color="var(--accent-bright)" size={32} />
         </div>

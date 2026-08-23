@@ -2,6 +2,7 @@ import { Loader } from '@mantine/core';
 import { BudgetCategoryHeader } from '../BudgetCategoryHeader/BudgetCategoryHeader';
 import { BudgetColumnHeader } from '../BudgetColumnHeader/BudgetColumnHeader';
 import BudgetGroupCard from '../BudgetGroupCard/BudgetGroupCard';
+import { useDelayedFlag } from '../../../hooks/useDelayedFlag';
 import type { Group } from '../../../types';
 import classes from './BudgetCategoryContainer.module.css';
 
@@ -21,6 +22,7 @@ export function BudgetCategoryContainer({
   showAddButton = true,
 }: BudgetCategoryContainerProps) {
   const spendingGroups = groups.filter((g) => !g.isIncome);
+  const showSpinner = useDelayedFlag(busy !== null, 300);
 
   return (
     <div className={classes.container}>
@@ -33,7 +35,7 @@ export function BudgetCategoryContainer({
         <BudgetColumnHeader />
       </div>
       <div className={classes.cardsWrapper}>
-        {busy !== null && (
+        {showSpinner && (
           <div className={classes.loadingOverlay}>
             <Loader color="var(--accent-bright)" size={24} />
           </div>
