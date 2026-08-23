@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ChevronDown,
   GripVertical,
@@ -18,6 +18,14 @@ import type { GroupItem } from '../../types';
 import rowClasses from '../budget-group/BudgetGroupCard/BudgetGroupCardItem.module.css';
 import classes from './Income.module.css';
 
+type Tone = 'pos' | 'neg' | 'zero';
+
+function getTone(value: number): Tone {
+  if (value > 0) return 'pos';
+  if (value < 0) return 'neg';
+  return 'zero';
+}
+
 /**
  * Single income source row, styled to match BudgetGroupCardItem.
  * Layout (5 cols): grip+name | plan | received | remaining | actions
@@ -33,23 +41,12 @@ function IncomeRow({
   onPlanChange: (itemId: string, amount: number) => void;
   onDelete: () => void;
 }) {
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const [nameDraft, setNameDraft] = useState(item.name);
-  const [planDraft, setPlanDraft] = useState(String(item.planned));
   const [planFocused, setPlanFocused] = useState(false);
-  const nameFocusRef = { current: false };
-
-  useEffect(() => {
-    if (!nameFocusRef.current) setNameDraft(item.name);
-  }, [item.name]);
-
-  useEffect(() => {
-    if (!planFocused) {
-      setPlanDraft(String(item.planned));
-    }
-  }, [item.planned, planFocused]);
+  const [planDraft, setPlanDraft] = useState<string | null>(null);
 
   const commitName = () => {
-    nameFocusRef.current = false;
     const name = nameDraft.trim();
     if (!name) {
       setNameDraft(item.name);
@@ -62,14 +59,16 @@ function IncomeRow({
 
   const commitPlan = () => {
     setPlanFocused(false);
+    setPlanDraft(null);
+    if (planDraft === null) return;
     const amount = parseAmountText(planDraft);
-    setPlanDraft(String(amount));
     if (amount !== item.planned) {
       onPlanChange(item.id, amount);
     }
   };
 
   const remaining = item.planned - item.received;
+  const remainingTone = getTone(remaining);
 
   return (
     <div
@@ -85,11 +84,12 @@ function IncomeRow({
           <GripVertical size={14} />
         </button>
         <input
+          ref={nameInputRef}
           className={rowClasses.gNameInput}
+          key={`${item.clientId ?? item.id}:${item.name}`}
           value={nameDraft}
           aria-label="Income name"
           onFocus={(e) => {
-            nameFocusRef.current = true;
             e.target.select();
           }}
           onBlur={commitName}
@@ -105,7 +105,7 @@ function IncomeRow({
 
       <input
         className={`${rowClasses.gAmountInput} ${classes.planInput}`}
-        value={planFocused ? planDraft : `${formatMoney(item.planned)}`}
+        value={planFocused && planDraft !== null ? planDraft : formatMoney(item.planned)}
         aria-label={`Plan for ${item.name}`}
         inputMode="decimal"
         onFocus={(e) => {
@@ -122,7 +122,7 @@ function IncomeRow({
 
       <span
         className={`${rowClasses.pill} ${classes.remaining}`}
-        data-tone={remaining > 0 ? 'pos' : remaining < 0 ? 'neg' : 'zero'}
+        data-tone={remainingTone}
       >
         <span className={rowClasses.pillText}>
           {formatMoney(remaining)}
@@ -223,9 +223,10 @@ export default function Income() {
               <IncomeRow
                 item={item}
                 onNameChange={handleNameChange}
-                onPlanChange={(itemId, amount) =>
-                  handleUpdateItem(itemId, { ...item, name: item.name, planned: amount })
-                }
+                onPlanChange={(itemId, amount) => handleUpdateItem(itemId, {
+                  name: item.name,
+                  planned: amount,
+                })}
                 onDelete={() => handleDeleteItem(item, group.id)}
               />
             </Reorder.Item>

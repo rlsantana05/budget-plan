@@ -10,8 +10,8 @@ import {
   Text,
   Center,
 } from '@mantine/core';
-import { useDelayedFlag } from '../../../hooks/useDelayedFlag';
 import type { BudgetTransactionDTO } from '@/types/budget';
+import { useDelayedFlag } from '../../../hooks/useDelayedFlag';
 import type { GroupItem, PlanningCategory } from '../../../types';
 import sharedClasses from '../../shared/BudgetPlanShared.module.css';
 import ViewToggle from '../../layout/ViewToggle/ViewToggle';
@@ -44,8 +44,6 @@ interface TransactionsPanelProps {
   readyToAssign: number;
   onSaveTarget: (item: GroupItem, form: TargetFormState) => void;
   targetBusy: boolean;
-  onAssignAll: () => void;
-  assignAllBusy: boolean;
 }
 
 const CATEGORY_COLORS = [
@@ -193,8 +191,6 @@ export default function TransactionsPanel({
   readyToAssign,
   onSaveTarget,
   targetBusy,
-  onAssignAll,
-  assignAllBusy,
 }: TransactionsPanelProps) {
   const [metric, setMetric] = useState<SummaryMetric>('spent');
   const [targetItem, setTargetItem] = useState<GroupItem | null>(null);

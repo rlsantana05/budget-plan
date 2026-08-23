@@ -161,15 +161,15 @@ function BudgetGroupCard({ group }: BudgetGroupCardProps) {
           <div className={classes.items}>
             <div className={classes.reorderWrap} ref={reorderWrapRef}>
               <Reorder.Group
-              axis="y"
-              values={group.items.map((it) => it.id)}
-              onReorder={handleLiveReorder}
-              className={classes.reorderGroup}
+                axis="y"
+                values={group.items.map((it) => it.id)}
+                onReorder={handleLiveReorder}
+                className={classes.reorderGroup}
               >
-              {group.items.map((item) => (
-                <BudgetGroupReorderItem
-                  key={item.clientId ?? item.id}
-                  item={item}
+                {group.items.map((item) => (
+                  <BudgetGroupReorderItem
+                    key={item.clientId ?? item.id}
+                    item={item}
                     groupId={group.id}
                     isIncome={group.isIncome}
                     isDragging={draggingItemId === item.id}

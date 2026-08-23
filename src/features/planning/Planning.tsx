@@ -78,12 +78,6 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
     [action],
   );
 
-  const handleAssignAll = useCallback(() => {
-    action.runTxAction('row', async () => {
-      await assignToTargets();
-    });
-  }, [action]);
-
   const handleSaveTarget = useCallback(
     (item: GroupItem, form: TargetFormState) => {
       let input: {
@@ -181,8 +175,6 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
           readyToAssign={readyToAssign}
           onSaveTarget={handleSaveTarget}
           targetBusy={action.busy === 'row'}
-          onAssignAll={handleAssignAll}
-          assignAllBusy={action.busy === 'row'}
         />
       </div>
 
