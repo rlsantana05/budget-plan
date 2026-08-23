@@ -25,7 +25,9 @@ the test fix restores the safety net everything else depends on.
 ## P1 — Consistency & UX
 
 - [ ] **Budget screen: envelope budgeting (YNAB-style real money)** — spec: `2026-08-22-budget-envelope-screen.md`
-  - [ ] Phase 1 MVP: header strip (Cash on Hand / Assigned / Ready to Assign), paycheck inbox, envelope columns, assign flow, cover overspend
+  - [x] Phase 1 MVP: MoneyStrip header, editable assigned cells, cover overspend ✅ `889b0c9`
+  - [ ] Paycheck inbox (unassigned-income nudge)
+  - [ ] Month rollover policy
 - [x] **Unify Income + Category rows into one `BudgetRow`** — spec: `2026-08-22-unify-row-components.md` ✅ `f7a5274`/`50da16a`
   - [x] Income renders BudgetGroupCardItem with isIncome (IncomeRow deleted, −156 LOC)
   - [x] Single keyboard contract (Enter/Escape/blur) via shared component
