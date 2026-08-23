@@ -197,7 +197,9 @@ function BudgetGroupCardItem({
         className={`${classes.gRow} ${isIncome ? classes.gRowIncome : ''} ${isSelected ? classes.selected : ''} ${isDragging ? classes.dragging : ''}`}
         data-category-row
         role="button"
-        tabIndex={0}
+        tabIndex={isIncome ? -1 : 0}
+        aria-pressed={isSelected}
+        aria-label={`${item.name} — open details`}
         onClick={(event) => {
           if (!isGripTarget(event.target)) handleRowClick();
         }}

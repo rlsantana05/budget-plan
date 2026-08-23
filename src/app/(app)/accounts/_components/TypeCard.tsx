@@ -21,17 +21,11 @@ export default function TypeCard({
   onSelect,
 }: TypeCardProps) {
   return (
-    <div
+    <button
+      type="button"
       className={`${classes.card} ${selected ? classes.cardSelected : ""}`}
       onClick={onSelect}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect();
-        }
-      }}
+      aria-pressed={selected}
     >
       {selected ? (
         <div className={classes.checkmark}>
@@ -47,6 +41,6 @@ export default function TypeCard({
           {description}
         </Text>
       </Stack>
-    </div>
+    </button>
   );
 }

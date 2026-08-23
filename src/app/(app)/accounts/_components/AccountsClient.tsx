@@ -307,23 +307,16 @@ export default function AccountsClient({
               );
             })}
 
-            <div
+            <button
+              type="button"
               className={classes.ghostCard}
               onClick={openCreateDialog}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  openCreateDialog();
-                }
-              }}
             >
               <div className={classes.ghostCircle}>
                 <PlusIcon size={15} />
               </div>
               <span style={{ fontSize: 13, fontWeight: 500 }}>Add account</span>
-            </div>
+            </button>
           </div>
         </div>
       )}

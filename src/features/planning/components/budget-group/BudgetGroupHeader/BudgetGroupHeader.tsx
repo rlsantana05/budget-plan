@@ -99,25 +99,17 @@ export const BudgetGroupHeader = factory<BudgetGroupHeaderFactory>((_props) => {
         <div {...getStyles('available')} data-test="total-available" data-tone={availableTone}>
           {typeof availableCents === 'number' ? formatCents(availableCents) : ''}
         </div>
-        <span
+        <button
+          type="button"
           {...getStyles('addItem')}
-          role="button"
-          tabIndex={0}
           aria-label={`Add item to ${title}`}
           onClick={(event) => {
             event.stopPropagation();
             onAddItem?.();
           }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              event.stopPropagation();
-              onAddItem?.();
-            }
-          }}
         >
           <Plus size={14} aria-hidden="true" />
-        </span>
+        </button>
       </div>
     </Box>
   );
