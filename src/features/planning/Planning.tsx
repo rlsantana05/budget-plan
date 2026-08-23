@@ -11,6 +11,7 @@ import type { TargetFormState } from './components/category/TargetModal/TargetMo
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { usePlanningActionState } from './hooks/usePlanningActionState';
 import { useBudgetGroupsStore } from './store/budgetGroupsStore';
+import { toCents } from './utils/money';
 import { useTransactionsPanel } from './hooks/useTransactionsPanel';
 import { usePlannedSummary } from './hooks/usePlannedSummary';
 import MonthHeader from './components/layout/MonthHeader/MonthHeader';
@@ -56,16 +57,16 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
     const income = groups
       .filter((g) => g.isIncome)
       .flatMap((g) => g.items)
-      .reduce((sum, it) => sum + it.planned, 0);
+      .reduce((sum, it) => sum + it.plannedCents, 0);
     const spending = groups
       .filter((g) => !g.isIncome)
       .flatMap((g) => g.items)
-      .reduce((sum, it) => sum + it.planned, 0);
+      .reduce((sum, it) => sum + it.plannedCents, 0);
     return income - spending;
   }, [groups]);
 
   const readyToAssign = useMemo(
-    () => initialData?.availableToAssign ?? 0,
+    () => initialData?.availableToAssignCents ?? 0,
     [initialData],
   );
 
@@ -82,7 +83,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
     (item: GroupItem, form: TargetFormState) => {
       let input: {
         type: 'NONE' | 'ONCE' | 'MONTHLY';
-        amount?: number;
+        amountCents?: number;
         dueDate?: string | null;
         monthDay?: number | null;
       };
@@ -91,13 +92,13 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
       } else if (form.type === 'ONCE') {
         input = {
           type: 'ONCE',
-          amount: form.amount,
+          amountCents: toCents(form.amount),
           dueDate: form.dueDate,
         };
       } else {
         input = {
           type: 'MONTHLY',
-          amount: form.amount,
+          amountCents: toCents(form.amount),
           monthDay: Number(form.monthDay),
         };
       }

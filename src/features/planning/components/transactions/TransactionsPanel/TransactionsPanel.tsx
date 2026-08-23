@@ -12,6 +12,7 @@ import {
 } from '@mantine/core';
 import type { BudgetTransactionDTO } from '@/types/budget';
 import { useDelayedFlag } from '../../../hooks/useDelayedFlag';
+import { formatCents } from '../../../utils/money';
 import type { GroupItem, PlanningCategory } from '../../../types';
 import sharedClasses from '../../shared/BudgetPlanShared.module.css';
 import ViewToggle from '../../layout/ViewToggle/ViewToggle';
@@ -61,6 +62,18 @@ const CATEGORY_COLORS = [
 
 type SummaryMetric = 'planned' | 'spent' | 'remaining';
 
+/** Maps a SummaryMetric to its PlanningCategory cents field. */
+function metricValue(cat: PlanningCategory, metric: SummaryMetric): number {
+  switch (metric) {
+    case 'planned':
+      return cat.plannedCents;
+    case 'spent':
+      return cat.spentCents;
+    default:
+      return cat.remainingCents;
+  }
+}
+
 const SUMMARY_METRIC_LABELS: Record<SummaryMetric, string> = {
   planned: 'Planned',
   spent: 'Activity',
@@ -78,7 +91,7 @@ function SummaryDonutChart({
     .filter((cat) => !cat.isIncome)
     .map((cat, index) => ({
       name: cat.name,
-      value: cat[metric],
+      value: metricValue(cat, metric),
       color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
     }))
     .filter((item) => item.value > 0);
@@ -121,8 +134,7 @@ function SummaryValueTable({
               </Table.Td>
               <Table.Td style={{ textAlign: 'right' }}>
                 <Text size="sm" fw={600} tabular-nums>
-                  $
-                  {cat[metric].toFixed(2)}
+                  {formatCents(metricValue(cat, metric))}
                 </Text>
               </Table.Td>
             </Table.Tr>

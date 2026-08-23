@@ -8,21 +8,21 @@ export function usePlannedSummary(groups: Group[]) {
       .flatMap((group) => (
         group.items.map((item) => ({
           name: item.name,
-          planned: item.planned,
-          spent: item.spent,
-          remaining: item.remaining,
+          plannedCents: item.plannedCents,
+          spentCents: item.spentCents,
+          remainingCents: item.remainingCents,
           isIncome: group.isIncome,
         }))
       ));
 
     const totals = cats.reduce(
       (acc, cat) => {
-        acc.planned += cat.planned;
-        acc.spent += cat.spent;
-        acc.remaining += cat.remaining;
+        acc.plannedCents += cat.plannedCents;
+        acc.spentCents += cat.spentCents;
+        acc.remainingCents += cat.remainingCents;
         return acc;
       },
-      { planned: 0, spent: 0, remaining: 0 },
+      { plannedCents: 0, spentCents: 0, remainingCents: 0 },
     );
 
     return { categories: cats, totals };

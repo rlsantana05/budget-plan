@@ -3,7 +3,8 @@
 import { memo } from 'react';
 import type { BudgetTransactionDTO } from '@/types/budget';
 import { Trash } from 'lucide-react';
-import { formatMoney, formatTxDate } from '../../../utils/formatters';
+import { formatCents } from '../../../utils/money';
+import { formatTxDate } from '../../../utils/formatters';
 import classes from './TransactionRow.module.css';
 
 interface TransactionRowProps {
@@ -37,7 +38,7 @@ function TransactionRow({
           }`}
         >
           {tx.isIncome ? '+' : '-'}
-          {formatMoney(tx.amount)}
+          {formatCents(tx.amountCents)}
         </span>
         <div className={classes.txActions}>
           {tx.status === 'NEW' && (

@@ -1,3 +1,9 @@
+/**
+ * Money invariant (spec 2026-08-22-money-in-cents): every field ending in
+ * `Cents` holds an INTEGER number of cents. Format for display with
+ * utils/money.ts `formatCents`; parse user input with `parseAmountToCents`.
+ */
+
 export interface GroupItem {
   id: string;
   /** Stable client-side id that never changes after the server assigns `id`.
@@ -5,27 +11,27 @@ export interface GroupItem {
   clientId?: string;
   name: string;
   dueDate: string | null;
-  planned: number;
-  funded: number;
-  spent: number;
-  received: number;
-  remaining: number;
+  plannedCents: number;
+  fundedCents: number;
+  spentCents: number;
+  receivedCents: number;
+  remainingCents: number;
   transactionCount: number;
   templateId: string | null;
   targetType: 'NONE' | 'ONCE' | 'MONTHLY';
-  targetAmount: number;
+  targetAmountCents: number;
   targetDue: string | null;
   targetDate: string | null;
   targetMonthDay: number | null;
-  needed: number;
-  trend: Array<{ month: string; activity: number }>;
+  neededCents: number;
+  trend: Array<{ month: string; activityCents: number }>;
 }
 
 export interface PlanningCategory {
   name: string;
-  planned: number;
-  spent: number;
-  remaining: number;
+  plannedCents: number;
+  spentCents: number;
+  remainingCents: number;
   isIncome: boolean;
 }
 

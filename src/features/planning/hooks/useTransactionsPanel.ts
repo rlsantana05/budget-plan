@@ -9,6 +9,7 @@ import {
   trackTransaction,
 } from '@/actions/budget-planning';
 import { formatMonthLabel } from '../utils/formatters';
+import { toCents } from '../utils/money';
 import { useServerSync } from './useServerSync';
 import type { PlanningActionState } from './usePlanningActionState';
 
@@ -69,7 +70,8 @@ export function useTransactionsPanel(
     setTransactions((prev) => [
       {
         id: tempId,
-        amount,
+        // txAmount is user-entered dollars from the modal; DTO carries cents.
+        amountCents: toCents(amount),
         payee,
         memo,
         date: new Date().toISOString(),

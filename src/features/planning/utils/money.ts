@@ -33,6 +33,24 @@ export function parseAmountToCents(text: string): number {
 
 const CENTS_PER_DOLLAR = 100;
 
+/**
+ * Restrict a user-typed string to the amount grammar: optional digits,
+ * one optional decimal point, max 2 decimals. Pairs with parseAmountToCents.
+ */
+export function sanitizeAmountText(text: string): string {
+  const value = text.replace(/[^\d.]/g, '');
+  const firstDot = value.indexOf('.');
+  if (firstDot !== -1) {
+    const before = value.slice(0, firstDot);
+    const after = value
+      .slice(firstDot + 1)
+      .replace(/\./g, '')
+      .slice(0, 2);
+    return `${before.slice(0, 9)}${after ? `.${after}` : '.'}`;
+  }
+  return value.slice(0, 9);
+}
+
 /** Format integer cents as "$1,234.56". */
 export function formatCents(cents: number): string {
   const negative = cents < 0;

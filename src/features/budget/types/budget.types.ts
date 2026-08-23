@@ -6,8 +6,8 @@ export type CategoryMeta = {
 export interface BudgetCategoryItem {
   id: string;
   name: string;
-  assigned: number;
-  activity: number;
+  assignedCents: number;
+  activityCents: number;
   meta?: CategoryMeta;
 }
 
@@ -18,7 +18,7 @@ export interface BudgetGroup {
 }
 
 export interface BudgetTotals {
-  leftToBudget: number;
-  totalAssigned: number;
-  totalIncome: number;
+  leftToBudgetCents: number;
+  totalAssignedCents: number;
+  totalIncomeCents: number;
 }

@@ -10,10 +10,10 @@ import {
 import { Reorder } from 'framer-motion';
 import { useBudgetGroupsStore } from '../../store/budgetGroupsStore';
 import {
-  formatMoney,
-  parseAmountText,
+  formatCents,
+  parseAmountToCents,
   sanitizeAmountText,
-} from '../../utils/formatters';
+} from '../../utils/money';
 import type { GroupItem } from '../../types';
 import rowClasses from '../budget-group/BudgetGroupCard/BudgetGroupCardItem.module.css';
 import classes from './Income.module.css';
@@ -61,13 +61,13 @@ function IncomeRow({
     setPlanFocused(false);
     setPlanDraft(null);
     if (planDraft === null) return;
-    const amount = parseAmountText(planDraft);
-    if (amount !== item.planned) {
-      onPlanChange(item.id, amount);
+    const amountCents = parseAmountToCents(planDraft);
+    if (amountCents !== item.plannedCents) {
+      onPlanChange(item.id, amountCents);
     }
   };
 
-  const remaining = item.planned - item.received;
+  const remaining = item.plannedCents - item.receivedCents;
   const remainingTone = getTone(remaining);
 
   return (
@@ -105,7 +105,7 @@ function IncomeRow({
 
       <input
         className={`${rowClasses.gAmountInput} ${classes.planInput}`}
-        value={planFocused && planDraft !== null ? planDraft : formatMoney(item.planned)}
+        value={planFocused && planDraft !== null ? planDraft : formatCents(item.plannedCents)}
         aria-label={`Plan for ${item.name}`}
         inputMode="decimal"
         onFocus={(e) => {
@@ -117,7 +117,7 @@ function IncomeRow({
       />
 
       <span className={rowClasses.gValue}>
-        {formatMoney(item.received)}
+        {formatCents(item.receivedCents)}
       </span>
 
       <span
@@ -125,7 +125,7 @@ function IncomeRow({
         data-tone={remainingTone}
       >
         <span className={rowClasses.pillText}>
-          {formatMoney(remaining)}
+          {formatCents(remaining)}
         </span>
       </span>
 
@@ -164,8 +164,8 @@ export default function Income() {
 
   const handleNameChange = (itemId: string, name: string) => {
     const existingItem = items.find((i) => i.id === itemId);
-    const planned = existingItem?.planned ?? 0;
-    handleUpdateItem(itemId, { name, planned });
+    const plannedCents = existingItem?.plannedCents ?? 0;
+    handleUpdateItem(itemId, { name, plannedCents });
   };
 
   return (
@@ -225,7 +225,7 @@ export default function Income() {
                 onNameChange={handleNameChange}
                 onPlanChange={(itemId, amount) => handleUpdateItem(itemId, {
                   name: item.name,
-                  planned: amount,
+                  plannedCents: amount,
                 })}
                 onDelete={() => handleDeleteItem(item, group.id)}
               />

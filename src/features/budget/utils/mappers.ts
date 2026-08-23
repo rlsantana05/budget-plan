@@ -1,5 +1,5 @@
 import type { MonthBudgetPlanDTO } from '@/types/budget';
-import { formatMoney } from './formatters';
+import { formatCents } from './formatters';
 import type {
   BudgetCategoryItem,
   BudgetGroup,
@@ -7,6 +7,10 @@ import type {
   CategoryMeta,
 } from '../types/budget.types';
 
+/**
+ * Map the server DTO (integer cents) to the Budget screen model. Money stays
+ * in integer cents throughout; display formats with `formatCents`.
+ */
 export function toBudgetGroups(dto: MonthBudgetPlanDTO): BudgetGroup[] {
   return (dto.categories ?? []).map<BudgetGroup>((cg) => ({
     id: cg.id,
@@ -14,19 +18,21 @@ export function toBudgetGroups(dto: MonthBudgetPlanDTO): BudgetGroup[] {
     items: (cg.items ?? []).map<BudgetCategoryItem>((it) => ({
       id: it.id,
       name: it.name,
-      assigned: Number(it.funded ?? 0),
-      activity: Number(it.spent),
+      assignedCents: it.fundedCents ?? 0,
+      activityCents: it.spentCents ?? 0,
       meta: toCategoryMeta(it),
     })),
   }));
 }
 
-function toCategoryMeta(it: MonthBudgetPlanDTO['categories'][number]['items'][number]): CategoryMeta | undefined {
+type PlanItem = MonthBudgetPlanDTO['categories'][number]['items'][number];
+
+function toCategoryMeta(it: PlanItem): CategoryMeta | undefined {
   if (it.targetType === 'NONE') return undefined;
-  if ((it.needed ?? 0) > 0 && it.targetDue) {
+  if ((it.neededCents ?? 0) > 0 && it.targetDue) {
     return {
       type: 'due',
-      text: `${formatMoney(Number(it.needed))} needed by ${it.targetDue}`,
+      text: `${formatCents(it.neededCents)} needed by ${it.targetDue}`,
     };
   }
   if (it.targetDue) {
@@ -39,18 +45,18 @@ function toCategoryMeta(it: MonthBudgetPlanDTO['categories'][number]['items'][nu
 }
 
 export function computeBudgetTotals(dto: MonthBudgetPlanDTO): BudgetTotals {
-  const totalIncome = (dto.categories ?? [])
+  const totalIncomeCents = (dto.categories ?? [])
     .filter((g) => g.name === 'Income')
     .flatMap((g) => g.items)
-    .reduce((sum, it) => sum + (it.received ?? 0), 0);
+    .reduce((sum, it) => sum + (it.receivedCents ?? 0), 0);
 
-  const totalAssigned = (dto.categories ?? [])
+  const totalAssignedCents = (dto.categories ?? [])
     .flatMap((g) => g.items)
-    .reduce((sum, it) => sum + (it.funded ?? 0), 0);
+    .reduce((sum, it) => sum + (it.fundedCents ?? 0), 0);
 
   return {
-    leftToBudget: totalIncome - totalAssigned,
-    totalAssigned,
-    totalIncome,
+    leftToBudgetCents: totalIncomeCents - totalAssignedCents,
+    totalAssignedCents,
+    totalIncomeCents,
   };
 }

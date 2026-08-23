@@ -1,21 +1,21 @@
-import { formatMoney } from '../../utils/formatters';
+import { formatCents } from '../../utils/formatters';
 import classes from './BudgetHero.module.css';
 
 export type BudgetHeroProps = {
-  leftToBudget: number;
-  totalAssigned: number;
-  totalIncome: number;
+  leftToBudgetCents: number;
+  totalAssignedCents: number;
+  totalIncomeCents: number;
   onAssignClick: () => void;
 };
 
 export default function BudgetHero({
-  leftToBudget,
-  totalAssigned,
-  totalIncome,
+  leftToBudgetCents,
+  totalAssignedCents,
+  totalIncomeCents,
   onAssignClick,
 }: BudgetHeroProps) {
-  const progressPct = totalIncome > 0
-    ? Math.min(totalAssigned / totalIncome, 1)
+  const progressPct = totalIncomeCents > 0
+    ? Math.min(totalAssignedCents / totalIncomeCents, 1)
     : 0;
 
   return (
@@ -30,9 +30,9 @@ export default function BudgetHero({
         </button>
       </div>
 
-      <div className={classes.amount}>{formatMoney(leftToBudget)}</div>
+      <div className={classes.amount}>{formatCents(leftToBudgetCents)}</div>
       <div className={classes.subtitle}>
-        {formatMoney(totalAssigned)} assigned of {formatMoney(totalIncome)} income
+        {formatCents(totalAssignedCents)} assigned of {formatCents(totalIncomeCents)} income
       </div>
 
       <div className={classes.progressBlock}>

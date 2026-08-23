@@ -34,7 +34,7 @@ export default function BudgetScreen({
     [initialData],
   );
   const totals = useMemo(
-    () => (initialData ? computeBudgetTotals(initialData) : { leftToBudget: 0, totalAssigned: 0, totalIncome: 0 }),
+    () => (initialData ? computeBudgetTotals(initialData) : { leftToBudgetCents: 0, totalAssignedCents: 0, totalIncomeCents: 0 }),
     [initialData],
   );
 
@@ -50,9 +50,9 @@ export default function BudgetScreen({
       <MonthSelector selectedValue={selectedMonth ?? ''} onGoToMonth={goToMonth} />
 
       <BudgetHero
-        leftToBudget={totals.leftToBudget}
-        totalAssigned={totals.totalAssigned}
-        totalIncome={totals.totalIncome}
+        leftToBudgetCents={totals.leftToBudgetCents}
+        totalAssignedCents={totals.totalAssignedCents}
+        totalIncomeCents={totals.totalIncomeCents}
         onAssignClick={() => {}}
       />
 

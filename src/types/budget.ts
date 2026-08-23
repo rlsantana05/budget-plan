@@ -1,8 +1,14 @@
+/**
+ * Money invariant (spec 2026-08-22-money-in-cents): every field ending in
+ * `Cents` holds an INTEGER number of cents. Never do float arithmetic on
+ * dollars; convert once at boundaries via utils/money.ts helpers.
+ */
+
 export interface BudgetCategoryTrendDTO {
   /** Short month label, e.g. "Aug". */
   month: string;
-  /** Rollup activity (spending) for that month. */
-  activity: number;
+  /** Rollup activity (spending) for that month, integer cents. */
+  activityCents: number;
 }
 
 export interface BudgetCategoryItemDTO {
@@ -10,30 +16,30 @@ export interface BudgetCategoryItemDTO {
   groupId: string;
   name: string;
   dueDate: string | null;
-  planned: number;
+  plannedCents: number;
   sortOrder: number;
   isPaymentCategory: boolean;
   accountId: string | null;
-  funded: number;
-  spent: number;
+  fundedCents: number;
+  spentCents: number;
   /** Money marked received for income categories (0 for expense categories). */
-  received: number;
-  remaining: number;
+  receivedCents: number;
+  remainingCents: number;
   transactionCount: number;
   /** Durable category identity (ADR-0002). Null for legacy/unlinked rows. */
   templateId: string | null;
   /** Category target rule: "NONE" | "ONCE" | "MONTHLY" (ADR-0002). */
   targetType: "NONE" | "ONCE" | "MONTHLY";
-  targetAmount: number;
+  targetAmountCents: number;
   /** Due-date label, e.g. "Aug 21". Null when no target. */
   targetDue: string | null;
   /** Absolute ISO date (yyyy-mm-dd) for ONCE targets; null otherwise. */
   targetDate: string | null;
   /** Day-of-month (1–31) for MONTHLY targets; null otherwise. */
   targetMonthDay: number | null;
-  /** Shortfall = target − assigned, clamped ≥ 0 (only meaningful with a target). */
-  needed: number;
-  /** Up to 3 most recent months of spending (rollup activity) for the durable category (ADR-0003). */
+  /** Shortfall = target − assigned, clamped ≥ 0 (only meaningful with a target), integer cents. */
+  neededCents: number;
+  /** Up to 3 most recent months of spending for the durable category (ADR-0003). */
   trend: BudgetCategoryTrendDTO[];
 }
 
@@ -45,15 +51,15 @@ export interface BudgetCategoryGroupDTO {
   rightColumn: "Spent" | "Remaining";
   collapsed: boolean;
   items: BudgetCategoryItemDTO[];
-  totalPlanned: number;
-  totalSpent: number;
-  totalRemaining: number;
+  totalPlannedCents: number;
+  totalSpentCents: number;
+  totalRemainingCents: number;
 }
 
 export interface BudgetStatusDTO {
-  /** Signed surplus: positive = over budget, negative = under budget, 0 = on track. */
-  amount: number;
-  overBudgetAmount: number;
+  /** Signed surplus in cents: positive = over budget, negative = under, 0 = on track. */
+  amountCents: number;
+  overBudgetCents: number;
   label: "over budget" | string;
 }
 
@@ -61,7 +67,7 @@ export type TransactionStatus = "NEW" | "TRACKED" | "DELETED";
 
 export interface BudgetTransactionDTO {
   id: string;
-  amount: number;
+  amountCents: number;
   payee: string | null;
   memo: string | null;
   date: string;
@@ -85,10 +91,10 @@ export interface MonthBudgetPlanDTO {
   year: number;
   budgetStatus: BudgetStatusDTO;
   /**
-   * The amount of money available to assign to categories this month.
-   * Computed from liquid account balances minus money already assigned.
+   * Money available to assign this month (liquid balances minus assigned),
+   * integer cents. Computed from liquid account balances minus money already assigned.
    */
-  availableToAssign: number;
+  availableToAssignCents: number;
   viewTabs: {
     active: string;
     options: string[];

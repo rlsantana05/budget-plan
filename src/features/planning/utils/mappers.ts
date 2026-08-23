@@ -1,6 +1,10 @@
 import type { MonthBudgetPlanDTO } from '@/types/budget';
 import type { Group } from '../types';
 
+/**
+ * Map the server DTO (integer cents) to the client Group model. Money passes
+ * through unchanged — both sides are integer cents; no conversion here.
+ */
 export function toGroups(dto: MonthBudgetPlanDTO): Group[] {
   return (dto.categories ?? []).map((cg) => ({
     id: cg.id,
@@ -18,22 +22,22 @@ export function toGroups(dto: MonthBudgetPlanDTO): Group[] {
       id: it.id,
       name: it.name,
       dueDate: it.dueDate ?? null,
-      planned: Number(it.planned),
-      funded: Number(it.funded ?? 0),
-      spent: Number(it.spent),
-      received: Number(it.received ?? 0),
-      remaining: Number(it.remaining),
+      plannedCents: it.plannedCents ?? 0,
+      fundedCents: it.fundedCents ?? 0,
+      spentCents: it.spentCents ?? 0,
+      receivedCents: it.receivedCents ?? 0,
+      remainingCents: it.remainingCents ?? 0,
       transactionCount: it.transactionCount,
       templateId: it.templateId ?? null,
       targetType: it.targetType ?? 'NONE',
-      targetAmount: Number(it.targetAmount ?? 0),
+      targetAmountCents: it.targetAmountCents ?? 0,
       targetDue: it.targetDue ?? null,
       targetDate: it.targetDate ?? null,
       targetMonthDay: it.targetMonthDay ?? null,
-      needed: Number(it.needed ?? 0),
+      neededCents: it.neededCents ?? 0,
       trend: (it.trend ?? []).map((t) => ({
         month: t.month,
-        activity: Number(t.activity ?? 0),
+        activityCents: t.activityCents ?? 0,
       })),
     })),
   }));

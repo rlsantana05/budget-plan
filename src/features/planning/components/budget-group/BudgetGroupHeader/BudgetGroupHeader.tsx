@@ -5,7 +5,7 @@ import {
   StylesApiProps, useProps, useStyles,
 } from '@mantine/core';
 import { ChevronRight, Plus } from 'lucide-react';
-import { formatMoney } from '../../../utils/formatters';
+import { formatCents } from '../../../utils/money';
 import classes from './BudgetGroupHeader.module.css';
 
 export type BudgetGroupHeaderStylesNames =
@@ -23,9 +23,9 @@ export type BudgetGroupHeaderStylesNames =
 export interface BudgetGroupHeaderProps
   extends BoxProps, StylesApiProps<BudgetGroupHeaderFactory>, ElementProps<'div'> {
   title: string;
-  assigned?: number;
-  activity?: number;
-  available?: number;
+  assignedCents?: number;
+  activityCents?: number;
+  availableCents?: number;
   availableTone?: 'pos' | 'neg' | 'zero';
   isExpanded?: boolean;
   itemCount?: number;
@@ -44,7 +44,11 @@ export const BudgetGroupHeader = factory<BudgetGroupHeaderFactory>((_props) => {
   const props = useProps('BudgetGroupHeader', defaultProps, _props);
   const {
     classNames, className, style, styles, unstyled, vars, attributes,
-    title, assigned, activity, available, availableTone = 'zero',
+    title,
+    assignedCents,
+    activityCents,
+    availableCents,
+    availableTone = 'zero',
     isExpanded, itemCount, onAddItem, ...others
   } = props;
 
@@ -87,13 +91,13 @@ export const BudgetGroupHeader = factory<BudgetGroupHeaderFactory>((_props) => {
           )}
         </span>
         <div {...getStyles('assigned')} data-test="total-assigned">
-          {typeof assigned === 'number' ? formatMoney(assigned) : ''}
+          {typeof assignedCents === 'number' ? formatCents(assignedCents) : ''}
         </div>
         <div {...getStyles('activity')} data-test="total-activity">
-          {typeof activity === 'number' ? formatMoney(activity) : ''}
+          {typeof activityCents === 'number' ? formatCents(activityCents) : ''}
         </div>
         <div {...getStyles('available')} data-test="total-available" data-tone={availableTone}>
-          {typeof available === 'number' ? formatMoney(available) : ''}
+          {typeof availableCents === 'number' ? formatCents(availableCents) : ''}
         </div>
         <span
           {...getStyles('addItem')}

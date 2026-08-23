@@ -78,8 +78,9 @@ describe('formatCents', () => {
   });
 
   it('is the inverse of parsing for whole-cent values', () => {
-    for (const text of ['0', '5', '12.34', '2750', '999999.99']) {
+    const samples = ['0', '5', '12.34', '2750', '999999.99'];
+    samples.forEach((text) => {
       expect(formatCents(parseAmountToCents(text))).toBe(`$${Number(text).toLocaleString('en-US', { minimumFractionDigits: 2 })}`);
-    }
+    });
   });
 });

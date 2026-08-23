@@ -6,7 +6,12 @@ import {
 import type { KeyboardEvent, PointerEvent } from 'react';
 import { Check, GripVertical, Trash } from 'lucide-react';
 import type { GroupItem } from '../../../types';
-import { formatMoney, parseAmountText, sanitizeAmountText } from '../../../utils/formatters';
+import {
+  formatCents,
+  fromCents,
+  parseAmountToCents,
+  sanitizeAmountText,
+} from '../../../utils/money';
 import { getAvailableStatus, resolveTargetDueDate } from '../../../utils/status';
 import type { AvailableStatus } from '../../../utils/status';
 import { useBudgetGroupsStore } from '../../../store/budgetGroupsStore';
@@ -37,60 +42,52 @@ function BudgetGroupCardItem({
   const onUpdateItem = useBudgetGroupsStore((s) => s.handleUpdateItem);
   const onAssignAmount = useBudgetGroupsStore((s) => s.handleAssignAmount);
 
-  const [draftName, setDraftName] = useState(item.name);
-  const [draftAmount, setDraftAmount] = useState(String(item.planned));
-  const [amountFocused, setAmountFocused] = useState(false);
-  const initialAmount = typeof item.planned === 'number' ? item.planned : 0;
-  const [draftAssigned, setDraftAssigned] = useState(String(item.funded));
-  const [assignedFocused, setAssignedFocused] = useState(false);
-  const nameFocusedRef = useRef(false);
-  const amountFocusedRef = useRef(false);
-  const assignedFocusedRef = useRef(false);
+  // Drafts exist ONLY while their input is focused; display derives from the
+  // committed item otherwise (spec: no draft-sync effects).
+  const [draftName, setDraftName] = useState<string | null>(null);
+  const [draftAmount, setDraftAmount] = useState<string | null>(null);
+  const [draftAssigned, setDraftAssigned] = useState<string | null>(null);
   const revertRef = useRef(false);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
 
+  const nameValue = draftName ?? item.name;
+  const amountFocused = draftAmount !== null;
+  const assignedFocused = draftAssigned !== null;
+
   useEffect(() => {
-    if (item.name === 'New category' && item.planned === 0) {
+    if (item.name === 'New category' && item.plannedCents === 0) {
       nameInputRef.current?.focus();
       nameInputRef.current?.select();
     }
-  }, [item.name, item.planned]);
-
-  useEffect(() => {
-    if (!nameFocusedRef.current) setDraftName(item.name);
-  }, [item.name]);
-
-  useEffect(() => {
-    if (!amountFocusedRef.current && !draftAmount.includes('-') && !draftAmount.includes('.')) {
-      setDraftAmount(String(initialAmount));
-    }
-  }, [draftAmount, initialAmount, item.planned]);
-
-  useEffect(() => {
-    if (!assignedFocusedRef.current) setDraftAssigned(String(item.funded));
-  }, [item.funded]);
+  }, [item.name, item.plannedCents]);
 
   const commitIfDirty = useCallback(() => {
     if (revertRef.current || busy !== null) {
       revertRef.current = false;
+      setDraftName(null);
+      setDraftAmount(null);
       return;
     }
-    const name = draftName.trim();
+    const name = nameValue.trim();
     if (!name) {
-      setDraftName(item.name);
+      setDraftName(null);
       return;
     }
-    const planned = parseAmountText(draftAmount);
-    if (name !== item.name || planned !== item.planned) {
-      onUpdateItem(item.id, { name, planned });
+    const plannedCents = draftAmount !== null
+      ? parseAmountToCents(draftAmount)
+      : item.plannedCents;
+    if (name !== item.name || plannedCents !== item.plannedCents) {
+      onUpdateItem(item.id, { name, plannedCents });
     }
-  }, [busy, draftName, draftAmount, item, onUpdateItem]);
+    setDraftName(null);
+    setDraftAmount(null);
+  }, [busy, draftAmount, nameValue, item, onUpdateItem]);
 
   const revertToItem = useCallback(() => {
     revertRef.current = true;
-    setDraftName(item.name);
-    setDraftAmount(String(item.planned));
-  }, [item]);
+    setDraftName(null);
+    setDraftAmount(null);
+  }, []);
 
   const handleNameKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
@@ -121,16 +118,21 @@ function BudgetGroupCardItem({
   );
 
   const commitAssignedIfDirty = useCallback(() => {
-    if (busy !== null) return;
-    const assigned = parseAmountText(draftAssigned);
-    if (assigned !== item.funded) {
-      onAssignAmount(item, assigned);
+    if (busy !== null) {
+      setDraftAssigned(null);
+      return;
+    }
+    if (draftAssigned === null) return;
+    const assignedCents = parseAmountToCents(draftAssigned);
+    setDraftAssigned(null);
+    if (assignedCents !== item.fundedCents) {
+      onAssignAmount(item, assignedCents);
     }
   }, [busy, draftAssigned, item, onAssignAmount]);
 
   const revertAssignedToItem = useCallback(() => {
-    setDraftAssigned(String(item.funded));
-  }, [item.funded]);
+    setDraftAssigned(null);
+  }, []);
 
   const handleAssignedKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
@@ -165,17 +167,17 @@ function BudgetGroupCardItem({
     return Boolean(node.closest('[data-row-drag]'));
   }, []);
 
-  let amountDisplay = draftAmount || '';
-  if (amountFocused && draftAmount !== '') amountDisplay = draftAmount;
+  const amountDisplay = amountFocused && draftAmount !== null
+    ? draftAmount
+    : formatCents(item.plannedCents);
 
-  let assignedDisplay = draftAssigned === ''
-    ? ''
-    : formatMoney(parseAmountText(draftAssigned));
-  if (assignedFocused && draftAssigned !== '') assignedDisplay = draftAssigned;
+  const assignedDisplay = assignedFocused && draftAssigned !== null
+    ? draftAssigned
+    : formatCents(item.fundedCents);
 
   const status: AvailableStatus = getAvailableStatus(
-    item.funded,
-    item.targetAmount,
+    fromCents(item.fundedCents),
+    fromCents(item.targetAmountCents),
     resolveTargetDueDate(item),
   );
   const statusClass = {
@@ -187,7 +189,7 @@ function BudgetGroupCardItem({
   const showCaption = !isIncome
     && (status === 'at-risk' || status === 'in-progress')
     && item.targetDue
-    && item.needed > 0;
+    && item.neededCents > 0;
 
   return (
     <>
@@ -223,14 +225,13 @@ function BudgetGroupCardItem({
           <input
             ref={nameInputRef}
             className={classes.gNameInput}
-            value={draftName}
+            value={nameValue}
             aria-label="Item name"
             onFocus={(e) => {
-              nameFocusedRef.current = true;
+              if (draftName === null) setDraftName(item.name);
               e.target.select();
             }}
             onBlur={() => {
-              nameFocusedRef.current = false;
               commitIfDirty();
             }}
             onChange={(e) => setDraftName(e.target.value)}
@@ -246,7 +247,7 @@ function BudgetGroupCardItem({
           )}
           {showCaption && (
             <div className={classes.gCaption}>
-              {formatMoney(item.needed)}
+              {formatCents(item.neededCents)}
               {' '}
               {status === 'at-risk' ? 'needed by' : 'more by'}
               {' '}
@@ -261,13 +262,10 @@ function BudgetGroupCardItem({
             aria-label="Planned income amount"
             inputMode="decimal"
             onFocus={(e) => {
-              setAmountFocused(true);
-              amountFocusedRef.current = true;
+              if (draftAmount === null) setDraftAmount(formatCents(item.plannedCents));
               e.target.select();
             }}
             onBlur={() => {
-              setAmountFocused(false);
-              amountFocusedRef.current = false;
               commitIfDirty();
             }}
             onChange={(e) => setDraftAmount(sanitizeAmountText(e.target.value))}
@@ -275,7 +273,7 @@ function BudgetGroupCardItem({
           />
         )}
         {isIncome ? (
-          <span className={classes.gValue}>{formatMoney(item.received)}</span>
+          <span className={classes.gValue}>{formatCents(item.receivedCents)}</span>
         ) : (
           <>
             <input
@@ -284,21 +282,18 @@ function BudgetGroupCardItem({
               aria-label={`Assigned amount for ${item.name}`}
               inputMode="decimal"
               onFocus={(e) => {
-                setAssignedFocused(true);
-                assignedFocusedRef.current = true;
+                if (draftAssigned === null) setDraftAssigned(formatCents(item.fundedCents));
                 e.target.select();
               }}
               onBlur={() => {
-                setAssignedFocused(false);
-                assignedFocusedRef.current = false;
                 commitAssignedIfDirty();
               }}
               onChange={(e) => setDraftAssigned(sanitizeAmountText(e.target.value))}
               onKeyDown={handleAssignedKeyDown}
             />
-            <span className={classes.gValue}>{formatMoney(item.spent)}</span>
+            <span className={classes.gValue}>{formatCents(item.spentCents)}</span>
             <span className={`${classes.pill} ${statusClass}`}>
-              <span className={classes.pillText}>{formatMoney(item.remaining)}</span>
+              <span className={classes.pillText}>{formatCents(item.remainingCents)}</span>
             </span>
           </>
         )}

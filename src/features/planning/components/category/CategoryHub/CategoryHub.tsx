@@ -4,7 +4,7 @@ import { ArrowLeft, Pencil, Target } from 'lucide-react';
 import { Sparkline } from '@mantine/charts';
 import type { BudgetTransactionDTO } from '@/types/budget';
 import type { GroupItem } from '../../../types';
-import { formatMoney } from '../../../utils/formatters';
+import { formatCents, fromCents } from '../../../utils/money';
 import TransactionList from '../../transactions/TransactionList/TransactionList';
 import classes from './CategoryHub.module.css';
 
@@ -34,7 +34,7 @@ export default function CategoryHub({
   onEditTarget,
 }: CategoryHubProps) {
   const hasTarget = item.targetType !== 'NONE';
-  const targetShortfall = item.needed > 0;
+  const targetShortfall = item.neededCents > 0;
   const assignable = readyToAssign > 0 && targetShortfall && !assignBusy;
 
   return (
@@ -56,26 +56,26 @@ export default function CategoryHub({
       <div className={classes.hubPlanned}>
         Planned
         {' '}
-        {formatMoney(item.planned)}
+        {formatCents(item.plannedCents)}
       </div>
 
       <div className={classes.stats}>
         <div className={classes.statBlock}>
           <span className={classes.statLabel}>Assigned</span>
           <span className={`${classes.statValue} ${classes.statAssigned}`}>
-            {formatMoney(item.funded)}
+            {formatCents(item.fundedCents)}
           </span>
         </div>
         <div className={classes.statBlock}>
           <span className={classes.statLabel}>Activity</span>
           <span className={`${classes.statValue} ${classes.statSpent}`}>
-            {formatMoney(item.spent)}
+            {formatCents(item.spentCents)}
           </span>
         </div>
         <div className={classes.statBlock}>
           <span className={classes.statLabel}>Available</span>
-          <span className={`${classes.statValue} ${classes.statAvailable} ${item.remaining < 0 ? classes.statAvailableNegative : ''}`}>
-            {formatMoney(item.remaining)}
+          <span className={`${classes.statValue} ${classes.statAvailable} ${item.remainingCents < 0 ? classes.statAvailableNegative : ''}`}>
+            {formatCents(item.remainingCents)}
           </span>
         </div>
       </div>
@@ -84,7 +84,7 @@ export default function CategoryHub({
         <div className={classes.trendCard}>
           <span className={classes.txHeader}>Spending trend</span>
           <Sparkline
-            data={item.trend.map((t) => t.activity)}
+            data={item.trend.map((t) => fromCents(t.activityCents))}
             strokeWidth={2}
             color="var(--accent-bright)"
             fillOpacity={0.15}
@@ -121,7 +121,7 @@ export default function CategoryHub({
               <span>
                 {targetShortfall ? (
                   <>
-                    {formatMoney(item.needed)}
+                    {formatCents(item.neededCents)}
                     {' '}
                     still needed by
                     {' '}
@@ -143,7 +143,7 @@ export default function CategoryHub({
                 disabled={!assignable || busy !== null}
                 onClick={() => onAssign(item)}
               >
-                {assignBusy ? 'Assigning…' : `Assign ${formatMoney(Math.min(item.needed, readyToAssign))}`}
+                {assignBusy ? 'Assigning…' : `Assign ${formatCents(Math.min(item.neededCents, readyToAssign))}`}
               </button>
             )}
           </div>

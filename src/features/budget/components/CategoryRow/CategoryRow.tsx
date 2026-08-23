@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { formatMoney } from '../../utils/formatters';
+import { formatCents } from '../../utils/formatters';
 import type { BudgetCategoryItem, CategoryMeta } from '../../types/budget.types';
 import MetaPill from '../MetaPill/MetaPill';
 import classes from './CategoryRow.module.css';
@@ -26,11 +26,11 @@ interface CategoryRowProps {
 
 function CategoryRow({ item }: CategoryRowProps) {
   const state: AvailableState = getAvailableState(
-    item.assigned,
-    item.activity,
+    item.assignedCents,
+    item.activityCents,
     item.meta,
   );
-  const available = item.assigned - item.activity;
+  const availableCents = item.assignedCents - item.activityCents;
 
   return (
     <div
@@ -43,14 +43,14 @@ function CategoryRow({ item }: CategoryRowProps) {
       </span>
 
       <span
-        className={`${classes.gCell} ${item.assigned === 0 ? classes.gFaint : ''}`}
+        className={`${classes.gCell} ${item.assignedCents === 0 ? classes.gFaint : ''}`}
       >
-        {formatMoney(item.assigned)}
+        {formatCents(item.assignedCents)}
       </span>
       <span
-        className={`${classes.gCell} ${item.activity === 0 ? classes.gFaint : ''}`}
+        className={`${classes.gCell} ${item.activityCents === 0 ? classes.gFaint : ''}`}
       >
-        {formatMoney(item.activity)}
+        {formatCents(item.activityCents)}
       </span>
       <span className={`${classes.gAvailable} ${classes[state]}`}>
         {state === 'negative' && (
@@ -58,7 +58,7 @@ function CategoryRow({ item }: CategoryRowProps) {
             !
           </span>
         )}
-        {formatMoney(available)}
+        {formatCents(availableCents)}
       </span>
     </div>
   );

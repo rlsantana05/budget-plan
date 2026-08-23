@@ -5,7 +5,7 @@ import {
   Modal, NumberInput, SegmentedControl, TextInput,
 } from '@mantine/core';
 import type { GroupItem } from '../../../types';
-import { formatMoney } from '../../../utils/formatters';
+import { formatCents, fromCents, toCents } from '../../../utils/money';
 import classes from './TargetModal.module.css';
 
 export interface TargetFormState {
@@ -36,11 +36,11 @@ function formFromItem(item: GroupItem | null): TargetFormState {
   if (!item || item.targetType === 'NONE') {
     // Prefill a fresh target with the aspirational plan (the bill) so the
     // total-to-set-aside goal matches what the user is saving toward.
-    return emptyTargetForm(item?.planned ?? 0);
+    return emptyTargetForm(fromCents(item?.plannedCents ?? 0));
   }
   return {
     type: item.targetType,
-    amount: item.targetAmount,
+    amount: fromCents(item.targetAmountCents),
     dueDate: item.targetType === 'ONCE' ? (item.targetDate ?? '') : '',
     monthDay: item.targetType === 'MONTHLY' ? (item.targetMonthDay ?? '') : '',
   };
@@ -105,25 +105,28 @@ export default function TargetModal({
                   placeholder="0.00"
                   mt="sm"
                 />
-                {item && (
-                  <div className={form.amount - item.funded > 0.005
-                    ? classes.status
-                    : classes.statusMet}
-                  >
-                    Assigned so far:
-                    {' '}
-                    {formatMoney(item.funded)}
-                    {form.amount - item.funded > 0.005 ? (
-                      <>
-                        {' — after saving, '}
-                        {formatMoney(form.amount - item.funded)}
-                        {' still needed.'}
-                      </>
-                    ) : (
-                      ' — with this target it will be marked as already met.'
-                    )}
-                  </div>
-                )}
+                {item && (() => {
+                  const shortfallCents = toCents(form.amount) - item.fundedCents;
+                  return (
+                    <div className={shortfallCents > 0
+                      ? classes.status
+                      : classes.statusMet}
+                    >
+                      Assigned so far:
+                      {' '}
+                      {formatCents(item.fundedCents)}
+                      {shortfallCents > 0 ? (
+                        <>
+                          {' — after saving, '}
+                          {formatCents(shortfallCents)}
+                          {' still needed.'}
+                        </>
+                      ) : (
+                        ' — with this target it will be marked as already met.'
+                      )}
+                    </div>
+                  );
+                })()}
               </>
             )}
 

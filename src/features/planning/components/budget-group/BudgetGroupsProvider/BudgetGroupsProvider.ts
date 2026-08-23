@@ -42,7 +42,7 @@ export function BudgetGroupsProvider({
   }, [initialData, store]);
 
   useEffect(() => {
-    store.getState().setAvailableToAssign(initialData?.availableToAssign ?? 0);
+    store.getState().setAvailableToAssign(initialData?.availableToAssignCents ?? 0);
   }, [initialData, store]);
 
   return children;

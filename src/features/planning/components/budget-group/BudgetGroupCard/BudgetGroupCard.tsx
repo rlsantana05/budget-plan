@@ -102,15 +102,15 @@ function BudgetGroupCard({ group }: BudgetGroupCardProps) {
   }, [group.id, showIndicator]);
 
   const available = group.isIncome
-    ? group.items.reduce((sum, it) => sum + (it.received - it.planned), 0)
-    : group.items.reduce((sum, it) => sum + it.remaining, 0);
+    ? group.items.reduce((sum, it) => sum + (it.receivedCents - it.plannedCents), 0)
+    : group.items.reduce((sum, it) => sum + it.remainingCents, 0);
 
   const totalAssigned = group.items.reduce(
-    (sum, it) => sum + (group.isIncome ? it.planned : it.funded),
+    (sum, it) => sum + (group.isIncome ? it.plannedCents : it.fundedCents),
     0,
   );
   const totalActivity = group.items.reduce(
-    (sum, it) => sum + (group.isIncome ? it.received : it.spent),
+    (sum, it) => sum + (group.isIncome ? it.receivedCents : it.spentCents),
     0,
   );
   let availableTone: 'pos' | 'neg' | 'zero' = 'zero';
@@ -146,9 +146,9 @@ function BudgetGroupCard({ group }: BudgetGroupCardProps) {
         <Accordion.Control>
           <BudgetGroupHeader
             title={group.name}
-            assigned={totalAssigned}
-            activity={totalActivity}
-            available={available}
+            assignedCents={totalAssigned}
+            activityCents={totalActivity}
+            availableCents={available}
             availableTone={availableTone}
             isExpanded={isExpanded}
             itemCount={group.items.length}

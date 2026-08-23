@@ -23,6 +23,7 @@ import type {
   MonthBudgetPlanDTO,
 } from "@/types/budget";
 import { calculateAvailableToAssign } from "@/lib/pool";
+import { toCents } from "@/features/planning/utils/money";
 
 const DEV_EMAIL = "dev@budgetplan.app";
 
@@ -408,7 +409,7 @@ export async function getMonthBudgetPlan(
   // template id so history spans months even though each month has its own row.
   const trendByTemplate = new Map<
     string,
-    Array<{ month: string; activity: number }>
+    Array<{ month: string; activityCents: number }>
   >();
   if (templateIds.length > 0) {
     const historyRows = await db
@@ -436,7 +437,7 @@ export async function getMonthBudgetPlan(
 
     const monthsByTemplate = new Map<
       string,
-      Array<{ year: number; month: number; activity: number }>
+      Array<{ year: number; month: number; activityCents: number }>
     >();
     for (const row of historyRows) {
       if (!row.templateId) continue;
@@ -444,7 +445,7 @@ export async function getMonthBudgetPlan(
       list.push({
         year: row.year,
         month: row.month,
-        activity: Number(row.activity ?? 0),
+        activityCents: toCents(row.activity ?? 0),
       });
       monthsByTemplate.set(row.templateId, list);
     }
@@ -459,7 +460,7 @@ export async function getMonthBudgetPlan(
           month: new Date(m.year, m.month - 1, 1).toLocaleString("default", {
             month: "short",
           }),
-          activity: m.activity,
+          activityCents: m.activityCents,
         })),
       );
     }
@@ -492,7 +493,7 @@ export async function getMonthBudgetPlan(
     ) {
       receivedByCategory.set(
         tx.categoryId,
-        (receivedByCategory.get(tx.categoryId) ?? 0) + Number(tx.amount),
+        (receivedByCategory.get(tx.categoryId) ?? 0) + toCents(tx.amount),
       );
     }
   }
@@ -500,43 +501,45 @@ export async function getMonthBudgetPlan(
   const groupDTOs = groups.map((g) => {
     const items = itemsByGroup.get(g.id) ?? [];
 
-    let totalPlanned = 0;
-    let totalSpent = 0;
-    let totalRemaining = 0;
+    let totalPlannedCents = 0;
+    let totalSpentCents = 0;
+    let totalRemainingCents = 0;
 
     const categoryItems = items.map((it): BudgetCategoryItemDTO => {
       const rollup = rollupById.get(it.id);
       const template = it.templateId
         ? templateById.get(it.templateId)
         : undefined;
-      const funded = Number(rollup?.assigned ?? 0);
-      const spent = Number(rollup?.activity ?? 0);
-      const remaining = funded - spent;
-      const planned = Number(it.planned ?? 0);
+      // All monetary values cross the DTO boundary as integer cents (spec:
+      // 2026-08-22-money-in-cents). Decimal DB columns convert exactly once here.
+      const fundedCents = toCents(rollup?.assigned ?? 0);
+      const spentCents = toCents(rollup?.activity ?? 0);
+      const remainingCents = fundedCents - spentCents;
+      const plannedCents = toCents(it.planned ?? 0);
 
-      totalPlanned += planned;
-      totalSpent += spent;
-      totalRemaining += remaining;
+      totalPlannedCents += plannedCents;
+      totalSpentCents += spentCents;
+      totalRemainingCents += remainingCents;
 
       return {
         id: it.id,
         groupId: it.groupId,
         name: it.name,
         dueDate: it.dueDate?.toISOString() ?? null,
-        planned,
+        plannedCents,
         sortOrder: it.sortOrder,
         isPaymentCategory: !!it.isPaymentCategory,
         accountId: it.accountId,
-        funded,
-        spent,
-        received: g.name === "Income"
+        fundedCents,
+        spentCents,
+        receivedCents: g.name === "Income"
           ? (receivedByCategory.get(it.id) ?? 0)
           : 0,
-        remaining,
+        remainingCents,
         transactionCount: txCountByCategory.get(it.id) ?? 0,
         templateId: it.templateId ?? null,
         targetType: template?.targetType ?? "NONE",
-        targetAmount: template ? Number(template.targetAmount ?? 0) : 0,
+        targetAmountCents: template ? toCents(template.targetAmount ?? 0) : 0,
         targetDue: targetDueLabel(
           template?.targetType ?? "NONE",
           template?.targetDueDate,
@@ -550,8 +553,8 @@ export async function getMonthBudgetPlan(
         targetMonthDay: template?.targetType === "MONTHLY"
           ? (template?.targetMonthDay ?? null)
           : null,
-        needed: template && template.targetType !== "NONE"
-          ? Math.max(Number(template.targetAmount ?? 0) - funded, 0)
+        neededCents: template && template.targetType !== "NONE"
+          ? Math.max(toCents(template.targetAmount ?? 0) - fundedCents, 0)
           : 0,
         trend: it.templateId ? (trendByTemplate.get(it.templateId) ?? []) : [],
       };
@@ -565,23 +568,23 @@ export async function getMonthBudgetPlan(
       rightColumn: (g.rightColumn as "Spent" | "Remaining") ?? "Spent",
       collapsed: g.collapsed ?? false,
       items: categoryItems,
-      totalPlanned,
-      totalSpent,
-      totalRemaining,
+      totalPlannedCents,
+      totalSpentCents,
+      totalRemainingCents,
     };
   });
 
   // Budget status: planned expenses vs planned income (EveryDollar logic)
   const incomeGroup = groupDTOs.find((g) => g.name === "Income");
   const expenseGroups = groupDTOs.filter((g) => g.name !== "Income");
-  const planIncome = incomeGroup
-    ? incomeGroup.items.reduce((s, it) => s + it.planned, 0)
+  const planIncomeCents = incomeGroup
+    ? incomeGroup.items.reduce((s, it) => s + it.plannedCents, 0)
     : 0;
-  const planExpenses = expenseGroups.reduce(
-    (s, g) => s + g.items.reduce((ss, it) => ss + it.planned, 0),
+  const planExpensesCents = expenseGroups.reduce(
+    (s, g) => s + g.items.reduce((ss, it) => ss + it.plannedCents, 0),
     0,
   );
-  const diff = planExpenses - planIncome;
+  const diff = planExpensesCents - planIncomeCents;
 
   const categoryNameById = new Map<string, string>();
   for (const g of groupDTOs) {
@@ -597,7 +600,7 @@ export async function getMonthBudgetPlan(
   const transactionsDTO = txRows.map(
     (tx): BudgetTransactionDTO => ({
       id: tx.id,
-      amount: Number(tx.amount),
+      amountCents: toCents(tx.amount),
       payee: tx.payee,
       memo: tx.memo,
       date: tx.date.toISOString(),
@@ -615,7 +618,7 @@ export async function getMonthBudgetPlan(
     }),
   );
 
-  const availableToAssign = await getReadyToAssign(mb.id);
+    const availableToAssignCents = await getReadyToAssignCents(mb.id);
 
   return {
     id: mb.id,
@@ -623,11 +626,11 @@ export async function getMonthBudgetPlan(
     month: monthName,
     year: resolvedYear,
     budgetStatus: {
-      amount: diff,
-      overBudgetAmount: diff > 0 ? diff : 0,
+      amountCents: diff,
+      overBudgetCents: diff > 0 ? diff : 0,
       label: diff > 0 ? "over budget" : diff < 0 ? "under budget" : "on track",
     },
-    availableToAssign,
+    availableToAssignCents,
     viewTabs: { active: "transactions", options: ["summary", "transactions"] },
     categories: groupDTOs.map((g) => ({
       id: g.id,
@@ -637,9 +640,9 @@ export async function getMonthBudgetPlan(
       rightColumn: g.rightColumn,
       collapsed: g.collapsed,
       items: g.items,
-      totalPlanned: g.totalPlanned,
-      totalSpent: g.totalSpent,
-      totalRemaining: g.totalRemaining,
+      totalPlannedCents: g.totalPlannedCents,
+      totalSpentCents: g.totalSpentCents,
+      totalRemainingCents: g.totalRemainingCents,
     })),
     note: mb.note,
     transactions: transactionsDTO,
@@ -711,6 +714,11 @@ async function applyBalanceDelta(
 
 async function getReadyToAssign(monthBudgetId: string): Promise<number> {
   return calculateAvailableToAssign(monthBudgetId);
+}
+
+/** Ready-to-Assign in integer cents (spec: 2026-08-22-money-in-cents). */
+async function getReadyToAssignCents(monthBudgetId: string): Promise<number> {
+  return toCents(await calculateAvailableToAssign(monthBudgetId));
 }
 
 async function getCategoryMonthBudgetId(categoryId: string): Promise<string> {
@@ -902,9 +910,9 @@ export async function assignToCategory(
  */
 export async function setCategoryAssigned(
   categoryId: string,
-  amount: number,
+  amountCents: number,
 ): Promise<void> {
-  if (!Number.isFinite(amount) || amount < 0) {
+  if (!Number.isInteger(amountCents) || amountCents < 0) {
     throw new Error("Assigned amount must be zero or positive");
   }
 
@@ -920,13 +928,13 @@ export async function setCategoryAssigned(
       ),
     )
     .limit(1);
-  const current = Number(rollup?.assigned ?? 0);
-  const delta = amount - current;
-  if (Math.abs(delta) < 0.005) return;
+  const currentCents = toCents(rollup?.assigned ?? 0);
+  const deltaCents = amountCents - currentCents;
+  if (deltaCents === 0) return;
 
-  if (delta > 0) {
-    const readyToAssign = await getReadyToAssign(monthBudgetId);
-    if (delta > readyToAssign) {
+  if (deltaCents > 0) {
+    const readyToAssignCents = toCents(await getReadyToAssign(monthBudgetId));
+    if (deltaCents > readyToAssignCents) {
       throw new Error("Amount exceeds Available to Assign");
     }
   }
@@ -936,13 +944,13 @@ export async function setCategoryAssigned(
     categoryId,
     paycheckId: null,
     moveId: null,
-    amount: String(delta),
+    amount: String(deltaCents / 100),
     moveType: "ASSIGN",
   });
 
   await incrementRollup(monthBudgetId, categoryId, {
-    assigned: delta,
-    available: delta,
+    assigned: deltaCents / 100,
+    available: deltaCents / 100,
   });
 
   revalidateBudgetPages();
@@ -1049,8 +1057,8 @@ export async function undoLastMove(): Promise<void> {
 
 export interface CategoryTargetInput {
   type: "NONE" | "ONCE" | "MONTHLY";
-  /** Required when type is ONCE or MONTHLY. */
-  amount?: number;
+  /** Required when type is ONCE or MONTHLY. Integer cents. */
+  amountCents?: number;
   /** ISO date string, required for ONCE. */
   dueDate?: string | null;
   /** 1–31, required for MONTHLY (day the bill recurs). */
@@ -1058,8 +1066,8 @@ export interface CategoryTargetInput {
 }
 
 function assertTargetInput(input: CategoryTargetInput): void {
-  const { type, amount, dueDate, monthDay } = input;
-  if (type !== "NONE" && (!Number.isFinite(amount) || (amount as number) <= 0)) {
+  const { type, amountCents, dueDate, monthDay } = input;
+  if (type !== "NONE" && (!Number.isInteger(amountCents) || (amountCents as number) <= 0)) {
     throw new Error("Target amount must be positive");
   }
   if (type === "ONCE" && !dueDate) {
@@ -1138,7 +1146,7 @@ export async function setCategoryTarget(
     .set({
       targetType: input.type,
       targetAmount:
-        input.type === "NONE" ? "0" : String(input.amount as number),
+        input.type === "NONE" ? "0" : String((input.amountCents as number) / 100),
       targetDueDate:
         input.type === "ONCE" ? new Date(input.dueDate as string) : null,
       targetMonthDay: input.type === "MONTHLY" ? input.monthDay! : null,
@@ -1350,22 +1358,22 @@ export async function addCategoryItem(
     groupId: created.groupId,
     name: created.name,
     dueDate: null,
-    planned,
+    plannedCents: toCents(planned),
     sortOrder: created.sortOrder,
     isPaymentCategory: false,
     accountId: null,
-    funded: 0,
-    spent: 0,
-    received: 0,
-    remaining: 0,
+    fundedCents: 0,
+    spentCents: 0,
+    receivedCents: 0,
+    remainingCents: 0,
     transactionCount: 0,
     templateId,
     targetType: "NONE",
-    targetAmount: 0,
+    targetAmountCents: 0,
     targetDue: null,
     targetDate: null,
     targetMonthDay: null,
-    needed: 0,
+    neededCents: 0,
     trend: [],
   };
 }
@@ -1376,13 +1384,13 @@ export async function addCategoryItem(
  */
 export async function updateCategoryItem(
   id: string,
-  input: { name?: string; planned?: number },
+  input: { name?: string; plannedCents?: number },
 ): Promise<void> {
   const name = input.name?.trim();
   if (name !== undefined && !name) throw new Error("Item name is required");
   if (
-    input.planned !== undefined &&
-    (!Number.isFinite(input.planned) || input.planned < 0)
+    input.plannedCents !== undefined &&
+    (!Number.isInteger(input.plannedCents) || input.plannedCents < 0)
   ) {
     throw new Error("Planned amount must be zero or positive");
   }
@@ -1398,8 +1406,8 @@ export async function updateCategoryItem(
     .update(budgetCategoriesTable)
     .set({
       ...(name !== undefined ? { name } : {}),
-      ...(input.planned !== undefined
-        ? { planned: String(input.planned) }
+      ...(input.plannedCents !== undefined
+        ? { planned: String(input.plannedCents / 100) }
         : {}),
     })
     .where(eq(budgetCategoriesTable.id, id));

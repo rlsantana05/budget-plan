@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { UnstyledButton } from '@mantine/core';
-import { formatMoney } from '../../utils/formatters';
+import { formatCents } from '../../utils/formatters';
 import type { BudgetCategoryItem } from '../../types/budget.types';
 import CategoryRow from '../CategoryRow/CategoryRow';
 import AddItemRow from '../AddItemRow/AddItemRow';
@@ -24,7 +24,7 @@ function CategoryGroup({
   onToggleCollapse,
   onAddItem,
 }: CategoryGroupProps) {
-  const subtotal = items.reduce((sum, item) => sum + item.assigned, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.assignedCents, 0);
 
   return (
     <div className={classes.card}>
@@ -42,7 +42,7 @@ function CategoryGroup({
           />
           <span>{name}</span>
         </UnstyledButton>
-        <span className={classes.gSubtotal}>{formatMoney(subtotal)}</span>
+        <span className={classes.gSubtotal}>{formatCents(subtotal)}</span>
       </div>
 
       <div
