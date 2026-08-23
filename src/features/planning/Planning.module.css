@@ -72,13 +72,14 @@
 }
 
 .loadingOverlay {
-  position: sticky;
-  top: 0;
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
+  background: rgba(31, 33, 41, 0.45);
   z-index: 5;
+  pointer-events: none;
 }
 
 @media (max-width: 900px) {
