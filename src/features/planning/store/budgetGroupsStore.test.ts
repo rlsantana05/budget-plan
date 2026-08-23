@@ -1,4 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  beforeEach,
+  describe,
+  expect,
+  it as testFn,
+  vi,
+} from 'vitest';
 import { useBudgetGroupsStore } from './budgetGroupsStore';
 import type { Group, GroupItem } from '../types';
 
@@ -74,7 +80,7 @@ describe('optimistic update rollback (spec 2026-08-22-optimistic-update-rollback
     vi.clearAllMocks();
   });
 
-  it('rolls back an optimistic create when the API fails', async () => {
+  testFn('rolls back an optimistic create when the API fails', async () => {
     const before = JSON.stringify(useBudgetGroupsStore.getState().groups);
 
     useBudgetGroupsStore.getState().addCategoryRow(groupId);
@@ -90,18 +96,18 @@ describe('optimistic update rollback (spec 2026-08-22-optimistic-update-rollback
     expect(JSON.stringify(useBudgetGroupsStore.getState().groups)).toBe(before);
   });
 
-  it('removes only the temp row on create rollback, leaving others intact', async () => {
+  testFn('removes only the temp row on create rollback, leaving others intact', async () => {
     useBudgetGroupsStore.getState().addCategoryRow(groupId);
     const withTemp = useBudgetGroupsStore.getState().groups[0].items;
     const tempId = withTemp[withTemp.length - 1].id;
 
     useBudgetGroupsStore.getState().removeItemById(tempId);
 
-    const items = useBudgetGroupsStore.getState().groups[0].items;
-    expect(items.map((it) => it.id)).toEqual(['a1', 'a2']);
+    const { groups: afterGroups } = useBudgetGroupsStore.getState();
+    expect(afterGroups[0].items.map((it) => it.id)).toEqual(['a1', 'a2']);
   });
 
-  it('rolls back a rename/planned edit to exact prior values', async () => {
+  testFn('rolls back a rename/planned edit to exact prior values', async () => {
     const { updateCategoryItem } = await import('@/actions/budget-planning');
     (updateCategoryItem as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('boom'));
 
@@ -121,7 +127,7 @@ describe('optimistic update rollback (spec 2026-08-22-optimistic-update-rollback
     expect(rolledBack?.plannedCents).toBe(0);
   });
 
-  it('rolls back an assign to prior funded/remaining/needed', async () => {
+  testFn('rolls back an assign to prior funded/remaining/needed', async () => {
     const { setCategoryAssigned } = await import('@/actions/budget-planning');
     (setCategoryAssigned as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('boom'));
 
@@ -157,7 +163,7 @@ describe('optimistic update rollback (spec 2026-08-22-optimistic-update-rollback
     expect(rolledBack.neededCents).toBe(500);
   });
 
-  it('rolls back a delete by restoring the row at its saved index', async () => {
+  testFn('rolls back a delete by restoring the row at its saved index', async () => {
     const { deleteCategoryItem } = await import('@/actions/budget-planning');
     (deleteCategoryItem as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('boom'));
 
