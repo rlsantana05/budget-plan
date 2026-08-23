@@ -85,6 +85,16 @@ interface BudgetGroupsStore {
 
   runTxAction: (key: 'add' | 'row', fn: () => Promise<void>) => Promise<void>;
 
+  /**
+   * Inverse of the in-flight optimistic mutation. Registered by each mutating
+   * action before its optimistic `set`; invoked by runTxAction on failure so
+   * the UI never lies about server state (spec 2026-08-22-optimistic-update-rollback).
+   */
+  pendingRollback: (() => void) | null;
+  registerRollback: (fn: (() => void) | null) => void;
+  /** Remove a single item by id (rollback for optimistic inserts). */
+  removeItemById: (itemId: string) => void;
+
   hydrateGroups: (groups: Group[]) => void;
   setHasAccounts: (has: boolean) => void;
   setAvailableToAssign: (amount: number) => void;
@@ -123,7 +133,17 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
   amountInputRef: { current: null },
   busy: null,
   runTxAction: noopRun,
+  pendingRollback: null,
   selectedItemId: null,
+
+  registerRollback: (fn) => set({ pendingRollback: fn }),
+
+  removeItemById: (itemId) => set((s) => ({
+    groups: s.groups.map((g) => ({
+      ...g,
+      items: g.items.filter((it) => it.id !== itemId),
+    })),
+  })),
 
   hydrateGroups: (groups) => set({ groups }),
 
@@ -145,6 +165,11 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
   addIncomeSource: (groupId) => {
     const state = get();
     const tempId = `income-${Date.now()}`;
+    const tempItem = newTempItem(tempId, 'New income');
+
+    state.registerRollback(() => {
+      get().removeItemById(tempId);
+    });
 
     set((s) => ({
       groups: s.groups.map((g) => (g.id === groupId
@@ -152,7 +177,7 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
           ...g,
           items: [
             ...g.items,
-            newTempItem(tempId, 'New income'),
+            tempItem,
           ],
         }
         : g)),
@@ -178,6 +203,11 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
   addCategoryRow: (groupId) => {
     const state = get();
     const tempId = `cat-${Date.now()}`;
+    const tempItem = newTempItem(tempId, 'New category');
+
+    state.registerRollback(() => {
+      get().removeItemById(tempId);
+    });
 
     set((s) => ({
       groups: s.groups.map((g) => (g.id === groupId
@@ -185,7 +215,7 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
           ...g,
           items: [
             ...g.items,
-            newTempItem(tempId, 'New category'),
+            tempItem,
           ],
         }
         : g)),
@@ -210,6 +240,21 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
 
   handleUpdateItem: (itemId, patch) => {
     const { name, plannedCents } = patch;
+    const previous = get().groups
+      .flatMap((g) => g.items)
+      .find((it) => it.id === itemId);
+
+    get().registerRollback(() => {
+      if (!previous) return;
+      set((s) => ({
+        groups: s.groups.map((g) => ({
+          ...g,
+          items: g.items.map((it) => (it.id === itemId
+            ? { ...it, name: previous.name, plannedCents: previous.plannedCents }
+            : it)),
+        })),
+      }));
+    });
 
     set((s) => ({
       groups: s.groups.map((g) => ({
@@ -226,6 +271,21 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
   handleAssignAmount: (item, amountCents) => {
     const delta = amountCents - item.fundedCents;
     if (delta === 0) return;
+
+    const previous = {
+      fundedCents: item.fundedCents,
+      remainingCents: item.remainingCents,
+      neededCents: item.neededCents,
+    };
+
+    get().registerRollback(() => {
+      set((s) => ({
+        groups: s.groups.map((g) => ({
+          ...g,
+          items: g.items.map((it) => (it.id === item.id ? { ...it, ...previous } : it)),
+        })),
+      }));
+    });
 
     set((s) => ({
       groups: s.groups.map((g) => ({
@@ -251,6 +311,21 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
     const index = state.groups
       .find((g) => g.id === groupId)
       ?.items.findIndex((it) => it.id === item.id);
+
+    const savedIndex = index ?? -1;
+    state.registerRollback(() => {
+      set((s) => ({
+        groups: s.groups.map((g) => (g.id === groupId
+          ? {
+            ...g,
+            items:
+                savedIndex >= 0 && savedIndex < g.items.length
+                  ? [...g.items.slice(0, savedIndex), item, ...g.items.slice(savedIndex)]
+                  : [...g.items, item],
+          }
+          : g)),
+      }));
+    });
 
     set((s) => ({
       groups: s.groups.map((g) => ({
@@ -294,6 +369,15 @@ export const useBudgetGroupsStore = create<BudgetGroupsStore>((set, get) => ({
   },
 
   handleReorderItems: (groupId, orderedIds) => {
+    const previousOrder = get()
+      .groups.find((g) => g.id === groupId)
+      ?.items.map((it) => it.id);
+
+    get().registerRollback(() => {
+      if (!previousOrder) return;
+      useBudgetGroupsStore.getState().handleReorderItems(groupId, previousOrder);
+    });
+
     set((s) => ({
       groups: s.groups.map((g) => (g.id === groupId
         ? {

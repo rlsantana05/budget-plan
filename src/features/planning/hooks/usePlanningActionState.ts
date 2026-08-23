@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useBudgetGroupsStore } from '../store/budgetGroupsStore';
 
 export interface PlanningActionState {
   busy: 'add' | 'row' | null;
@@ -21,6 +22,11 @@ export function usePlanningActionState(): PlanningActionState {
         await fn();
         succeeded = true;
       } catch (e) {
+        // Revert the optimistic mutation first so the UI shows truthful state
+        // (spec 2026-08-22-optimistic-update-rollback), then surface the error
+        // and reconcile with the server as a final correction.
+        useBudgetGroupsStore.getState().registerRollback(null);
+        useBudgetGroupsStore.getState().pendingRollback?.();
         setError(e instanceof Error ? e.message : 'Something went wrong');
       } finally {
         if (!succeeded) router.refresh();
