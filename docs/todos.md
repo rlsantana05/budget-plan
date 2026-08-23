@@ -5,7 +5,7 @@ the test fix restores the safety net everything else depends on.
 
 ## P0 — Correctness
 
-- [ ] **Fix failing test suite** (3 failures) — spec: `2026-08-22-fix-failing-test-suite.md`
+- [x] **Fix failing test suite** (3 failures) — spec: `2026-08-22-fix-failing-test-suite.md` ✅ `977bdb6`
   - [ ] Update `BudgetCategoryHeader.test.tsx` for `showAddButton` prop
   - [ ] `parseAmountText`: NaN → 0 (`formatters.ts`)
   - [ ] `resolveTargetDueDate` MONTHLY end-of-month clamp (`status.ts`) + rename shadowed `now`
@@ -24,6 +24,8 @@ the test fix restores the safety net everything else depends on.
 
 ## P1 — Consistency & UX
 
+- [ ] **Budget screen: envelope budgeting (YNAB-style real money)** — spec: `2026-08-22-budget-envelope-screen.md`
+  - [ ] Phase 1 MVP: header strip (Cash on Hand / Assigned / Ready to Assign), paycheck inbox, envelope columns, assign flow, cover overspend
 - [ ] **Unify Income + Category rows into one `BudgetRow`** — spec: `2026-08-22-unify-row-components.md`
   - [ ] Shared component w/ `isIncome` switch; single keyboard contract (Enter/Escape/blur)
   - [ ] Shared reorder wrapper usage; adopt two-step delete for income
