@@ -13,14 +13,14 @@ the test fix restores the safety net everything else depends on.
   - [x] Rollback registry in store actions
   - [x] Wire into `runTxAction` failure branch
   - [x] Store unit tests with mocked failing API (5 tests)
-- [ ] **Server action input validation** (zod) — spec: `2026-08-22-server-action-validation.md`
-  - [ ] Schemas per action + wrapper
-  - [ ] Rejection tests
-- [ ] **Money in integer cents** — spec: `2026-08-22-money-in-cents.md`
-  - [ ] `money.ts` helpers + property tests
-  - [ ] DTO fields → `*Cents`; fix server actions
-  - [ ] `GroupItem` → cents; fix store/components
-  - [ ] `formatMoney(cents)` / `parseAmountToCents`; delete wrappers
+- [x] **Server action input validation** (zod) — spec: `2026-08-22-server-action-validation.md` ✅ `c301b1f`
+  - [x] Schemas per action + formatValidationError wrapper
+  - [x] 19 rejection/acceptance tests
+- [x] **Money in integer cents** — spec: `2026-08-22-money-in-cents.md` ✅ `f46c8b9`/`82ece5c`
+  - [x] `money.ts` helpers + property tests
+  - [x] DTO fields → `*Cents`; fix server actions
+  - [x] `GroupItem` → cents; fix store/components
+  - [x] `formatMoney(cents)` / `parseAmountToCents`; delete wrappers
 
 ## P1 — Consistency & UX
 
