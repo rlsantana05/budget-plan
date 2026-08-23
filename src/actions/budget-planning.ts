@@ -179,7 +179,7 @@ async function ensureCategoryLinks(
  * logged-in dev budget. Seeds the EveryDollar default groups + items on
  * first creation.
  */
-async function getOrCreateMonthBudget(
+export async function getOrCreateMonthBudget(
   budgetId: string,
   seedDefaults = true,
   year?: number,
