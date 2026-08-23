@@ -9,10 +9,10 @@ the test fix restores the safety net everything else depends on.
   - [ ] Update `BudgetCategoryHeader.test.tsx` for `showAddButton` prop
   - [ ] `parseAmountText`: NaN → 0 (`formatters.ts`)
   - [ ] `resolveTargetDueDate` MONTHLY end-of-month clamp (`status.ts`) + rename shadowed `now`
-- [ ] **Optimistic update rollback on API failure** — spec: `2026-08-22-optimistic-update-rollback.md`
-  - [ ] Rollback registry in store actions
-  - [ ] Wire into `runTxAction` failure branch
-  - [ ] Store unit tests with mocked failing API
+- [x] **Optimistic update rollback on API failure** — spec: `2026-08-22-optimistic-update-rollback.md` ✅ `bd1266b`/`13038f5`
+  - [x] Rollback registry in store actions
+  - [x] Wire into `runTxAction` failure branch
+  - [x] Store unit tests with mocked failing API (5 tests)
 - [ ] **Server action input validation** (zod) — spec: `2026-08-22-server-action-validation.md`
   - [ ] Schemas per action + wrapper
   - [ ] Rejection tests
