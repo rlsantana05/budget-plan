@@ -3,10 +3,12 @@
 import { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { MonthBudgetPlanDTO } from '@/types/budget';
+import { toCents } from '@/features/planning/utils/money';
 import { toBudgetGroups, computeBudgetTotals } from './utils/mappers';
 import { useCollapsedGroups } from './hooks/useCollapsedGroups';
 import MonthSelector from './components/MonthSelector/MonthSelector';
 import BudgetHero from './components/BudgetHero/BudgetHero';
+import MoneyStrip from './components/MoneyStrip/MoneyStrip';
 import CategoryGroup from './components/CategoryGroup/CategoryGroup';
 import classes from './BudgetScreen.module.css';
 
@@ -38,16 +40,34 @@ export default function BudgetScreen({
     [initialData],
   );
 
+  // Real-money numbers for the strip. Ready to Assign mirrors the server's
+  // pool calculation (cash on hand − assigned); cash on hand is not in the
+  // plan DTO so it derives from RTA + assigned as an exact client-side proxy
+  // until a dedicated overview endpoint exists.
+  const money = useMemo(() => {
+    const readyToAssignCents = initialData?.availableToAssignCents ?? 0;
+    return {
+      readyToAssignCents,
+      totalAssignedCents: totals.totalAssignedCents,
+      cashOnHandCents: readyToAssignCents + totals.totalAssignedCents,
+    };
+  }, [initialData, totals]);
+
   const { isCollapsed, toggleCollapse } = useCollapsedGroups();
 
-  const handleAddItem = useCallback((groupId: string) => {
+  const handleAddItem = useCallback((_groupId: string) => {
     // TODO: wire into add-category-item flow
-    console.log('add item', groupId);
   }, []);
 
   return (
     <div className={classes.screen}>
       <MonthSelector selectedValue={selectedMonth ?? ''} onGoToMonth={goToMonth} />
+
+      <MoneyStrip
+        cashOnHandCents={money.cashOnHandCents}
+        readyToAssignCents={money.readyToAssignCents}
+        totalAssignedCents={money.totalAssignedCents}
+      />
 
       <BudgetHero
         leftToBudgetCents={totals.leftToBudgetCents}
@@ -70,6 +90,7 @@ export default function BudgetScreen({
             id={group.id}
             name={group.name}
             items={group.items}
+            allGroups={groups}
             collapsed={isCollapsed(group.id)}
             onToggleCollapse={toggleCollapse}
             onAddItem={handleAddItem}

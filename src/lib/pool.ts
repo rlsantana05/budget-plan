@@ -24,12 +24,12 @@ export async function getLiquidAccountBalance(): Promise<number> {
  */
 export async function calculateAvailableToAssign(monthBudgetId: string): Promise<number> {
   const liquidBalance = await getLiquidAccountBalance();
-  const [rollup] = await db
+  // Σ assigned across ALL category rollups for the month (one row per category).
+  const rollups = await db
     .select({ assigned: categoryRollups.assigned })
     .from(categoryRollups)
-    .where(eq(categoryRollups.monthBudgetId, monthBudgetId))
-    .limit(1);
+    .where(eq(categoryRollups.monthBudgetId, monthBudgetId));
 
-  const assigned = rollup ? Number(rollup.assigned ?? 0) : 0;
+  const assigned = rollups.reduce((sum, r) => sum + Number(r.assigned ?? 0), 0);
   return Math.max(liquidBalance - assigned, 0);
 }

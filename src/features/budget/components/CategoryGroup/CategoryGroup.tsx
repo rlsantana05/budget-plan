@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { UnstyledButton } from '@mantine/core';
 import { formatCents } from '../../utils/formatters';
-import type { BudgetCategoryItem } from '../../types/budget.types';
+import type { BudgetCategoryItem, BudgetGroup } from '../../types/budget.types';
 import CategoryRow from '../CategoryRow/CategoryRow';
 import AddItemRow from '../AddItemRow/AddItemRow';
 import classes from './CategoryGroup.module.css';
@@ -14,6 +14,8 @@ export interface CategoryGroupProps {
   collapsed: boolean;
   onToggleCollapse: (id: string) => void;
   onAddItem: (groupId: string) => void;
+  /** All groups, for the cover-overspend donor picker. */
+  allGroups?: BudgetGroup[];
 }
 
 function CategoryGroup({
@@ -23,6 +25,7 @@ function CategoryGroup({
   collapsed,
   onToggleCollapse,
   onAddItem,
+  allGroups,
 }: CategoryGroupProps) {
   const subtotal = items.reduce((sum, item) => sum + item.assignedCents, 0);
 
@@ -51,7 +54,7 @@ function CategoryGroup({
       >
         <div className={classes.gRows}>
           {items.map((item) => (
-            <CategoryRow key={item.id} item={item} />
+            <CategoryRow key={item.id} item={item} allGroups={allGroups} />
           ))}
           <AddItemRow onAddItem={() => onAddItem(id)} />
         </div>
