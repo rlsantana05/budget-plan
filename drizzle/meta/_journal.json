@@ -43,6 +43,13 @@
       "when": 1786557687393,
       "tag": "0005_absent_wilson_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787587214619,
+      "tag": "0006_faulty_epoch",
+      "breakpoints": true
     }
   ]
 }

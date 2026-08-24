@@ -357,6 +357,9 @@ export const assignmentLedger = pgTable(
     moveId: uuid("move_id"),
     amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
     moveType: moveTypeEnum("move_type").notNull(),
+    /** Week this assignment belongs to ('YYYY-MM-DD' of the week's Saturday),
+     *  per spec 2026-08-23-budget-weekly-ledger. Null = month-level assign. */
+    weekKey: text("week_key"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

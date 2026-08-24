@@ -11,6 +11,7 @@ import {
   withTags,
   type Week,
 } from './utils/weeks';
+import WeekWorkspace from './WeekWorkspace';
 import classes from './WeeklyLedger.module.css';
 
 export interface WeeklyLedgerProps {
@@ -53,6 +54,7 @@ export default function WeeklyLedger({ initialData, selectedMonth }: WeeklyLedge
   // Auto-select the current week; fall back to the first.
   const initialWeek = weeks.find((w) => w.tag === 'current') ?? weeks[0];
   const [selectedKey, setSelectedKey] = useState<string>(initialWeek?.key ?? '');
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const selected = weeks.find((w) => w.key === selectedKey) ?? initialWeek;
 
   const goToMonth = (y: number, m: number) => {
@@ -98,27 +100,35 @@ export default function WeeklyLedger({ initialData, selectedMonth }: WeeklyLedge
         </nav>
 
         <section className={classes.workspace}>
-          {selected && (
-            <>
-              <div className={classes.icon} aria-hidden="true">
-                <NotebookText size={26} strokeWidth={1.6} color="var(--accent-bright)" />
-              </div>
-              <span className={classes.kicker}>
-                {formatWeekRange(selected.start, selected.end)} · {tagLabel(selected.tag)} week
-              </span>
-              <h2 className={classes.wsTitle}>Budget workspace</h2>
-              <p className={classes.copy}>
-                {selected.tag === 'past'
-                  ? "This week wasn't planned. Log what actually happened to keep the record straight."
-                  : selected.tag === 'future'
-                    ? 'This week is coming up. Plan it now so there are no surprises when it arrives.'
-                    : "This week hasn't been planned yet. Set your income and expenses to see where the money's going."}
-              </p>
-              <button type="button" className={classes.cta}>
-                Plan this week
-                <ChevronRightIcon size={14} />
-              </button>
-            </>
+          {selected && (workspaceOpen || selected.tag !== 'future') ? (
+            <WeekWorkspace year={year} month={month} week={selected} />
+          ) : (
+            selected && (
+              <>
+                <div className={classes.icon} aria-hidden="true">
+                  <NotebookText size={26} strokeWidth={1.6} color="var(--accent-bright)" />
+                </div>
+                <span className={classes.kicker}>
+                  {formatWeekRange(selected.start, selected.end)} · {tagLabel(selected.tag)} week
+                </span>
+                <h2 className={classes.wsTitle}>Budget workspace</h2>
+                <p className={classes.copy}>
+                  {selected.tag === 'past'
+                    ? "This week wasn't planned. Log what actually happened to keep the record straight."
+                    : selected.tag === 'future'
+                      ? 'This week is coming up. Plan it now so there are no surprises when it arrives.'
+                      : "This week hasn't been planned yet. Set your income and expenses to see where the money's going."}
+                </p>
+                <button
+                  type="button"
+                  className={classes.cta}
+                  onClick={() => setWorkspaceOpen(true)}
+                >
+                  Plan this week
+                  <ChevronRightIcon size={14} />
+                </button>
+              </>
+            )
           )}
         </section>
       </div>

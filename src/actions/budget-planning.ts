@@ -53,7 +53,7 @@ const DEFAULT_GROUPS: Array<{ name: string; items: string[] }> = [
   { name: "Debt", items: [] },
 ];
 
-async function getOrCreateDefaultBudget() {
+export async function getOrCreateDefaultBudget() {
   let [user] = await db
     .select()
     .from(users)
@@ -883,6 +883,7 @@ export async function receivePlannedIncome(categoryItemId: string): Promise<void
 export async function assignToCategory(
   categoryId: string,
   amount: number,
+  weekKey?: string,
 ): Promise<void> {
   assertAmount(amount);
 
@@ -899,6 +900,7 @@ export async function assignToCategory(
     moveId: null,
     amount: String(amount),
     moveType: "ASSIGN",
+    ...(weekKey ? { weekKey } : {}),
   });
 
   await incrementRollup(monthBudgetId, categoryId, {
@@ -971,6 +973,7 @@ export async function moveBetweenCategories(
   fromCategoryId: string,
   toCategoryId: string,
   amount: number,
+  weekKey?: string,
 ): Promise<void> {
   assertAmount(amount);
   if (fromCategoryId === toCategoryId) {
@@ -988,6 +991,7 @@ export async function moveBetweenCategories(
       moveId,
       amount: String(-amount),
       moveType: "MOVE_OUT",
+      ...(weekKey ? { weekKey } : {}),
     },
     {
       monthBudgetId,
@@ -996,6 +1000,7 @@ export async function moveBetweenCategories(
       moveId,
       amount: String(amount),
       moveType: "MOVE_IN",
+      ...(weekKey ? { weekKey } : {}),
     },
   ]);
 

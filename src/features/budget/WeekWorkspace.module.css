@@ -1,0 +1,142 @@
+/* Planned-week workspace (spec Phase B). Fills the workspace panel of the
+   WeeklyLedger shell. */
+
+.workspace {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 4px;
+}
+
+.loading {
+  align-self: center;
+  justify-self: center;
+  color: var(--ink-soft);
+  font-size: 14px;
+  padding: 60px 0;
+}
+
+.head {
+  text-align: left;
+}
+
+.kicker {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+}
+
+.title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  font-size: 26px;
+  margin: 6px 0 0;
+}
+
+/* summary strip */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.summaryCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.value {
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.positive { color: #7ee2a8; }
+.negative { color: var(--budget-red, #ff8080); }
+
+.hint {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.error {
+  font-size: 13px;
+  color: var(--budget-red, #ff8080);
+}
+
+/* category rows */
+.rows {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 110px 110px 110px;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 6px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.rowHead {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.catName {
+  font-size: 14px;
+}
+
+.amountInput {
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: 14px;
+  text-align: right;
+  color: inherit;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+.amountInput:focus {
+  outline: 1px solid var(--accent-bright);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.num {
+  text-align: right;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.over {
+  color: var(--budget-red, #ff8080);
+  font-weight: 600;
+}
+
+.faint {
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
