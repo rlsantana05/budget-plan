@@ -67,7 +67,10 @@ export default function TransactionsModal({
             <NumberInput
               label="Amount"
               value={txAmount}
-              onChange={(v) => onTxAmountChange(typeof v === 'number' ? v : 0)}
+              onChange={(v) => {
+                const num = typeof v === 'number' ? v : v ? Number(v) : 0;
+                if (num !== txAmount) onTxAmountChange(num);
+              }}
               min={0}
               decimalScale={2}
               autoFocus
@@ -92,8 +95,8 @@ export default function TransactionsModal({
           <div className={classes.modalField}>
             <Select
               label="Category"
-              data={categoryOptions}
-              value={txCategory}
+              data={categoryOptions.length > 0 ? categoryOptions : [{ value: "", label: "Uncategorized" }]}
+              value={txCategory != null ? txCategory : ""}
               onChange={onTxCategoryChange}
               searchable
               clearable
@@ -123,7 +126,7 @@ export default function TransactionsModal({
               type="button"
               className={classes.modalButton}
               onClick={onSubmit}
-              disabled={busy === 'add' || txAmount <= 0 || txAccount === null}
+              disabled={busy === 'add'}
             >
               {busy === 'add' ? 'Saving…' : 'Add transaction'}
             </button>
