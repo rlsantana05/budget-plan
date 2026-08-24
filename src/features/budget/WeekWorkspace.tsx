@@ -69,15 +69,39 @@ export default function WeekWorkspace({ year, month, week, nextWeekKey }: WeekWo
     const cents = parseAmountToCents(draft);
     const current = detail?.categories.find((c) => c.categoryId === categoryId)?.plannedCents;
     if (cents === current) return;
+
+    // OPTIMISTIC: apply locally first so the number moves at keystroke speed.
+    setDetail((prev) => prev
+      ? {
+          ...prev,
+          categories: prev.categories.map((c) =>
+            c.categoryId === categoryId ? { ...c, plannedCents: cents } : c,
+          ),
+        }
+      : prev);
+
     setError(null);
     try {
       await assignToCategory(categoryId, cents / 100, week.key);
-      await reload();
-      router.refresh();
+      // Silent reconcile from server (keeps spent/left consistent) — no
+      // router.refresh(); that full RSC refetch was the ~3s lag.
+      const d = await getWeekDetail(year, month, week.key);
+      setDetail(d);
     } catch (e) {
+      // ROLLBACK on failure — restore prior committed value.
+      if (current !== undefined) {
+        setDetail((prev) => prev
+          ? {
+              ...prev,
+              categories: prev.categories.map((c) =>
+                c.categoryId === categoryId ? { ...c, plannedCents: current } : c,
+              ),
+            }
+          : prev);
+      }
       setError(e instanceof Error ? e.message : 'Something went wrong');
     }
-  }, [detail, drafts, reload, router, week.key]);
+  }, [detail, drafts, year, month, week.key]);
 
   if (loading && !detail) {
     return <div className={classes.loading}>Loading week…</div>;
