@@ -217,7 +217,16 @@
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 16px;
+}
+
+.monthTitle {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 17px;
+  color: var(--ink-soft);
+  min-width: 140px;
+  text-align: center;
 }
 
 .navBtn {
@@ -232,6 +241,7 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  flex: none;
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
@@ -240,58 +250,6 @@
   color: var(--ink);
 }
 
-.navGroup {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.navRight { flex-direction: row-reverse; }
-
-.navLabel {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  display: block;
-  margin-bottom: 3px;
-}
-
-.navTextRight { text-align: right; }
-
-.navMonth {
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 19px;
-}
-
-.archives { text-align: center; }
-.archives .navLabel { margin-bottom: 8px; }
-
-.dots {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-}
-
-.dots span {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--ink-soft);
-  opacity: 0.4;
-}
-
-.dotActive {
-  background: var(--accent-bright) !important;
-  opacity: 1 !important;
-  width: 14px !important;
-  border-radius: 3px !important;
-}
-
 @media (max-width: 760px) {
   .layout { grid-template-columns: 1fr; }
-  .foot { flex-direction: column; gap: 18px; }
-  .navRight { flex-direction: row; }
-  .navTextRight { text-align: left; }
 }
