@@ -45,8 +45,8 @@ export default function WeekWorkspace({ year, month, week }: WeekWorkspaceProps)
     void load();
   }, [load]);
 
-  const commitDraft = useCallback(async (categoryId: string) => {
-    const draft = drafts[categoryId];
+  const commitDraft = useCallback(async (categoryId: string, rawValue?: string) => {
+    const draft = rawValue ?? drafts[categoryId];
     setDrafts((prev) => ({ ...prev, [categoryId]: null }));
     if (draft === null || draft === undefined) return;
     const cents = parseAmountToCents(draft);
@@ -128,7 +128,11 @@ export default function WeekWorkspace({ year, month, week }: WeekWorkspaceProps)
                   }
                   e.target.select();
                 }}
-                onBlur={() => void commitDraft(cat.categoryId)}
+                onBlur={(e) => {
+                  // Pass the live input value: the memoized commitDraft may hold
+                  // a stale `drafts` snapshot if React batched the re-render.
+                  void commitDraft(cat.categoryId, e.currentTarget.value);
+                }}
                 onChange={(e) => setDrafts((p) => ({
                   ...p,
                   [cat.categoryId]: sanitizeAmountText(e.target.value),
