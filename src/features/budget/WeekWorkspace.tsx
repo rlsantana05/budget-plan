@@ -128,15 +128,35 @@ export default function WeekWorkspace({ year, month, week, nextWeekKey }: WeekWo
           {cat.dueLabel && <span className={classes.dueChip}>due {cat.dueLabel}</span>}
         </span>
         <input
-          className={`${classes.amountInput} ${!focused && cat.plannedCents === 0 ? classes.faint : ''}`}
+          className={`${classes.amountInput} ${
+            !focused && cat.plannedCents === 0
+              ? cat.prefillCents > 0
+                ? classes.suggestion
+                : classes.faint
+              : ''
+          }`}
           value={focused
             ? drafts[cat.categoryId] ?? ''
-            : formatCents(cat.plannedCents)}
+            : cat.plannedCents > 0
+              ? formatCents(cat.plannedCents)
+              : cat.prefillCents > 0
+                ? `${formatCents(cat.prefillCents)}?`
+                : '$0.00'}
           aria-label={`Planned amount for ${cat.name} this week`}
           inputMode="decimal"
           onFocus={(e) => {
             if (!focused) {
-              setDrafts((p) => ({ ...p, [cat.categoryId]: formatCents(cat.plannedCents) }));
+              // Focus replaces suggestion with the bare number, so Enter
+              // commits the prefill as-is; user can edit or clear to $0.
+              setDrafts((p) => ({
+                ...p,
+                [cat.categoryId]:
+                  cat.plannedCents > 0
+                    ? formatCents(cat.plannedCents)
+                    : cat.prefillCents > 0
+                      ? formatCents(cat.prefillCents)
+                      : '$0.00',
+              }));
             }
             e.target.select();
           }}

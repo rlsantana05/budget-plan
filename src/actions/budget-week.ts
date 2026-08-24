@@ -20,6 +20,7 @@ import {
   classifyCadence,
   effectiveDueDate,
 } from "@/features/budget/utils/cadence";
+import { averageWeeklyPlan } from "@/features/budget/utils/prefill";
 
 export interface WeekCategoryRow {
   categoryId: string;
@@ -32,6 +33,9 @@ export interface WeekCategoryRow {
   cadence: "weekly" | "monthly-due-this-week" | "monthly-not-due";
   /** Human date ("Aug 26") when the bill is due in-window. */
   dueLabel?: string;
+  /** Suggested plan (integer cents): weekly avg or full target for due bills.
+   *  Only meaningful when plannedCents is 0. */
+  prefillCents: number;
 }
 
 export interface WeekDetail {
@@ -158,6 +162,29 @@ export async function getWeekDetail(
   const weekEnd = new Date(endExclusive);
   weekEnd.setDate(weekEnd.getDate() - 1); // endExclusive → actual Friday
 
+  // Prefill history: per (category, week) totals across this month's weeks.
+  const historyRows = await db
+    .select({
+      categoryId: assignmentLedger.categoryId,
+      weekKey: assignmentLedger.weekKey,
+      total: sql<string>`sum(${assignmentLedger.amount})`,
+    })
+    .from(assignmentLedger)
+    .where(
+      and(
+        eq(assignmentLedger.monthBudgetId, mb.id),
+        sql`${assignmentLedger.weekKey} is not null`,
+      ),
+    )
+    .groupBy(assignmentLedger.categoryId, assignmentLedger.weekKey);
+
+  const prefillByCat = averageWeeklyPlan(
+    historyRows.map((r) => ({
+      categoryId: r.categoryId,
+      weekKey: r.weekKey ?? '',
+      totalCents: toCents(r.total),
+    })),
+  );
   const seen = new Set<string>();
   const categories: WeekCategoryRow[] = [];
   for (const r of rollupRows) {
@@ -183,6 +210,13 @@ export async function getWeekDetail(
             .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         : undefined;
 
+    // Prefill rule (spec Task 4): full target for bills due this week;
+    // weekly average for everything else.
+    const prefillCents =
+      cadence === 'monthly-due-this-week' && r.targetAmount != null
+        ? toCents(r.targetAmount)
+        : prefillByCat.get(r.categoryId) ?? 0;
+
     categories.push({
       categoryId: r.categoryId,
       name: r.name,
@@ -190,6 +224,7 @@ export async function getWeekDetail(
       spentCents: spentByCat.get(r.categoryId) ?? 0,
       cadence,
       dueLabel,
+      prefillCents,
     });
   }
 
