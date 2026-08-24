@@ -198,7 +198,7 @@ export default function AccountsClient({
                 strokeLinecap="round"
               />
             </svg>
-            <Title order={2} style={{ fontSize: 33, letterSpacing: "-0.02em" }}>
+            <Title order={2} style={{ fontSize: 33, letterSpacing: "-0.02em", fontFamily: 'var(--font-serif), Georgia, serif' }}>
               No accounts yet
             </Title>
             <Text c="dimmed" className={classes.description}>
