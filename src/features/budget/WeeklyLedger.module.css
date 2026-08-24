@@ -1,16 +1,13 @@
 /* Weekly ledger shell — spec 2026-08-23-budget-weekly-ledger Phase A.
-   Visual language from Leonardo's mockup: Fraunces dates, mono caps tags,
-   torn-stub notch on the current week. */
+   Visual language from Leonardo's mockup: Fraunces dates, mono caps tags.
+   NOTE: the app layout already provides the outer card (Paper.mainPanel),
+   so this fills it — no extra sheet/border of its own. */
 
 .sheet {
-  position: relative;
   width: 100%;
-  max-width: 1180px;
-  margin: 0 auto;
-  background: linear-gradient(180deg, #1a1b21, var(--budget-bg, #17181e));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 20px;
-  padding: 36px 36px 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .monthHead {
@@ -41,6 +38,8 @@
   grid-template-columns: 340px 1fr;
   gap: 28px;
   align-items: stretch;
+  flex: 1;
+  min-height: 0;
 }
 
 /* ---------- week rail ---------- */
