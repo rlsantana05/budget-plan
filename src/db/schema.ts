@@ -406,3 +406,23 @@ export const categoryRollups = pgTable(
     index("category_rollups_category_id_idx").on(table.categoryId),
   ],
 );
+
+/**
+ * Closed review weeks (spec 2026-08-23-budget-weekly-ledger Phase C).
+ * One row per (monthBudget, weekKey) once the user closes their Friday
+ * review. Closing is a ritual marker only — money math never depends on it.
+ */
+export const closedWeeks = pgTable(
+  "closed_weeks",
+  {
+    monthBudgetId: uuid("month_budget_id")
+      .notNull()
+      .references(() => monthBudgets.id, { onDelete: "cascade" }),
+    /** 'YYYY-MM-DD' of the week's Saturday — same key as ledger.week_key. */
+    weekKey: text("week_key").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.monthBudgetId, table.weekKey] })],
+);

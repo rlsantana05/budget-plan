@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  closeWeek,
   getWeekDetail,
   type WeekDetail,
 } from '@/actions/budget-week';
@@ -15,6 +16,8 @@ interface WeekWorkspaceProps {
   year: number;
   month: number;
   week: Week;
+  /** Saturday key of the following week — rollover target when closing. */
+  nextWeekKey: string;
 }
 
 /**
@@ -22,28 +25,42 @@ interface WeekWorkspaceProps {
  * income expected / planned / left + per-category planned vs spent rows.
  * Inline editing writes week-tagged ASSIGN ledger rows.
  */
-export default function WeekWorkspace({ year, month, week }: WeekWorkspaceProps) {
+export default function WeekWorkspace({ year, month, week, nextWeekKey }: WeekWorkspaceProps) {
   const router = useRouter();
   const [detail, setDetail] = useState<WeekDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [drafts, setDrafts] = useState<Record<string, string | null>>({});
   const [error, setError] = useState<string | null>(null);
+  const [closeState, setCloseState] = useState<'idle' | 'confirm' | 'closing'>('idle');
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const [closedMessage, setClosedMessage] = useState<string | null>(null);
+
+  // Data fetching keyed to the selected week. setLoading inside the async
+  // callback (not synchronously in the effect) keeps the lint rule happy.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const d = await getWeekDetail(year, month, week.key);
+        if (!cancelled) setDetail(d);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load week');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [year, month, week.key]);
+
+  const reload = useCallback(async () => {
     try {
       const d = await getWeekDetail(year, month, week.key);
       setDetail(d);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load week');
-    } finally {
-      setLoading(false);
     }
   }, [year, month, week.key]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   const commitDraft = useCallback(async (categoryId: string, rawValue?: string) => {
     const draft = rawValue ?? drafts[categoryId];
@@ -55,12 +72,12 @@ export default function WeekWorkspace({ year, month, week }: WeekWorkspaceProps)
     setError(null);
     try {
       await assignToCategory(categoryId, cents / 100, week.key);
-      await load();
+      await reload();
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     }
-  }, [detail, drafts, load, router, week.key]);
+  }, [detail, drafts, reload, router, week.key]);
 
   if (loading && !detail) {
     return <div className={classes.loading}>Loading week…</div>;
@@ -77,6 +94,9 @@ export default function WeekWorkspace({ year, month, week }: WeekWorkspaceProps)
           {formatWeekRange(week.start, week.end)} · {week.tag === 'current' ? 'Current' : week.tag === 'past' ? 'Past' : 'Future'} week
         </span>
         <h2 className={classes.title}>This week</h2>
+        {detail?.isClosed && (
+          <span className={classes.closedBadge}>✓ Review closed</span>
+        )}
       </header>
 
       <div className={classes.summary}>
@@ -155,6 +175,87 @@ export default function WeekWorkspace({ year, month, week }: WeekWorkspaceProps)
           );
         })}
       </div>
+
+      {/* Close-week footer (spec Phase C): rollover leftover into next week */}
+      {detail && !detail.isClosed && (
+        <footer className={classes.closeBar}>
+          {closeState === 'idle' && (
+            <button
+              type="button"
+              className={classes.closeBtn}
+              disabled={plannedTotal === 0}
+              onClick={() => setCloseState('confirm')}
+            >
+              Close week review
+            </button>
+          )}
+          {closeState === 'confirm' && (
+            <div className={classes.confirmBox}>
+              <span className={classes.confirmText}>
+                Roll{' '}
+                <strong>
+                  {formatCents(
+                    detail.categories.reduce(
+                      (s, c) => s + Math.max(c.plannedCents - c.spentCents, 0),
+                      0,
+                    ),
+                  )}
+                </strong>{' '}
+                of leftovers into next week?
+              </span>
+              <div className={classes.confirmActions}>
+                <button
+                  type="button"
+                  className={classes.confirmRoll}
+                  onClick={async () => {
+                    setCloseState('closing');
+                    try {
+                      const result = await closeWeek(year, month, week.key, nextWeekKey, true);
+                      setClosedMessage(
+                        `Week closed — ${formatCents(result.rolledCents)} rolled to next week.`,
+                      );
+                      setCloseState('idle');
+      await reload();
+                      router.refresh();
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : 'Failed to close week');
+                      setCloseState('idle');
+                    }
+                  }}
+                >
+                  Yes, roll it over
+                </button>
+                <button
+                  type="button"
+                  className={classes.confirmKeep}
+                  onClick={async () => {
+                    setCloseState('closing');
+                    try {
+                      await closeWeek(year, month, week.key, nextWeekKey, false);
+                      setClosedMessage('Week closed — leftovers kept in place.');
+                      setCloseState('idle');
+      await reload();
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : 'Failed to close week');
+                      setCloseState('idle');
+                    }
+                  }}
+                >
+                  Close without rolling
+                </button>
+                <button
+                  type="button"
+                  className={classes.confirmCancel}
+                  onClick={() => setCloseState('idle')}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          {closedMessage && <span className={classes.closedMessage}>{closedMessage}</span>}
+        </footer>
+      )}
     </div>
   );
 }

@@ -101,7 +101,7 @@ export default function WeeklyLedger({ initialData, selectedMonth }: WeeklyLedge
 
         <section className={classes.workspace}>
           {selected && (workspaceOpen || selected.tag !== 'future') ? (
-            <WeekWorkspace year={year} month={month} week={selected} />
+            <WeekWorkspace year={year} month={month} week={selected} nextWeekKey={weeks[weeks.findIndex((w) => w.key === selected?.key) + 1]?.key ?? selected?.key ?? ''} />
           ) : (
             selected && (
               <>

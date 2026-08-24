@@ -6,9 +6,14 @@ import {
   assignmentLedger,
   budgetCategories,
   categoryRollups,
+  closedWeeks,
   transactions,
 } from "@/db/schema";
-import { getOrCreateDefaultBudget, getOrCreateMonthBudget } from "./budget-planning";
+import {
+  assignToCategory,
+  getOrCreateDefaultBudget,
+  getOrCreateMonthBudget,
+} from "./budget-planning";
 import { toCents } from "@/features/planning/utils/money";
 
 export interface WeekCategoryRow {
@@ -26,6 +31,8 @@ export interface WeekDetail {
   incomeCents: number;
   incomeCount: number;
   categories: WeekCategoryRow[];
+  /** True once the user has closed this week's review. */
+  isClosed: boolean;
 }
 
 function windowDates(weekKey: string): { start: Date; endExclusive: Date } {
@@ -142,10 +149,76 @@ export async function getWeekDetail(
     });
   }
 
+  // Closed marker
+  const [closed] = await db
+    .select({ weekKey: closedWeeks.weekKey })
+    .from(closedWeeks)
+    .where(
+      and(eq(closedWeeks.monthBudgetId, mb.id), eq(closedWeeks.weekKey, weekKey)),
+    )
+    .limit(1);
+
   return {
     weekKey,
     incomeCents: toCents(income?.total ?? "0"),
     incomeCount: income?.count ?? 0,
     categories,
+    isClosed: closed !== undefined,
   };
+}
+
+export interface CloseWeekResult {
+  closedWeekKey: string;
+  nextWeekKey: string;
+  /** Per-category amounts rolled into the next week (integer cents). */
+  rolledCents: number;
+}
+
+/**
+ * Close a review week (spec Phase C): mark it closed and optionally roll each
+ * category's leftover (planned − spent) into the same category next week via
+ * week-tagged ASSIGN ledger rows. "Roll with the punches" — the monthly
+ * envelope totals are unchanged; only week attribution moves.
+ */
+export async function closeWeek(
+  year: number,
+  month: number,
+  weekKey: string,
+  nextWeekKey: string,
+  rollLeftover: boolean,
+): Promise<CloseWeekResult> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(weekKey) || !/^\d{4}-\d{2}-\d{2}$/.test(nextWeekKey)) {
+    throw new Error("Invalid week key");
+  }
+  if (nextWeekKey <= weekKey) {
+    throw new Error("Next week must be after the closing week");
+  }
+
+  const detail = await getWeekDetail(year, month, weekKey);
+
+  // Idempotent: closing twice must not double-roll.
+  await db
+    .insert(closedWeeks)
+    .values({ monthBudgetId: (await getOrCreateMonthBudgetId(year, month)), weekKey })
+    .onConflictDoNothing();
+
+  let rolled = 0;
+  if (rollLeftover) {
+    for (const cat of detail.categories) {
+      const leftover = cat.plannedCents - cat.spentCents;
+      if (leftover <= 0 || cat.plannedCents === 0) continue;
+      // Leftover rolls as dollars; assignToCategory validates + writes a
+      // week-tagged ASSIGN row and bumps rollups.
+      await assignToCategory(cat.categoryId, leftover / 100, nextWeekKey);
+      rolled += leftover;
+    }
+  }
+
+  return { closedWeekKey: weekKey, nextWeekKey, rolledCents: rolled };
+}
+
+async function getOrCreateMonthBudgetId(year: number, month: number): Promise<string> {
+  const budget = await getOrCreateDefaultBudget();
+  const { mb } = await getOrCreateMonthBudget(budget.id, true, year, month);
+  return mb.id;
 }
