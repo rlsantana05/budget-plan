@@ -57,6 +57,7 @@ export default function TransactionsModal({
           padding: 24,
         }}
       >
+        <Modal.Body>
         <div className={classes.modalTitle}>Add transaction</div>
         <div className={classes.modalField}>
           <NumberInput
@@ -123,6 +124,7 @@ export default function TransactionsModal({
             {busy === 'add' ? 'Saving…' : 'Add transaction'}
           </button>
         </div>
+        </Modal.Body>
       </Modal.Content>
     </Modal.Root>
   );
