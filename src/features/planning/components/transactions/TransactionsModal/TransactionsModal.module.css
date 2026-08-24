@@ -46,3 +46,9 @@
   filter: none;
   color: var(--ink);
 }
+.content {
+  border-radius: 16px;
+  background: var(--mantine-color-surface-2);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 24px;
+}

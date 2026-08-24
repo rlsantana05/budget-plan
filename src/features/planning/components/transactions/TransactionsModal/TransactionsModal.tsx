@@ -47,18 +47,15 @@ export default function TransactionsModal({
   error,
 }: TransactionsModalProps) {
   return (
-    <Modal.Root opened={opened} onClose={onClose}>
+    <Modal.Root opened={opened} onClose={onClose} centered>
       <Modal.Overlay backgroundOpacity={0.6} blur={3} />
       <Modal.Content
-        style={{
-          borderRadius: 16,
-          background: 'var(--mantine-color-surface-2)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          padding: 24,
-        }}
+        className={classes.content}
       >
+        <Modal.Header>
+          <Modal.Title className={classes.modalTitle}>Add transaction</Modal.Title>
+        </Modal.Header>
         <Modal.Body>
-        <div className={classes.modalTitle}>Add transaction</div>
         <div className={classes.modalField}>
           <NumberInput
             label="Amount"
