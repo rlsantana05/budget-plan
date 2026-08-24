@@ -233,11 +233,12 @@
   font-size: 15px;
   font-weight: 600;
   color: #f2f3f5;
+  font-family: var(--font-sans, system-ui, sans-serif);
 }
 
 .cardSub {
   margin-top: 2px;
-  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -250,6 +251,7 @@
   font-weight: 600;
   letter-spacing: -0.01em;
   color: #f2f3f5;
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
 }
 
