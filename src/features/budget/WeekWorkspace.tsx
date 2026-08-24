@@ -204,7 +204,9 @@ export default function WeekWorkspace({ year, month, week, nextWeekKey }: WeekWo
             {formatCents(detail?.incomeCents ?? 0)}
           </span>
           {(detail?.incomeCount ?? 0) === 0 && (
-            <span className={classes.hint}>No income this week</span>
+            <span className={classes.hint}>
+              No paycheck lands this week — planning from cash on hand
+            </span>
           )}
         </div>
         <div className={classes.summaryCell}>
