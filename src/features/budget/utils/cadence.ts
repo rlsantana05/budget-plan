@@ -7,11 +7,9 @@ export interface CadenceInput {
   targetDueDate: Date | null;
 }
 
-/**
- * Clamp a recurring month-day (1–31) to the actual length of the month
- * containing `ref`. Day 31 in a 30-day month → 30; in February → 28/29.
- */
-function effectiveDueDate(targetMonthDay: number, ref: Date): Date {
+/** Clamp a recurring month-day (1–31) to the actual length of the month
+ *  containing `ref`. Day 31 in a 30-day month → 30; in February → 28/29. */
+export function effectiveDueDate(targetMonthDay: number, ref: Date): Date {
   const y = ref.getFullYear();
   const m = ref.getMonth();
   const lastDay = new Date(y, m + 1, 0).getDate();

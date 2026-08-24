@@ -6,6 +6,7 @@ import {
   assignmentLedger,
   budgetCategories,
   categoryRollups,
+  categoryTemplates,
   closedWeeks,
   transactions,
 } from "@/db/schema";
@@ -15,6 +16,10 @@ import {
   getOrCreateMonthBudget,
 } from "./budget-planning";
 import { toCents } from "@/features/planning/utils/money";
+import {
+  classifyCadence,
+  effectiveDueDate,
+} from "@/features/budget/utils/cadence";
 
 export interface WeekCategoryRow {
   categoryId: string;
@@ -23,6 +28,10 @@ export interface WeekCategoryRow {
   plannedCents: number;
   /** Σ tracked expense txs dated inside the window (positive cents). */
   spentCents: number;
+  /** Every-week vs monthly bill bucket for this week. */
+  cadence: "weekly" | "monthly-due-this-week" | "monthly-not-due";
+  /** Human date ("Aug 26") when the bill is due in-window. */
+  dueLabel?: string;
 }
 
 export interface WeekDetail {
@@ -119,16 +128,25 @@ export async function getWeekDetail(
   const spentByCat = new Map(spentRows.map((r) => [r.categoryId!, toCents(r.total)]));
 
   // Include all month categories that have a rollup so the workspace can show
-  // the full envelope list; zero-filled where the week has no plan.
+  // the full envelope list; zero-filled where the week has no plan. Also pull
+  // target fields for cadence classification.
   const rollupRows = await db
     .select({
       categoryId: categoryRollups.categoryId,
       name: budgetCategories.name,
+      targetType: categoryTemplates.targetType,
+      targetAmount: categoryTemplates.targetAmount,
+      targetMonthDay: categoryTemplates.targetMonthDay,
+      targetDueDate: categoryTemplates.targetDueDate,
     })
     .from(categoryRollups)
     .innerJoin(
       budgetCategories,
       eq(budgetCategories.id, categoryRollups.categoryId),
+    )
+    .leftJoin(
+      categoryTemplates,
+      eq(categoryTemplates.id, budgetCategories.templateId),
     )
     .where(eq(categoryRollups.monthBudgetId, mb.id));
 
@@ -136,16 +154,42 @@ export async function getWeekDetail(
     plannedRows.map((r) => [r.categoryId, toCents(r.total)]),
   );
 
+  // Window dates for the cadence classifier (reuses the query window).
+  const weekEnd = new Date(endExclusive);
+  weekEnd.setDate(weekEnd.getDate() - 1); // endExclusive → actual Friday
+
   const seen = new Set<string>();
   const categories: WeekCategoryRow[] = [];
   for (const r of rollupRows) {
     if (seen.has(r.categoryId)) continue;
     seen.add(r.categoryId);
+
+    const cadence = classifyCadence(
+      {
+        targetType: r.targetType ?? 'NONE',
+        targetAmountCents: toCents(r.targetAmount ?? '0'),
+        targetMonthDay: r.targetMonthDay,
+        targetDueDate: r.targetDueDate,
+      },
+      start,
+      weekEnd,
+    );
+    const dueLabel =
+      cadence === 'monthly-due-this-week'
+        ? (r.targetDueDate ??
+           (r.targetMonthDay != null
+             ? effectiveDueDate(r.targetMonthDay, start)
+             : start))
+            .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : undefined;
+
     categories.push({
       categoryId: r.categoryId,
       name: r.name,
       plannedCents: plannedByCat.get(r.categoryId) ?? 0,
       spentCents: spentByCat.get(r.categoryId) ?? 0,
+      cadence,
+      dueLabel,
     });
   }
 
