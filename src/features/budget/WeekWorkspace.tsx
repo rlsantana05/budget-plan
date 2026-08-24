@@ -34,6 +34,7 @@ export default function WeekWorkspace({ year, month, week, nextWeekKey }: WeekWo
   const [closeState, setCloseState] = useState<'idle' | 'confirm' | 'closing'>('idle');
 
   const [closedMessage, setClosedMessage] = useState<string | null>(null);
+  const [showNotDue, setShowNotDue] = useState(false);
 
   // Data fetching keyed to the selected week. setLoading inside the async
   // callback (not synchronously in the effect) keeps the lint rule happy.
@@ -111,6 +112,59 @@ export default function WeekWorkspace({ year, month, week, nextWeekKey }: WeekWo
   const left = (detail?.incomeCents ?? 0) - plannedTotal;
   const leftTone = left < 0 ? classes.negative : left > 0 ? classes.positive : '';
 
+  // Cadence buckets (spec: weekly-cadence-buckets)
+  const dueNow = (detail?.categories ?? []).filter((c) => c.cadence === 'monthly-due-this-week');
+  const weekly = (detail?.categories ?? []).filter((c) => c.cadence === 'weekly');
+  const notDue = (detail?.categories ?? []).filter((c) => c.cadence === 'monthly-not-due');
+
+  const renderRow = (cat: WeekDetail['categories'][number], dimmed = false) => {
+    const focused = drafts[cat.categoryId] !== undefined && drafts[cat.categoryId] !== null;
+    const spentLeft = cat.plannedCents - cat.spentCents;
+    const over = cat.plannedCents > 0 && cat.spentCents > cat.plannedCents;
+    return (
+      <div key={cat.categoryId} className={`${classes.row} ${dimmed ? classes.dimmedRow : ''}`}>
+        <span className={classes.catName}>
+          {cat.name}
+          {cat.dueLabel && <span className={classes.dueChip}>due {cat.dueLabel}</span>}
+        </span>
+        <input
+          className={`${classes.amountInput} ${!focused && cat.plannedCents === 0 ? classes.faint : ''}`}
+          value={focused
+            ? drafts[cat.categoryId] ?? ''
+            : formatCents(cat.plannedCents)}
+          aria-label={`Planned amount for ${cat.name} this week`}
+          inputMode="decimal"
+          onFocus={(e) => {
+            if (!focused) {
+              setDrafts((p) => ({ ...p, [cat.categoryId]: formatCents(cat.plannedCents) }));
+            }
+            e.target.select();
+          }}
+          onBlur={(e) => {
+            void commitDraft(cat.categoryId, e.currentTarget.value);
+          }}
+          onChange={(e) => setDrafts((p) => ({
+            ...p,
+            [cat.categoryId]: sanitizeAmountText(e.target.value),
+          }))}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.currentTarget.blur();
+            else if (e.key === 'Escape') {
+              setDrafts((p) => ({ ...p, [cat.categoryId]: null }));
+              e.currentTarget.blur();
+            }
+          }}
+        />
+        <span className={`${classes.num} ${cat.spentCents === 0 ? classes.faint : ''}`}>
+          {formatCents(cat.spentCents)}
+        </span>
+        <span className={`${classes.num} ${over ? classes.over : cat.spentCents === 0 ? classes.faint : ''}`}>
+          {over ? '⚠ ' : ''}{formatCents(spentLeft)}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className={classes.workspace}>
       <header className={classes.head}>
@@ -146,58 +200,50 @@ export default function WeekWorkspace({ year, month, week, nextWeekKey }: WeekWo
       {error && <div className={classes.error}>{error}</div>}
 
       <div className={classes.rows}>
-        <div className={`${classes.row} ${classes.rowHead}`}>
-          <span>Category</span>
-          <span>Planned</span>
-          <span>Spent</span>
-          <span>Left</span>
-        </div>
-        {detail?.categories.map((cat) => {
-          const focused = drafts[cat.categoryId] !== undefined && drafts[cat.categoryId] !== null;
-          const spentLeft = cat.plannedCents - cat.spentCents;
-          const over = cat.plannedCents > 0 && cat.spentCents > cat.plannedCents;
-          return (
-            <div key={cat.categoryId} className={classes.row}>
-              <span className={classes.catName}>{cat.name}</span>
-              <input
-                className={`${classes.amountInput} ${!focused && cat.plannedCents === 0 ? classes.faint : ''}`}
-                value={focused
-                  ? drafts[cat.categoryId] ?? ''
-                  : formatCents(cat.plannedCents)}
-                aria-label={`Planned amount for ${cat.name} this week`}
-                inputMode="decimal"
-                onFocus={(e) => {
-                  if (!focused) {
-                    setDrafts((p) => ({ ...p, [cat.categoryId]: formatCents(cat.plannedCents) }));
-                  }
-                  e.target.select();
-                }}
-                onBlur={(e) => {
-                  // Pass the live input value: the memoized commitDraft may hold
-                  // a stale `drafts` snapshot if React batched the re-render.
-                  void commitDraft(cat.categoryId, e.currentTarget.value);
-                }}
-                onChange={(e) => setDrafts((p) => ({
-                  ...p,
-                  [cat.categoryId]: sanitizeAmountText(e.target.value),
-                }))}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') e.currentTarget.blur();
-                  else if (e.key === 'Escape') {
-                    setDrafts((p) => ({ ...p, [cat.categoryId]: null }));
-                    e.currentTarget.blur();
-                  }
-                }}
-              />
-              <span className={`${classes.num} ${cat.spentCents === 0 ? classes.faint : ''}`}>
-                {formatCents(cat.spentCents)}
-              </span>
-              <span className={`${classes.num} ${over ? classes.over : cat.spentCents === 0 ? classes.faint : ''}`}>
-                {over ? '⚠ ' : ''}{formatCents(spentLeft)}
-              </span>
+        {dueNow.length > 0 && (
+          <>
+            <div className={classes.sectionHead}>
+              Bills due this week
+              <span className={classes.sectionHint}>pay these before anything else</span>
             </div>
-          );
-        })}
+            <div className={`${classes.row} ${classes.rowHead}`}>
+              <span>Category</span><span>Planned</span><span>Spent</span><span>Left</span>
+            </div>
+            {dueNow.map((c) => renderRow(c))}
+          </>
+        )}
+
+        <div className={classes.sectionHead}>
+          Every week
+          <span className={classes.sectionHint}>regular spending</span>
+        </div>
+        <div className={`${classes.row} ${classes.rowHead}`}>
+          <span>Category</span><span>Planned</span><span>Spent</span><span>Left</span>
+        </div>
+        {weekly.map((c) => renderRow(c))}
+        {weekly.length === 0 && (
+          <div className={classes.emptySection}>Nothing recurring this week yet.</div>
+        )}
+
+        {notDue.length > 0 && (
+          <>
+            <button
+              type="button"
+              className={classes.sectionToggle}
+              onClick={() => setShowNotDue((v) => !v)}
+            >
+              {showNotDue ? '▾' : '▸'} Monthly bills — not due this week ({notDue.length})
+            </button>
+            {showNotDue && (
+              <>
+                <div className={`${classes.row} ${classes.rowHead}`}>
+                  <span>Category</span><span>Planned</span><span>Spent</span><span>Left</span>
+                </div>
+                {notDue.map((c) => renderRow(c, true))}
+              </>
+            )}
+          </>
+        )}
       </div>
 
       {/* Close-week footer (spec Phase C): rollover leftover into next week */}

@@ -95,6 +95,64 @@
   color: var(--budget-red, #ff8080);
 }
 
+/* cadence section headers */
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 14px 6px 6px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.sectionHint {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.sectionToggle {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 6px;
+  margin-top: 8px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  color: var(--ink-soft);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.sectionToggle:hover { color: var(--ink); }
+
+.dimmedRow { opacity: 0.55; }
+
+.dueChip {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: var(--orange, #f59e0b);
+  margin-left: 8px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.emptySection {
+  padding: 12px 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
 /* category rows */
 .rows {
   display: flex;
