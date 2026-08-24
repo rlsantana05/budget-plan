@@ -47,7 +47,14 @@ export default function TransactionsModal({
   error,
 }: TransactionsModalProps) {
   return (
-    <Modal.Root opened={opened} onClose={onClose} centered>
+    <Modal.Root
+      opened={opened}
+      onClose={onClose}
+      centered
+      // duration 0 mounts content synchronously — no rAF dependency, so the
+      // dialog appears instantly even in background/hidden tabs.
+      transitionProps={{ duration: 0, transition: 'fade' }}
+    >
       <Modal.Overlay backgroundOpacity={0.6} blur={3} />
       <Modal.Content
         className={classes.content}

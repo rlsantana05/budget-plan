@@ -15,6 +15,9 @@ const surface: MantineColorsTuple = [
 
 export const theme = createTheme({
   fontFamily: "var(--font-sans, system-ui, sans-serif)",
+  // Skip enter/exit transitions entirely: modals render immediately (also
+  // avoids rAF-dependent mounting that stalls in background tabs).
+  respectReducedMotion: true,
   colors: {
     surface,
   },
