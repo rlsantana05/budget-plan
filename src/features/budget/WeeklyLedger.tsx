@@ -69,7 +69,7 @@ export default function WeeklyLedger({ initialData, selectedMonth }: WeeklyLedge
     <div className={classes.sheet}>
       <header className={classes.monthHead}>
         <div>
-          <span className={classes.eyebrow}>Weekly ledger</span>
+          <span className={classes.eyebrow}>Weekly check-ins</span>
           <h1 className={classes.title}>{MONTH_NAMES[month - 1]} {year}</h1>
         </div>
       </header>
