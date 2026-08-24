@@ -63,71 +63,71 @@ export default function TransactionsModal({
           <Modal.Title className={classes.modalTitle}>Add transaction</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <div className={classes.modalField}>
-          <NumberInput
-            label="Amount"
-            value={txAmount}
-            onChange={(v) => onTxAmountChange(typeof v === 'number' ? v : 0)}
-            min={0}
-            decimalScale={2}
-            autoFocus
-          />
-        </div>
-        <div className={classes.modalField}>
-          <TextInput
-            label="Payee"
-            value={txPayee}
-            onChange={(e) => onTxPayeeChange(e.target.value)}
-            placeholder="e.g. Kroger"
-          />
-        </div>
-        <div className={classes.modalField}>
-          <TextInput
-            label="Memo (optional)"
-            value={txMemo}
-            onChange={(e) => onTxMemoChange(e.target.value)}
-            placeholder="e.g. Weekly groceries"
-          />
-        </div>
-        <div className={classes.modalField}>
-          <Select
-            label="Category"
-            data={categoryOptions}
-            value={txCategory}
-            onChange={onTxCategoryChange}
-            searchable
-            clearable
-            placeholder="Select a category"
-          />
-        </div>
-        <div className={classes.modalField}>
-          <Select
-            label="Account"
-            data={accountOptions.map((a) => ({ value: a.id, label: a.name }))}
-            value={txAccount}
-            onChange={onTxAccountChange}
-            required
-            placeholder="Select an account"
-          />
-        </div>
-        {error && <div className={sharedClasses.error}>{error}</div>}
-        <div className={classes.modalActions}>
-          <button
-            type="button"
-            className={`${classes.modalButton} ${classes.secondary}`}
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className={classes.modalButton}
-            onClick={onSubmit}
-            disabled={busy === 'add' || txAmount <= 0 || txAccount === null}
-          >
-            {busy === 'add' ? 'Saving…' : 'Add transaction'}
-          </button>
-        </div>
+          <div className={classes.modalField}>
+            <NumberInput
+              label="Amount"
+              value={txAmount}
+              onChange={(v) => onTxAmountChange(typeof v === 'number' ? v : 0)}
+              min={0}
+              decimalScale={2}
+              autoFocus
+            />
+          </div>
+          <div className={classes.modalField}>
+            <TextInput
+              label="Payee"
+              value={txPayee}
+              onChange={(e) => onTxPayeeChange(e.target.value)}
+              placeholder="e.g. Kroger"
+            />
+          </div>
+          <div className={classes.modalField}>
+            <TextInput
+              label="Memo (optional)"
+              value={txMemo}
+              onChange={(e) => onTxMemoChange(e.target.value)}
+              placeholder="e.g. Weekly groceries"
+            />
+          </div>
+          <div className={classes.modalField}>
+            <Select
+              label="Category"
+              data={categoryOptions}
+              value={txCategory}
+              onChange={onTxCategoryChange}
+              searchable
+              clearable
+              placeholder="Select a category"
+            />
+          </div>
+          <div className={classes.modalField}>
+            <Select
+              label="Account"
+              data={accountOptions.map((a) => ({ value: a.id, label: a.name }))}
+              value={txAccount}
+              onChange={onTxAccountChange}
+              required
+              placeholder="Select an account"
+            />
+          </div>
+          {error && <div className={sharedClasses.error}>{error}</div>}
+          <div className={classes.modalActions}>
+            <button
+              type="button"
+              className={`${classes.modalButton} ${classes.secondary}`}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={classes.modalButton}
+              onClick={onSubmit}
+              disabled={busy === 'add' || txAmount <= 0 || txAccount === null}
+            >
+              {busy === 'add' ? 'Saving…' : 'Add transaction'}
+            </button>
+          </div>
         </Modal.Body>
       </Modal.Content>
     </Modal.Root>

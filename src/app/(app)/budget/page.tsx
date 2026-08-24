@@ -1,6 +1,6 @@
 import { getMonthBudgetPlan } from "@/actions/budget-planning";
 import { formatMonthValue, normalizeMonthParam } from "@/lib/month";
-import BudgetScreen from "@/features/budget/BudgetScreen";
+import WeeklyLedger from "@/features/budget/WeeklyLedger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +17,6 @@ export default async function BudgetPage({
   const selectedMonth = formatMonthValue(year, month);
 
   return (
-    <BudgetScreen initialData={monthBudget} selectedMonth={selectedMonth} />
+    <WeeklyLedger initialData={monthBudget} selectedMonth={selectedMonth} />
   );
 }

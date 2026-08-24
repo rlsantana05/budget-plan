@@ -1,0 +1,298 @@
+/* Weekly ledger shell — spec 2026-08-23-budget-weekly-ledger Phase A.
+   Visual language from Leonardo's mockup: Fraunces dates, mono caps tags,
+   torn-stub notch on the current week. */
+
+.sheet {
+  position: relative;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, #1a1b21, var(--budget-bg, #17181e));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 36px 36px 24px;
+}
+
+.monthHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  font-size: 32px;
+  letter-spacing: 0.2px;
+  margin: 4px 0 0;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 28px;
+  align-items: stretch;
+}
+
+/* ---------- week rail ---------- */
+
+.weeks {
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 6px 0;
+  align-self: start;
+}
+
+.weekRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 22px;
+  cursor: pointer;
+  border: none;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.weekRow + .weekRow {
+  border-top: 1px dashed rgba(255, 255, 255, 0.07);
+}
+
+.weekRow:hover { background: rgba(255, 255, 255, 0.02); }
+
+.weekInfo { display: block; }
+
+.dates {
+  display: block;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.tag {
+  display: block;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-top: 5px;
+}
+
+.past .dates { color: rgba(242, 243, 245, 0.55); }
+.past .tag { color: rgba(113, 113, 122, 0.65); }
+
+.current {
+  background: linear-gradient(90deg, rgba(93, 101, 183, 0.16), rgba(93, 101, 183, 0.02));
+  border-left-color: var(--accent-bright);
+}
+.current .dates { color: var(--accent-bright); }
+.current .tag { color: var(--accent-bright); }
+
+.selected {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: -2px;
+  border-radius: 10px;
+}
+
+/* status pill */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 10px 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-soft);
+  flex: none;
+}
+
+.unplanned .dot { background: var(--orange, #f59e0b); }
+
+/* ---------- workspace panel ---------- */
+
+.workspace {
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 40px;
+  min-height: 420px;
+}
+
+.icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.kicker {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+  margin-bottom: 10px;
+}
+
+.wsTitle {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  font-size: 28px;
+  margin: 0 0 8px;
+}
+
+.copy {
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  max-width: 360px;
+  line-height: 1.55;
+  margin: 0 0 26px;
+}
+
+.cta {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--accent, #5d65b7);
+  border: 1px solid var(--accent-bright);
+  padding: 11px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.cta:hover {
+  background: var(--accent-bright);
+  transform: translateY(-1px);
+}
+
+/* ---------- footer ---------- */
+
+.foot {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--card-bg);
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.navBtn:hover {
+  border-color: var(--accent-bright);
+  color: var(--ink);
+}
+
+.navGroup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.navRight { flex-direction: row-reverse; }
+
+.navLabel {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: block;
+  margin-bottom: 3px;
+}
+
+.navTextRight { text-align: right; }
+
+.navMonth {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 19px;
+}
+
+.archives { text-align: center; }
+.archives .navLabel { margin-bottom: 8px; }
+
+.dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink-soft);
+  opacity: 0.4;
+}
+
+.dotActive {
+  background: var(--accent-bright) !important;
+  opacity: 1 !important;
+  width: 14px !important;
+  border-radius: 3px !important;
+}
+
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  .foot { flex-direction: column; gap: 18px; }
+  .navRight { flex-direction: row; }
+  .navTextRight { text-align: left; }
+}
