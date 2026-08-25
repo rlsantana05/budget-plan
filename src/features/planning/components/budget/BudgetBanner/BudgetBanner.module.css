@@ -50,6 +50,19 @@
   color: var(--budget-red);
 }
 
+/* CSS-module exports for the status classes */
+.bannerAmountComplete {
+  color: var(--budget-green);
+}
+
+.bannerAmountInProgress {
+  color: var(--accent);
+}
+
+.bannerAmountOver {
+  color: var(--budget-red);
+}
+
 .bannerMessage {
   font-size: 12px;
   font-weight: 400;

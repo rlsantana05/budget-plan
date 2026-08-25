@@ -23,9 +23,9 @@ const statusByAmount = (amount: number): BannerStatus => {
 };
 
 const STATUS_CLASS: Record<BannerStatus, string> = {
-  complete: 'bannerAmount--complete',
-  'in-progress': 'bannerAmount--in-progress',
-  over: 'bannerAmount--over',
+  complete: classes.bannerAmountComplete,
+  'in-progress': classes.bannerAmountInProgress,
+  over: classes.bannerAmountOver,
 };
 
 export default function BudgetBanner({
