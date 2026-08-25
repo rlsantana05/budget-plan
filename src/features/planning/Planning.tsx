@@ -53,10 +53,19 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
     ease: 'easeOut' as const,
   };
 
-  const readyToAssign = useMemo(
-    () => initialData?.availableToAssignCents ?? 0,
-    [initialData],
-  );
+  // Left to budget = total planned across spending items − what's actually
+  // been assigned (funded). Positive = still left to budget; negative =
+  // over budget (funded more than planned).
+  const leftToBudget = useMemo(() => {
+    const spendingGroups = groups.filter((g) => !g.isIncome);
+    const plannedTotal = spendingGroups
+      .flatMap((g) => g.items ?? [])
+      .reduce((sum, it) => sum + it.plannedCents, 0);
+    const fundedTotal = spendingGroups
+      .flatMap((g) => g.items ?? [])
+      .reduce((sum, it) => sum + it.fundedCents, 0);
+    return plannedTotal - fundedTotal;
+  }, [groups]);
 
   const handleAssign = useCallback(
     (item: GroupItem) => {
@@ -137,7 +146,10 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
           >
             <BudgetGroupsProvider initialData={initialData} action={action}>
               <Income />
-              <BudgetBanner amount={readyToAssign} message="Available to allocate" />
+              <BudgetBanner
+                amount={leftToBudget}
+                message={leftToBudget < 0 ? 'Over budget' : 'Left to budget'}
+              />
               <BudgetGroupListWithHeader />
             </BudgetGroupsProvider>
           </motion.div>
@@ -161,7 +173,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
           selectedItem={selectedItem}
           onClearSelected={() => setSelectedItemId(null)}
           onAssign={handleAssign}
-          readyToAssign={readyToAssign}
+          readyToAssign={initialData?.availableToAssignCents ?? 0}
           onSaveTarget={handleSaveTarget}
           targetBusy={action.busy === 'row'}
         />
