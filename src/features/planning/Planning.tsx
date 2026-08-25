@@ -25,7 +25,7 @@ import { useTransactionsPanel } from './hooks/useTransactionsPanel';
 import classes from './Planning.module.css';
 import { useBudgetGroupsStore } from './store/budgetGroupsStore';
 import type { GroupItem } from './types';
-import { fromCents, toCents } from './utils/money';
+import { toCents } from './utils/money';
 
 interface PlanningProps {
   initialData?: MonthBudgetPlanDTO;
@@ -36,6 +36,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
   const nav = useMonthNavigation(selectedMonth, initialData?.month);
   const action = usePlanningActionState();
   const groups = useBudgetGroupsStore((s) => s.groups);
+  const availableToAssign = useBudgetGroupsStore((s) => s.availableToAssign);
   const panel = useTransactionsPanel(initialData, action);
   const { categories: plannedCategories } = usePlannedSummary(groups);
   const selectedItemId = useBudgetGroupsStore((s) => s.selectedItemId);
@@ -55,20 +56,6 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
     ease: 'easeOut' as const,
   };
 
-  // Left to budget = total planned across spending items − what's actually
-  // been assigned (funded). Positive = still left to budget; negative =
-  // over budget (funded more than planned).
-  const leftToBudget = useMemo(() => {
-    const spendingGroups = groups.filter((g) => !g.isIncome);
-    const plannedTotal = spendingGroups
-      .flatMap((g) => g.items ?? [])
-      .reduce((sum, it) => sum + it.plannedCents, 0);
-    const fundedTotal = spendingGroups
-      .flatMap((g) => g.items ?? [])
-      .reduce((sum, it) => sum + it.fundedCents, 0);
-    return plannedTotal - fundedTotal;
-  }, [groups]);
-
   const handleAssign = useCallback(
     (item: GroupItem) => {
       action.runTxAction('row', async () => {
@@ -79,46 +66,36 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
   );
 
   const handleSaveTarget = useCallback(
-    (item: GroupItem, form: TargetFormState) => {
+    (item: GroupItem, targetForm: TargetFormState) => {
       let input: {
         type: 'NONE' | 'ONCE' | 'MONTHLY';
         amountCents?: number;
         dueDate?: string | null;
         monthDay?: number | null;
       };
-      if (form.type === 'NONE') {
+
+      if (targetForm.type === 'NONE') {
         input = { type: 'NONE' };
-      } else if (form.type === 'ONCE') {
+      } else if (targetForm.type === 'ONCE') {
         input = {
           type: 'ONCE',
-          amountCents: toCents(form.amount),
-          dueDate: form.dueDate,
+          amountCents: toCents(targetForm.amount),
+          dueDate: targetForm.dueDate,
         };
       } else {
         input = {
           type: 'MONTHLY',
-          amountCents: toCents(form.amount),
-          monthDay: Number(form.monthDay),
+          amountCents: toCents(targetForm.amount),
+          monthDay: Number(targetForm.monthDay),
         };
       }
+
       action.runTxAction('row', async () => {
         await setCategoryTarget(item.id, input);
       });
     },
     [action],
   );
-
-  useEffect(() => {
-    const handleDocumentClick = (event: MouseEvent) => {
-      const target = event.target as Element | null;
-      if (!target) return;
-      if (target.closest('[data-category-row]')) return;
-      if (target.closest('[data-hub-panel]')) return;
-      setSelectedItemId(null);
-    };
-    document.addEventListener('click', handleDocumentClick);
-    return () => document.removeEventListener('click', handleDocumentClick);
-  }, [setSelectedItemId]);
 
   return (
     <div className={classes.page}>
@@ -137,25 +114,22 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
       />
 
       <div className={classes.layout}>
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.div
-            key={nav.selectedValue}
-            className={classes.leftCol}
-            initial={{ opacity: 0, x: nav.navDir * 28 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: nav.navDir * -28 }}
-            transition={motionTransition}
-          >
-            <BudgetGroupsProvider initialData={initialData} action={action}>
-              <Income />
-              <BudgetBanner
-                amount={fromCents(leftToBudget)}
-                message={leftToBudget < 0 ? 'Over budget' : 'Left to budget'}
-              />
+        <BudgetGroupsProvider initialData={initialData} action={action}>
+          <Income />
+          <BudgetBanner groups={groups} />
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={nav.selectedValue}
+              className={classes.leftCol}
+              initial={{ opacity: 0, x: nav.navDir * 28 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: nav.navDir * -28 }}
+              transition={motionTransition}
+            >
               <BudgetGroupListWithHeader />
-            </BudgetGroupsProvider>
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        </BudgetGroupsProvider>
 
         <TransactionsPanel
           activeView={panel.activeView}
@@ -175,7 +149,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
           selectedItem={selectedItem}
           onClearSelected={() => setSelectedItemId(null)}
           onAssign={handleAssign}
-          readyToAssign={initialData?.availableToAssignCents ?? 0}
+          readyToAssign={availableToAssign}
           onSaveTarget={handleSaveTarget}
           targetBusy={action.busy === 'row'}
         />

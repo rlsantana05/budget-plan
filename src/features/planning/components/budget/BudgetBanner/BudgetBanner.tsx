@@ -1,17 +1,20 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Check } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useMemo } from 'react';
+
 import { formatMoney } from '../../../utils/formatters';
 import sharedClasses from '../../shared/BudgetPlanShared.module.css';
+
 import classes from './BudgetBanner.module.css';
 
 interface BudgetBannerProps {
-  amount: number;
+  /** Spending groups from the planning store; used to compute `leftToBudget` internally. */
+  groups: Array<{ isIncome: boolean; items: Array<{ plannedCents: number; fundedCents: number }> }>;
   children?: ReactNode;
   flat?: boolean;
-  message?: string;
 }
 
 type BannerStatus = 'in-progress' | 'complete' | 'over';
@@ -28,29 +31,45 @@ const STATUS_CLASS: Record<BannerStatus, string> = {
   over: classes.bannerAmountOver,
 };
 
+function useLeftToBudget(
+  groups: BudgetBannerProps['groups'],
+): number {
+  return useMemo(() => {
+    const spendingGroups = groups.filter((g) => !g.isIncome);
+    const plannedTotal = spendingGroups
+      .flatMap((g) => g.items ?? [])
+      .reduce((sum, it) => sum + it.plannedCents, 0);
+    const fundedTotal = spendingGroups
+      .flatMap((g) => g.items ?? [])
+      .reduce((sum, it) => sum + it.fundedCents, 0);
+    return plannedTotal - fundedTotal;
+  }, [groups]);
+}
+
 export default function BudgetBanner({
-  amount,
+  groups,
   children,
   flat = false,
-  message,
 }: BudgetBannerProps) {
   const reduceMotion = useReducedMotion();
   const transition = {
     duration: reduceMotion ? 0 : 0.24,
     ease: 'easeOut' as const,
   };
-  const status = statusByAmount(amount);
+
+  const leftToBudget = useLeftToBudget(groups);
+  const status = statusByAmount(leftToBudget);
   const amountStatusClass = STATUS_CLASS[status];
+  const message = leftToBudget < 0 ? 'Over budget' : 'Left to budget';
 
   return (
     <div
       className={`${sharedClasses.card} ${classes.banner} ${flat ? classes.flat : ''}`}
       data-status={status}
     >
-      {/* Compact row - no eyebrow, message to right of amount */}
       <AnimatePresence mode="popLayout">
         <motion.div
-          key={`${status}-${amount}`}
+          key={`${status}-${leftToBudget}`}
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 4 }}
@@ -58,8 +77,8 @@ export default function BudgetBanner({
           className={classes.bannerRow}
         >
           <span className={`${classes.bannerAmount} ${amountStatusClass}`}>
-            {formatMoney(Math.abs(amount))}
-            {message && <span className={classes.bannerMessage}>{message}</span>}
+            {formatMoney(Math.abs(leftToBudget / 100))}
+            <span className={classes.bannerMessage}>{message}</span>
           </span>
           {status === 'complete' && (
             <motion.span
