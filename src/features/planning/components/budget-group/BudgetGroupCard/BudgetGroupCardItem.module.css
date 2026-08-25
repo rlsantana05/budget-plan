@@ -15,7 +15,8 @@
 }
 
 .gRowIncome {
-  grid-template-columns: 1.5fr 1fr 1fr 64px;
+  /* match Income.module.css .headerRow: name / Plan / Received / Remaining / actions */
+  grid-template-columns: minmax(0, 1.5fr) 150px 140px 140px 44px;
 }
 
 .gRow:hover {
