@@ -163,6 +163,11 @@
   padding-right: 8px;
 }
 
+.gRowIncome .gAmountInput,
+.gRowIncome .gValue {
+  justify-self: end;
+}
+
 .gActions {
   display: flex;
   align-items: center;
