@@ -39,7 +39,7 @@
 }
 
 .bannerAmount--complete {
-  color: var(--budget-green);
+  color: var(--green, #22c55e);
 }
 
 .bannerAmount--in-progress {
@@ -47,12 +47,12 @@
 }
 
 .bannerAmount--over {
-  color: var(--budget-red);
+  color: var(--red, #dd4e3b);
 }
 
 /* CSS-module exports for the status classes */
 .bannerAmountComplete {
-  color: var(--budget-green);
+  color: var(--green, #22c55e);
 }
 
 .bannerAmountInProgress {
@@ -60,7 +60,7 @@
 }
 
 .bannerAmountOver {
-  color: var(--budget-red);
+  color: var(--red, #dd4e3b);
 }
 
 .bannerMessage {
@@ -73,7 +73,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--budget-green);
+  color: var(--green, #22c55e);
 }
 
 .bannerDivider {
