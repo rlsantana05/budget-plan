@@ -14,11 +14,15 @@ import { useBudgetGroupsStore } from './store/budgetGroupsStore';
 import { fromCents, toCents } from './utils/money';
 import { useTransactionsPanel } from './hooks/useTransactionsPanel';
 import { usePlannedSummary } from './hooks/usePlannedSummary';
-import { MonthHeader, UndoToast } from './components/layout';
+import MonthHeader from './components/layout/MonthHeader/MonthHeader';
 import BudgetBanner from './components/budget/BudgetBanner/BudgetBanner';
 import Income from './components/budget/Income';
-import { BudgetGroupsProvider, BudgetGroupListWithHeader } from './components/budget-group';
-import { TransactionsPanel, TransactionsFab, TransactionsModal } from './components/transactions';
+import { BudgetGroupsProvider } from './components/budget-group/BudgetGroupsProvider/BudgetGroupsProvider';
+import BudgetGroupListWithHeader from './components/budget-group/BudgetGroupListWithHeader/BudgetGroupListWithHeader';
+import TransactionsPanel from './components/transactions/TransactionsPanel/TransactionsPanel';
+import TransactionsFab from './components/transactions/TransactionsFab/TransactionsFab';
+import TransactionsModal from './components/transactions/TransactionsModal/TransactionsModal';
+import UndoToast from './components/layout/UndoToast/UndoToast';
 import classes from './Planning.module.css';
 
 interface PlanningProps {
