@@ -46,6 +46,11 @@ function useLeftToBudget(
   }, [groups]);
 }
 
+const MOTION_TRANSITION = {
+  duration: 0.18,
+  ease: 'easeOut',
+} as const;
+
 export default function BudgetBanner({
   groups,
   children,
@@ -53,8 +58,8 @@ export default function BudgetBanner({
 }: BudgetBannerProps) {
   const reduceMotion = useReducedMotion();
   const transition = {
-    duration: reduceMotion ? 0 : 0.24,
-    ease: 'easeOut' as const,
+    duration: reduceMotion ? 0 : MOTION_TRANSITION.duration,
+    ease: MOTION_TRANSITION.ease,
   };
 
   const leftToBudget = useLeftToBudget(groups);

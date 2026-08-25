@@ -114,22 +114,22 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
       />
 
       <div className={classes.layout}>
-        <BudgetGroupsProvider initialData={initialData} action={action}>
-          <Income />
-          <BudgetBanner groups={groups} />
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.div
-              key={nav.selectedValue}
-              className={classes.leftCol}
-              initial={{ opacity: 0, x: nav.navDir * 28 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: nav.navDir * -28 }}
-              transition={motionTransition}
-            >
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={nav.selectedValue}
+            className={classes.leftCol}
+            initial={{ opacity: 0, x: nav.navDir * 28 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: nav.navDir * -28 }}
+            transition={motionTransition}
+          >
+            <BudgetGroupsProvider initialData={initialData} action={action}>
+              <Income />
+              <BudgetBanner groups={groups} />
               <BudgetGroupListWithHeader />
-            </motion.div>
-          </AnimatePresence>
-        </BudgetGroupsProvider>
+            </BudgetGroupsProvider>
+          </motion.div>
+        </AnimatePresence>
 
         <TransactionsPanel
           activeView={panel.activeView}
