@@ -274,9 +274,15 @@ function BudgetGroupCardItem({
               onChange={(e) => setDraftAmount(sanitizeAmountText(e.target.value))}
               onKeyDown={handleAmountKeyDown}
             />
-            <span className={classes.gValue}>{formatCents(item.receivedCents)}</span>
             <span className={classes.gValue}>
-              {formatCents(item.receivedCents - item.plannedCents)}
+              {formatCents(item.receivedCents)}
+            </span>
+            <span
+              className={`${classes.gValue} ${
+                item.plannedCents > item.receivedCents ? classes.statusAtRisk : ''
+              }`}
+            >
+              {formatCents(Math.max(item.plannedCents - item.receivedCents, 0))}
             </span>
           </>
         )}
