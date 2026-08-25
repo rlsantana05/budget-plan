@@ -83,6 +83,15 @@ const eslintConfig = defineConfig([
       "no-restricted-exports": "off",
       // The codebase deliberately reads props via `props.x`.
       "react/destructuring-assignment": "off",
+      "import/order": [
+        "error",
+        {
+          groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
+          pathGroups: [{ pattern: "@/**", group: "internal" }],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+        },
+      ],
     },
   },
   // Override default ignores of eslint-config-next.

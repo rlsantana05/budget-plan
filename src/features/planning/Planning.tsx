@@ -1,29 +1,31 @@
 'use client';
 
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   useCallback, useEffect, useMemo,
 } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import type { MonthBudgetPlanDTO } from '@/types/budget';
+
 import { assignToTargets, setCategoryTarget } from '@/actions/budget-planning';
-import type { GroupItem } from './types';
-import type { TargetFormState } from './components/category/TargetModal/TargetModal';
-import { useMonthNavigation } from './hooks/useMonthNavigation';
-import { usePlanningActionState } from './hooks/usePlanningActionState';
-import { useBudgetGroupsStore } from './store/budgetGroupsStore';
-import { fromCents, toCents } from './utils/money';
-import { useTransactionsPanel } from './hooks/useTransactionsPanel';
-import { usePlannedSummary } from './hooks/usePlannedSummary';
-import MonthHeader from './components/layout/MonthHeader/MonthHeader';
+import type { MonthBudgetPlanDTO } from '@/types/budget';
+
 import BudgetBanner from './components/budget/BudgetBanner/BudgetBanner';
 import Income from './components/budget/Income';
-import { BudgetGroupsProvider } from './components/budget-group/BudgetGroupsProvider/BudgetGroupsProvider';
 import BudgetGroupListWithHeader from './components/budget-group/BudgetGroupListWithHeader/BudgetGroupListWithHeader';
-import TransactionsPanel from './components/transactions/TransactionsPanel/TransactionsPanel';
+import { BudgetGroupsProvider } from './components/budget-group/BudgetGroupsProvider/BudgetGroupsProvider';
+import type { TargetFormState } from './components/category/TargetModal/TargetModal';
+import MonthHeader from './components/layout/MonthHeader/MonthHeader';
+import UndoToast from './components/layout/UndoToast/UndoToast';
 import TransactionsFab from './components/transactions/TransactionsFab/TransactionsFab';
 import TransactionsModal from './components/transactions/TransactionsModal/TransactionsModal';
-import UndoToast from './components/layout/UndoToast/UndoToast';
+import TransactionsPanel from './components/transactions/TransactionsPanel/TransactionsPanel';
+import { useMonthNavigation } from './hooks/useMonthNavigation';
+import { usePlannedSummary } from './hooks/usePlannedSummary';
+import { usePlanningActionState } from './hooks/usePlanningActionState';
+import { useTransactionsPanel } from './hooks/useTransactionsPanel';
 import classes from './Planning.module.css';
+import { useBudgetGroupsStore } from './store/budgetGroupsStore';
+import type { GroupItem } from './types';
+import { fromCents, toCents } from './utils/money';
 
 interface PlanningProps {
   initialData?: MonthBudgetPlanDTO;
