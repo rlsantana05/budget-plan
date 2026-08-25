@@ -53,18 +53,6 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
     ease: 'easeOut' as const,
   };
 
-  const bannerAmount = useMemo(() => {
-    const income = groups
-      .filter((g) => g.isIncome)
-      .flatMap((g) => g.items)
-      .reduce((sum, it) => sum + it.plannedCents, 0);
-    const spending = groups
-      .filter((g) => !g.isIncome)
-      .flatMap((g) => g.items)
-      .reduce((sum, it) => sum + it.plannedCents, 0);
-    return income - spending;
-  }, [groups]);
-
   const readyToAssign = useMemo(
     () => initialData?.availableToAssignCents ?? 0,
     [initialData],
@@ -149,7 +137,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
           >
             <BudgetGroupsProvider initialData={initialData} action={action}>
               <Income />
-              <BudgetBanner amount={bannerAmount} message="Available to allocate" />
+              <BudgetBanner amount={readyToAssign} message="Available to allocate" />
               <BudgetGroupListWithHeader />
             </BudgetGroupsProvider>
           </motion.div>
