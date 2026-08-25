@@ -258,25 +258,29 @@ function BudgetGroupCardItem({
           )}
         </span>
         {isIncome && (
-          <input
-            className={classes.gAmountInput}
-            value={amountDisplay}
-            aria-label="Planned income amount"
-            inputMode="decimal"
-            onFocus={(e) => {
-              if (draftAmount === null) setDraftAmount(formatCents(item.plannedCents));
-              e.target.select();
-            }}
-            onBlur={() => {
-              commitIfDirty();
-            }}
-            onChange={(e) => setDraftAmount(sanitizeAmountText(e.target.value))}
-            onKeyDown={handleAmountKeyDown}
-          />
+          <>
+            <input
+              className={classes.gAmountInput}
+              value={amountDisplay}
+              aria-label="Planned income amount"
+              inputMode="decimal"
+              onFocus={(e) => {
+                if (draftAmount === null) setDraftAmount(formatCents(item.plannedCents));
+                e.target.select();
+              }}
+              onBlur={() => {
+                commitIfDirty();
+              }}
+              onChange={(e) => setDraftAmount(sanitizeAmountText(e.target.value))}
+              onKeyDown={handleAmountKeyDown}
+            />
+            <span className={classes.gValue}>{formatCents(item.receivedCents)}</span>
+            <span className={classes.gValue}>
+              {formatCents(item.receivedCents - item.plannedCents)}
+            </span>
+          </>
         )}
-        {isIncome ? (
-          <span className={classes.gValue}>{formatCents(item.receivedCents)}</span>
-        ) : (
+        {isIncome ? null : (
           <>
             <input
               className={classes.gAmountInput}
