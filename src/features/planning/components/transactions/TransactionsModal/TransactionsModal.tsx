@@ -68,7 +68,12 @@ export default function TransactionsModal({
               label="Amount"
               value={txAmount}
               onChange={(v) => {
-                const num = typeof v === 'number' ? v : v ? Number(v) : 0;
+                let num = 0;
+                if (typeof v === 'number') {
+                  num = v;
+                } else if (v) {
+                  num = Number(v);
+                }
                 if (num !== txAmount) onTxAmountChange(num);
               }}
               min={0}
@@ -95,8 +100,10 @@ export default function TransactionsModal({
           <div className={classes.modalField}>
             <Select
               label="Category"
-              data={categoryOptions.length > 0 ? categoryOptions : [{ value: "", label: "Uncategorized" }]}
-              value={txCategory != null ? txCategory : ""}
+              data={categoryOptions.length > 0
+                ? categoryOptions
+                : [{ value: '', label: 'Uncategorized' }]}
+              value={txCategory != null ? txCategory : ''}
               onChange={onTxCategoryChange}
               searchable
               clearable
