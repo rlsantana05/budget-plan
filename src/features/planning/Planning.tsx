@@ -11,7 +11,7 @@ import type { TargetFormState } from './components/category/TargetModal/TargetMo
 import { useMonthNavigation } from './hooks/useMonthNavigation';
 import { usePlanningActionState } from './hooks/usePlanningActionState';
 import { useBudgetGroupsStore } from './store/budgetGroupsStore';
-import { toCents } from './utils/money';
+import { fromCents, toCents } from './utils/money';
 import { useTransactionsPanel } from './hooks/useTransactionsPanel';
 import { usePlannedSummary } from './hooks/usePlannedSummary';
 import MonthHeader from './components/layout/MonthHeader/MonthHeader';
@@ -147,7 +147,7 @@ export default function Planning({ initialData, selectedMonth }: PlanningProps) 
             <BudgetGroupsProvider initialData={initialData} action={action}>
               <Income />
               <BudgetBanner
-                amount={leftToBudget}
+                amount={fromCents(leftToBudget)}
                 message={leftToBudget < 0 ? 'Over budget' : 'Left to budget'}
               />
               <BudgetGroupListWithHeader />
