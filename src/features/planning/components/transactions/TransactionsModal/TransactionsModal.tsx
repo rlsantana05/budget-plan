@@ -68,13 +68,22 @@ export default function TransactionsModal({
               label="Amount"
               value={txAmount}
               onChange={(v) => {
+                // Preserve current value if input is empty during editing
+                if (v === '' || v === null) {
+                  return;
+                }
+
                 let num = 0;
                 if (typeof v === 'number') {
                   num = v;
                 } else if (v) {
                   num = Number(v);
                 }
-                if (num !== txAmount) onTxAmountChange(num);
+
+                // Only update if the value actually changed
+                if (num !== txAmount) {
+                  onTxAmountChange(num);
+                }
               }}
               min={0}
               decimalScale={2}
