@@ -68,19 +68,19 @@ export default function TransactionsModal({
               label="Amount"
               value={txAmount}
               onChange={(v) => {
-                // Preserve current value if input is empty during editing
-                if (v === '' || v === null) {
+                if (v === null || v === undefined) {
+                  onTxAmountChange(0);
                   return;
                 }
-
-                let num = 0;
-                if (typeof v === 'number') {
-                  num = v;
-                } else if (v) {
-                  num = Number(v);
+                if (v === '') {
+                  onTxAmountChange(0);
+                  return;
                 }
-
-                // Only update if the value actually changed
+                let num = Number(v);
+                if (isNaN(num)) {
+                  // Do not update state for invalid input
+                  return;
+                }
                 if (num !== txAmount) {
                   onTxAmountChange(num);
                 }
