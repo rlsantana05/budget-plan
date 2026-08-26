@@ -33,14 +33,15 @@ const STATUS_CLASS: Record<BannerStatus, string> = {
 
 function useLeftToBudget(groups: BudgetBannerProps['groups']): number {
   return useMemo(() => {
-    const spendingGroups = groups.filter((g) => !g.isIncome);
-    const plannedTotal = spendingGroups
+    const incomePlanned = groups
+      .filter((g) => g.isIncome)
       .flatMap((g) => g.items ?? [])
       .reduce((sum, it) => sum + it.plannedCents, 0);
-    const fundedTotal = spendingGroups
+    const spendingPlanned = groups
+      .filter((g) => !g.isIncome)
       .flatMap((g) => g.items ?? [])
-      .reduce((sum, it) => sum + it.fundedCents, 0);
-    return plannedTotal - fundedTotal;
+      .reduce((sum, it) => sum + it.plannedCents, 0);
+    return incomePlanned - spendingPlanned;
   }, [groups]);
 }
 
