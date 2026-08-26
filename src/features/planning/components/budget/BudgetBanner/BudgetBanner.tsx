@@ -35,14 +35,18 @@ function useLeftToBudget(
   groups: BudgetBannerProps['groups'],
 ): number {
   return useMemo(() => {
+    const incomeGroups = groups.filter((g) => g.isIncome);
     const spendingGroups = groups.filter((g) => !g.isIncome);
-    const plannedTotal = spendingGroups
+    
+    const incomePlanned = incomeGroups
       .flatMap((g) => g.items ?? [])
       .reduce((sum, it) => sum + it.plannedCents, 0);
-    const fundedTotal = spendingGroups
+    
+    const spendingPlanned = spendingGroups
       .flatMap((g) => g.items ?? [])
-      .reduce((sum, it) => sum + it.fundedCents, 0);
-    return plannedTotal - fundedTotal;
+      .reduce((sum, it) => sum + it.plannedCents, 0);
+    
+    return incomePlanned - spendingPlanned;
   }, [groups]);
 }
 
