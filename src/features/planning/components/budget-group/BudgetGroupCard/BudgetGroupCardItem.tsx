@@ -1,10 +1,12 @@
 'use client';
 
+import { Check, GripVertical, Trash } from 'lucide-react';
 import {
   memo, useCallback, useEffect, useRef, useState,
 } from 'react';
 import type { KeyboardEvent, PointerEvent } from 'react';
-import { Check, GripVertical, Trash } from 'lucide-react';
+
+import { useBudgetGroupsStore } from '../../../store/budgetGroupsStore';
 import type { GroupItem } from '../../../types';
 import {
   formatCents,
@@ -14,7 +16,7 @@ import {
 } from '../../../utils/money';
 import { getAvailableStatus, resolveTargetDueDate } from '../../../utils/status';
 import type { AvailableStatus } from '../../../utils/status';
-import { useBudgetGroupsStore } from '../../../store/budgetGroupsStore';
+
 import classes from './BudgetGroupCardItem.module.css';
 
 interface BudgetGroupCardItemProps {
@@ -73,9 +75,7 @@ function BudgetGroupCardItem({
       setDraftName(null);
       return;
     }
-    const plannedCents = draftAmount !== null
-      ? parseAmountToCents(draftAmount)
-      : item.plannedCents;
+    const plannedCents = draftAmount !== null && draftAmount !== '' ? parseAmountToCents(draftAmount) : item.plannedCents;
     if (name !== item.name || plannedCents !== item.plannedCents) {
       onUpdateItem(item.id, { name, plannedCents });
     }
@@ -167,13 +167,9 @@ function BudgetGroupCardItem({
     return Boolean(node.closest('[data-row-drag]'));
   }, []);
 
-  const amountDisplay = amountFocused && draftAmount !== null
-    ? draftAmount
-    : formatCents(item.plannedCents);
+  const amountDisplay = amountFocused && draftAmount !== null ? draftAmount : formatCents(item.plannedCents);
 
-  const assignedDisplay = assignedFocused && draftAssigned !== null
-    ? draftAssigned
-    : formatCents(item.fundedCents);
+  const assignedDisplay = assignedFocused && draftAssigned !== null ? draftAssigned : formatCents(item.fundedCents);
 
   const status: AvailableStatus = getAvailableStatus(
     fromCents(item.fundedCents),
@@ -230,9 +226,9 @@ function BudgetGroupCardItem({
             value={nameValue}
             aria-label="Item name"
             onFocus={(e) => {
-              if (draftName === null) setDraftName(item.name);
-              e.target.select();
-            }}
+                            if (draftAmount === null) setDraftAmount((item.plannedCents / 100).toFixed(2));
+                            e.target.select();
+                        }}
             onBlur={() => {
               commitIfDirty();
             }}
@@ -240,10 +236,7 @@ function BudgetGroupCardItem({
             onKeyDown={handleNameKeyDown}
           />
           {!isIncome && status === 'complete' && (
-            <span
-              className={classes.gComplete}
-              aria-label={`${item.name} target met`}
-            >
+            <span className={classes.gComplete} aria-label={`${item.name} target met`}>
               <Check size={14} />
             </span>
           )}
@@ -265,7 +258,9 @@ function BudgetGroupCardItem({
               aria-label="Planned income amount"
               inputMode="decimal"
               onFocus={(e) => {
-                if (draftAmount === null) setDraftAmount(formatCents(item.plannedCents));
+                if (draftAmount === null) {
+                    setDraftAmount((item.plannedCents / 100).toFixed(2));
+                }
                 e.target.select();
               }}
               onBlur={() => {
@@ -274,9 +269,7 @@ function BudgetGroupCardItem({
               onChange={(e) => setDraftAmount(sanitizeAmountText(e.target.value))}
               onKeyDown={handleAmountKeyDown}
             />
-            <span className={classes.gValue}>
-              {formatCents(item.receivedCents)}
-            </span>
+            <span className={classes.gValue}>{formatCents(item.receivedCents)}</span>
             <span
               className={`${classes.gValue} ${
                 item.plannedCents > item.receivedCents ? classes.statusAtRisk : ''
@@ -294,9 +287,11 @@ function BudgetGroupCardItem({
               aria-label={`Assigned amount for ${item.name}`}
               inputMode="decimal"
               onFocus={(e) => {
-                if (draftAssigned === null) setDraftAssigned(formatCents(item.fundedCents));
-                e.target.select();
-              }}
+                              if (draftAssigned === null) {
+                                  setDraftAssigned((item.fundedCents / 100).toFixed(2));
+                              }
+                              e.target.select();
+                          }}
               onBlur={() => {
                 commitAssignedIfDirty();
               }}
@@ -339,8 +334,7 @@ function BudgetGroupCardItem({
             {' '}
             {item.transactionCount === 1 ? 'transaction' : 'transactions'}
             {' '}
-            will
-            be hidden with this category
+            will be hidden with this category
           </span>
           <div className={classes.deleteWarningActions}>
             <button
