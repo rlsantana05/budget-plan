@@ -90,8 +90,8 @@ export default function CategoryHub({
             fillOpacity={0.15}
           />
           <div className={classes.trendLabels}>
-            {item.trend.map((point) => (
-              <span key={point.month} className={classes.trendLabel}>
+            {item.trend.map((point, index) => (
+              <span key={`${point.month}-${index}`} className={classes.trendLabel}>
                 {point.month}
               </span>
             ))}
