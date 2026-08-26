@@ -31,22 +31,16 @@ const STATUS_CLASS: Record<BannerStatus, string> = {
   over: classes.bannerAmountOver,
 };
 
-function useLeftToBudget(
-  groups: BudgetBannerProps['groups'],
-): number {
+function useLeftToBudget(groups: BudgetBannerProps['groups']): number {
   return useMemo(() => {
-    const incomeGroups = groups.filter((g) => g.isIncome);
     const spendingGroups = groups.filter((g) => !g.isIncome);
-    
-    const incomePlanned = incomeGroups
+    const plannedTotal = spendingGroups
       .flatMap((g) => g.items ?? [])
       .reduce((sum, it) => sum + it.plannedCents, 0);
-    
-    const spendingPlanned = spendingGroups
+    const fundedTotal = spendingGroups
       .flatMap((g) => g.items ?? [])
-      .reduce((sum, it) => sum + it.plannedCents, 0);
-    
-    return incomePlanned - spendingPlanned;
+      .reduce((sum, it) => sum + it.fundedCents, 0);
+    return plannedTotal - fundedTotal;
   }, [groups]);
 }
 
@@ -55,11 +49,7 @@ const MOTION_TRANSITION = {
   ease: 'easeOut',
 } as const;
 
-export default function BudgetBanner({
-  groups,
-  children,
-  flat = false,
-}: BudgetBannerProps) {
+export default function BudgetBanner({ groups, children, flat = false }: BudgetBannerProps) {
   const reduceMotion = useReducedMotion();
   const transition = {
     duration: reduceMotion ? 0 : MOTION_TRANSITION.duration,

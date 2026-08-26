@@ -69,11 +69,10 @@ export default function TransactionsModal({
               value={txAmount}
               onChange={(v) => {
                 if (v === null || v === undefined) {
-                  onTxAmountChange(0);
                   return;
                 }
                 if (v === '') {
-                  onTxAmountChange(0);
+                  // Do not update state on empty string to prevent reset on focus
                   return;
                 }
                 let num = Number(v);
